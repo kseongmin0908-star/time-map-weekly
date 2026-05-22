@@ -1,0 +1,2766 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>시간의 지도 — 나의 한 해</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0a0a0f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=JetBrains+Mono:wght@300;400;500;700&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f; --bg-secondary: #16161f; --bg-panel: #0e0e16;
+      --gold: #d4a574; --gold-bright: #f0c888; --gold-dim: #a0804f;
+      --text: #f0ede9; --text-dim: #c4bfb9; --accent: #ff8c5a;
+      --current-glow: #fffbe6;
+      --success: #4ade80; --success-dim: #22633a;
+      --danger: #ef4444; --danger-dim: #7f1d1d;
+      --warn: #f59e0b; --warn-dim: #78350f;
+      --nebula-1: #1a0a2e; --nebula-2: #0a1a2e;
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Noto Sans KR', 'Cormorant Garamond', sans-serif;
+      min-height: 100vh; overflow-x: hidden;
+    }
+
+    /* ===== GRAIN ===== */
+    body::before {
+      content: ""; position: fixed; inset: 0; z-index: 9998; pointer-events: none;
+      opacity: 0.04; filter: url(#grain-filter);
+      background-image: repeating-conic-gradient(rgba(255 255 255 / 0.06) 0% 25%, transparent 0% 50%);
+      background-size: 4px 4px; mix-blend-mode: overlay;
+    }
+    body::after {
+      content: ""; position: fixed; inset: 0; z-index: 9997; pointer-events: none;
+      background: radial-gradient(ellipse 70% 70% at 50% 50%, transparent 40%, rgba(5,3,10,0.35) 70%, rgba(2,1,5,0.7) 100%);
+    }
+
+    /* ===== MATRIX BACKGROUND ===== */
+    .matrix-bg {
+      position: fixed; inset: 0; z-index: -4;
+      pointer-events: none;
+      background: url('matrix-bg.jpg') center center / cover no-repeat;
+      opacity: .4;
+    }
+
+    /* ===== STARS ===== */
+    .star-field { position: fixed; inset: 0; z-index: -2; pointer-events: none; overflow: hidden; }
+    .star-field__layer--small {
+      position: absolute; width: 1px; height: 1px; background: transparent;
+      box-shadow: 42vw 8vh 0 .5px rgba(232,228,223,.35),87vw 14vh 0 .5px rgba(232,228,223,.25),15vw 22vh 0 .5px rgba(232,228,223,.3),63vw 31vh 0 .5px rgba(232,228,223,.2),5vw 45vh 0 .5px rgba(232,228,223,.28),91vw 52vh 0 .5px rgba(232,228,223,.22),33vw 60vh 0 .5px rgba(232,228,223,.35),78vw 68vh 0 .5px rgba(232,228,223,.18),12vw 75vh 0 .5px rgba(232,228,223,.3),56vw 83vh 0 .5px rgba(232,228,223,.25),95vw 90vh 0 .5px rgba(232,228,223,.2),27vw 3vh 0 .5px rgba(232,228,223,.32),70vw 18vh 0 .5px rgba(232,228,223,.22),48vw 40vh 0 .5px rgba(232,228,223,.28),8vw 55vh 0 .5px rgba(232,228,223,.18),82vw 37vh 0 .5px rgba(232,228,223,.3),20vw 92vh 0 .5px rgba(232,228,223,.24),60vw 72vh 0 .5px rgba(232,228,223,.2),38vw 48vh 0 .5px rgba(232,228,223,.26),74vw 85vh 0 .5px rgba(232,228,223,.22),3vw 28vh 0 .5px rgba(232,228,223,.3),52vw 12vh 0 .5px rgba(232,228,223,.25);
+    }
+    .star-field__layer--medium {
+      position: absolute; width: 1px; height: 1px; background: transparent;
+      box-shadow: 22vw 6vh 0 .75px rgba(232,228,223,.4),55vw 15vh 0 .75px rgba(232,228,223,.3),80vw 23vh 0 .75px rgba(232,228,223,.35),10vw 34vh 0 .75px rgba(232,228,223,.28),47vw 42vh 0 .75px rgba(232,228,223,.38),93vw 48vh 0 .75px rgba(232,228,223,.25),36vw 56vh 0 .75px rgba(232,228,223,.32),72vw 63vh 0 .75px rgba(232,228,223,.28),18vw 71vh 0 .75px rgba(232,228,223,.35),58vw 80vh 0 .75px rgba(232,228,223,.22),85vw 88vh 0 .75px rgba(232,228,223,.3),65vw 4vh 0 .75px rgba(232,228,223,.35),40vw 20vh 0 .75px rgba(232,228,223,.25),76vw 44vh 0 .75px rgba(232,228,223,.38),28vw 66vh 0 .75px rgba(232,228,223,.3),88vw 74vh 0 .75px rgba(232,228,223,.28),62vw 30vh 0 .75px rgba(232,228,223,.25),34vw 10vh 0 .75px rgba(232,228,223,.4),53vw 92vh 0 .75px rgba(232,228,223,.25),78vw 2vh 0 .75px rgba(232,228,223,.32);
+      animation: twinkle-slow 6s ease-in-out infinite alternate;
+    }
+    .star-field__layer--large {
+      position: absolute; width: 1px; height: 1px; background: transparent;
+      box-shadow: 31vw 11vh 0 1px rgba(232,228,223,.5),67vw 26vh 0 1px rgba(232,228,223,.4),9vw 41vh 0 1px rgba(232,228,223,.45),83vw 55vh 0 1px rgba(232,228,223,.35),50vw 70vh 0 1px rgba(232,228,223,.42),19vw 84vh 0 1px rgba(232,228,223,.38),43vw 5vh 0 1px rgba(232,228,223,.5),92vw 33vh 0 1px rgba(232,228,223,.35),26vw 47vh 0 1px rgba(232,228,223,.42),61vw 62vh 0 1px rgba(232,228,223,.38),71vw 46vh 0 1px rgba(212,165,116,.3),54vw 36vh 0 1px rgba(212,165,116,.25),82vw 79vh 0 1px rgba(232,228,223,.42),46vw 22vh 0 1px rgba(232,228,223,.35),11vw 13vh 0 1px rgba(232,228,223,.45);
+      animation: twinkle-bright 8s ease-in-out infinite alternate;
+    }
+    @keyframes twinkle-slow { 0%{opacity:.6} 50%{opacity:1} 100%{opacity:.7} }
+    @keyframes twinkle-bright { 0%{opacity:.5} 33%{opacity:1} 66%{opacity:.65} 100%{opacity:.9} }
+
+    /* ===== NEBULA ===== */
+    .nebula {
+      position: fixed; inset: -50%; z-index: -3; pointer-events: none;
+      opacity: .35; will-change: transform; animation: nebula-drift 45s linear infinite;
+    }
+    .nebula::before {
+      content: ""; position: absolute; width: 100%; height: 100%;
+      background: radial-gradient(ellipse 60% 50% at 30% 40%,rgba(26,10,46,.8) 0%,transparent 70%),radial-gradient(ellipse 50% 60% at 70% 60%,rgba(10,26,46,.7) 0%,transparent 65%),radial-gradient(ellipse 40% 40% at 50% 50%,rgba(20,8,40,.5) 0%,transparent 60%);
+    }
+    .nebula::after {
+      content: ""; position: absolute; width: 100%; height: 100%;
+      background: conic-gradient(from 0deg at 40% 45%,rgba(26,10,46,.6) 0deg,rgba(10,26,46,.4) 90deg,rgba(26,10,46,.3) 180deg,rgba(10,26,46,.5) 270deg,rgba(26,10,46,.6) 360deg);
+      opacity: .5; animation: nebula-counter 60s linear infinite reverse;
+    }
+    @keyframes nebula-drift { from{transform:rotate(0) scale(1.2)} to{transform:rotate(360deg) scale(1.2)} }
+    @keyframes nebula-counter { from{transform:rotate(0) scale(1.1)} to{transform:rotate(360deg) scale(1.1)} }
+
+    /* ===== APP ===== */
+    #app {
+      position: relative; z-index: 1; max-width: 960px; margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem; display: flex; flex-direction: column; align-items: center;
+      background: radial-gradient(ellipse 80% 80% at 50% 30%, rgba(10,10,15,.92) 0%, rgba(10,10,15,.88) 50%, rgba(10,10,15,.82) 100%);
+      border-left: 1px solid rgba(106,102,96,.05); border-right: 1px solid rgba(106,102,96,.05);
+      box-shadow: 0 0 80px 40px rgba(10,10,15,.7);
+    }
+
+    /* ===== HEADER ===== */
+    .header { text-align: center; margin-bottom: 1.5rem; position: relative; }
+    .header::after {
+      content: ''; display: block; width: 60px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+      margin: 1.2rem auto 0;
+    }
+    .year-nav { display: flex; align-items: center; justify-content: center; gap: .5rem; }
+    .year-nav-btn {
+      background: none; border: 1px solid rgba(212,165,116,.2); border-radius: 50%;
+      width: 36px; height: 36px; color: var(--gold-dim); font-size: 1rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all .2s; opacity: .6;
+    }
+    .year-nav-btn:hover { border-color: var(--gold); color: var(--gold); opacity: 1; background: rgba(212,165,116,.08); }
+    .year-display {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(70px, 14vw, 180px); font-weight: 300;
+      letter-spacing: .08em; line-height: 1; color: #5a1515; opacity: .25;
+      user-select: none; position: relative;
+      transition: transform .4s, filter .4s;
+    }
+    .year-display:hover { transform: scale(1.03); }
+    .year-display::after {
+      content: attr(data-year); position: absolute; top: 0; left: 0; right: 0;
+      background: linear-gradient(180deg, #ffc299 0%, #ff9068 10%, #ff6b4a 25%, #ff4d4d 40%, #e63946 60%, #c41e3a 80%, #8b1a2b 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; opacity: 1;
+      filter: drop-shadow(0 0 25px rgba(255, 140, 100, .7)) drop-shadow(0 0 60px rgba(230, 57, 70, .5)) drop-shadow(0 0 110px rgba(196, 30, 58, .3));
+      animation: horse-fire 3.5s ease-in-out infinite alternate;
+    }
+    @keyframes horse-fire {
+      0% { filter: drop-shadow(0 0 25px rgba(255, 140, 100, .7)) drop-shadow(0 0 60px rgba(230, 57, 70, .5)) drop-shadow(0 0 110px rgba(196, 30, 58, .3)); }
+      100% { filter: drop-shadow(0 0 40px rgba(255, 194, 153, .85)) drop-shadow(0 0 90px rgba(255, 77, 77, .6)) drop-shadow(0 0 140px rgba(230, 57, 70, .4)); }
+    }
+    .viewing-other .year-display::after {
+      background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 40%, var(--gold-dim) 100%);
+      -webkit-background-clip: text; background-clip: text;
+      filter: drop-shadow(0 0 12px rgba(212,165,116,.3)); animation: none;
+    }
+    .subtitle {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(.65rem, 1.4vw, .85rem); font-weight: 400;
+      letter-spacing: .3em; color: var(--text-dim); margin-top: -.2em;
+    }
+    .subtitle .hl { color: var(--gold-bright); font-weight: 700; }
+
+    /* ===== YEARLY GOAL ===== */
+    .yearly-goal-section {
+      text-align: center; margin-top: 1rem; margin-bottom: .5rem;
+      max-width: 520px; width: 100%;
+      opacity: 0; animation: fadein .8s ease-out .3s forwards;
+    }
+    .yearly-goal-label {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: .6rem; font-weight: 500; letter-spacing: .2em;
+      color: var(--gold); margin-bottom: .5rem; text-transform: uppercase;
+    }
+    .yearly-goal-display {
+      position: relative; cursor: pointer; padding: .8rem 1.5rem;
+      border: 1px solid rgba(212,165,116,.25); border-radius: 10px;
+      background: linear-gradient(135deg, rgba(212,165,116,.06) 0%, rgba(240,200,136,.03) 100%);
+      transition: border-color .3s, box-shadow .3s, background .3s;
+      min-height: 3rem; display: flex; align-items: center; justify-content: center;
+    }
+    .yearly-goal-display:hover {
+      border-color: rgba(212,165,116,.45); box-shadow: 0 0 20px rgba(212,165,116,.1);
+      background: linear-gradient(135deg, rgba(212,165,116,.1) 0%, rgba(240,200,136,.05) 100%);
+    }
+    .yearly-goal-text {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: clamp(.9rem, 2vw, 1.15rem); font-weight: 700;
+      color: var(--gold-bright); line-height: 1.6; letter-spacing: .03em;
+      text-shadow: 0 0 16px rgba(240,200,136,.2);
+    }
+    .yearly-goal-placeholder {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: clamp(.8rem, 1.5vw, .95rem); font-weight: 300;
+      color: var(--text-dim); opacity: .7; font-style: italic;
+    }
+    .yearly-goal-edit {
+      position: absolute; inset: 0; display: none; align-items: center; justify-content: center; padding: .5rem;
+    }
+    .yearly-goal-edit.active { display: flex; }
+    .yearly-goal-input {
+      width: 100%; text-align: center; padding: .6rem 1rem;
+      background: rgba(255,255,255,.05); border: 1.5px solid var(--gold); border-radius: 8px;
+      color: var(--gold-bright); font-family: 'Noto Sans KR', sans-serif;
+      font-size: clamp(.9rem, 2vw, 1.15rem); font-weight: 700; letter-spacing: .03em;
+      outline: none; box-shadow: 0 0 20px rgba(212,165,116,.15);
+    }
+    .yearly-goal-input::placeholder { color: rgba(168,162,158,.5); font-weight: 300; font-style: italic; }
+    .yearly-goal-hint {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: .55rem; color: var(--text-dim); margin-top: .4rem; opacity: .6; letter-spacing: .05em;
+    }
+
+    /* ===== CLOCK ===== */
+    .clock-section {
+      text-align: center; margin-bottom: 1.2rem;
+      opacity: 0; animation: fadein 1s ease-out .5s forwards;
+    }
+    @keyframes fadein { to { opacity: 1; } }
+    .current-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(1.1rem, 2.8vw, 1.6rem); font-weight: 300;
+      color: var(--gold-bright); letter-spacing: .15em;
+      text-shadow: 0 0 20px rgba(240,200,136,.2); transition: text-shadow .3s, transform .3s;
+    }
+    .clock-section:hover .current-time { text-shadow: 0 0 30px rgba(240,200,136,.4); transform: scale(1.03); }
+    .current-date {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: clamp(.6rem, 1.1vw, .75rem); font-weight: 400;
+      letter-spacing: .2em; color: var(--text-dim); margin-top: .3rem;
+    }
+
+    /* ===== MOTIVATIONAL QUOTE ===== */
+    .quote-section {
+      text-align: center; margin-bottom: 2rem; max-width: 480px; min-height: 2.4em;
+      opacity: 0; animation: fadein 1s ease-out .8s forwards;
+    }
+    .quote-text {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: clamp(1rem, 2.2vw, 1.3rem); font-weight: 500;
+      color: #ffad70; letter-spacing: .04em; line-height: 1.7; font-style: italic;
+      text-shadow: 0 0 18px rgba(255,140,90,.25); transition: opacity .5s ease, text-shadow .3s, transform .3s;
+    }
+    .quote-text:hover { text-shadow: 0 0 28px rgba(255,140,90,.45); transform: scale(1.02); }
+
+    /* ===== GRID ===== */
+    .grid-section { width: 100%; max-width: 720px; margin-bottom: 2rem; }
+    .month-labels {
+      display: grid; grid-template-columns: repeat(12, 1fr);
+      gap: 6px; padding: 0 4px; margin-bottom: 10px;
+    }
+    .month-label {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: clamp(.55rem, 1.1vw, .7rem); font-weight: 500;
+      letter-spacing: .08em; color: var(--text-dim); text-align: center;
+      opacity: .9; transition: opacity .3s, color .3s; white-space: nowrap;
+    }
+    .month-label:hover { opacity: 1; color: var(--gold); }
+    .week-grid {
+      display: grid; grid-template-columns: repeat(12, 1fr);
+      gap: 6px; padding: 4px;
+    }
+    .month-col {
+      display: flex; flex-direction: column; gap: 6px; align-items: center;
+    }
+
+    /* ===== WEEK CELL ===== */
+    .week-cell {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 1.5px solid rgba(106,102,96,.2);
+      position: relative; cursor: pointer;
+      opacity: 0; animation: fade-in-week .5s ease-out forwards;
+      transition: transform .25s cubic-bezier(.34,1.56,.64,1),
+                  border-color .3s, box-shadow .3s, background .3s, filter .2s;
+    }
+    @keyframes fade-in-week { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    .week-cell:hover { transform: scale(1.35); filter: brightness(1.4); z-index: 5; }
+    .week-cell .goal-dot {
+      position: absolute; bottom: -3px; left: 50%; transform: translateX(-50%);
+      width: 6px; height: 6px; border-radius: 50%;
+      opacity: 0; transition: opacity .3s; pointer-events: none;
+    }
+    .week-cell.has-goal .goal-dot { opacity: 1; }
+    .week-cell.goal-complete .goal-dot { background: #00ff88; box-shadow: 0 0 10px rgba(0,255,136,.7); }
+    .week-cell.goal-incomplete .goal-dot { background: #ff9500; box-shadow: 0 0 10px rgba(255,149,0,.7); }
+    .week-cell.goal-future .goal-dot { background: var(--gold); box-shadow: 0 0 6px rgba(212,165,116,.5); }
+
+    /* Passed week WITH goals */
+    .week-passed {
+      background: radial-gradient(circle, #e8b87a 0%, #c49560 50%, rgba(160,128,79,.3) 100%);
+      border-color: #c49560;
+      box-shadow: 0 0 10px rgba(212,165,116,.4), inset 0 0 6px rgba(240,200,136,.25);
+    }
+    /* Passed week WITHOUT goals — RED warning */
+    .week-passed.no-goal {
+      background: radial-gradient(circle, #c0392b 0%, #962d22 40%, rgba(100,25,20,.4) 100%);
+      border-color: #e74c3c;
+      box-shadow: 0 0 12px rgba(231,76,60,.4), inset 0 0 4px rgba(231,76,60,.2);
+    }
+    /* Passed week FULLY complete — GREEN */
+    .week-passed.goal-complete {
+      background: radial-gradient(circle, #2ecc71 0%, #1a9c54 50%, rgba(26,156,84,.3) 100%);
+      border-color: #2ecc71;
+      box-shadow: 0 0 12px rgba(46,204,113,.4), inset 0 0 4px rgba(46,204,113,.2);
+    }
+    /* Passed week PARTIAL complete — AMBER/ORANGE */
+    .week-passed.goal-incomplete {
+      background: radial-gradient(circle, #e67e22 0%, #bf6516 50%, rgba(191,101,22,.3) 100%);
+      border-color: #e67e22;
+      box-shadow: 0 0 10px rgba(230,126,34,.35), inset 0 0 4px rgba(230,126,34,.2);
+    }
+    .week-passed:hover { box-shadow: 0 0 18px rgba(240,200,136,.6); border-color: #fff; transform: scale(1.35); filter: brightness(1.5); }
+
+    /* Current week — BLAZING */
+    .week-current {
+      background: radial-gradient(circle, #fffbe6 0%, #ffd866 30%, #ffb347 70%);
+      border-color: #ffe082;
+      box-shadow: 0 0 20px rgba(255,251,230,.7), 0 0 40px rgba(255,179,71,.4), 0 0 60px rgba(255,216,102,.2), inset 0 0 8px rgba(255,251,230,.5);
+      animation: fade-in-week .5s ease-out forwards, pulse-glow 2.4s ease-in-out infinite; z-index: 2;
+    }
+    @keyframes pulse-glow {
+      0%,100% { box-shadow: 0 0 20px rgba(255,251,230,.7),0 0 40px rgba(255,179,71,.4),0 0 60px rgba(255,216,102,.2),inset 0 0 8px rgba(255,251,230,.5); transform: scale(1); }
+      50% { box-shadow: 0 0 30px rgba(255,251,230,.9),0 0 55px rgba(255,179,71,.55),0 0 80px rgba(255,216,102,.3),inset 0 0 12px rgba(255,251,230,.6); transform: scale(1.18); }
+    }
+    .week-current:hover { animation: fade-in-week .5s ease-out forwards; box-shadow: 0 0 30px rgba(255,251,230,.9),0 0 60px rgba(255,179,71,.5); }
+
+    /* Future weeks */
+    .week-future { background: rgba(255,255,255,.02); border-color: rgba(140,135,128,.18); }
+    .week-future.has-goal { border-color: rgba(212,165,116,.5); background: rgba(212,165,116,.06); box-shadow: 0 0 6px rgba(212,165,116,.15); }
+    .week-future:hover { border-color: rgba(200,195,188,.5); box-shadow: 0 0 12px rgba(200,195,188,.2); background: rgba(200,195,188,.08); }
+
+    /* ===== GRID LEGEND ===== */
+    .grid-legend { display: flex; justify-content: center; gap: 1.2rem; margin-top: .8rem; flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: .35rem; font-family: 'Noto Sans KR', sans-serif; font-size: .6rem; color: var(--text-dim); letter-spacing: .03em; transition: color .2s; cursor: default; }
+    .legend-item:hover { color: var(--text); }
+    .legend-item:hover .legend-dot { transform: scale(1.4); }
+    .legend-dot { transition: transform .2s; }
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .legend-dot.passed { background: var(--gold); }
+    .legend-dot.empty { background: rgba(120,80,50,.4); border: 1px solid rgba(180,80,60,.25); }
+    .legend-dot.complete { background: var(--gold); border: 1.5px solid var(--success); }
+    .legend-dot.current { background: var(--current-glow); box-shadow: 0 0 4px rgba(255,251,230,.5); }
+    .legend-dot.future { border: 1px solid rgba(106,102,96,.3); }
+
+    /* ===== STATS ===== */
+    .stats-section {
+      width: 100%; max-width: 640px;
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1rem; margin-bottom: 1.5rem; padding: 1.5rem 0;
+      border-top: 1px solid rgba(106,102,96,.12); border-bottom: 1px solid rgba(106,102,96,.12);
+    }
+    .stat-block {
+      text-align: center; display: flex; flex-direction: column; align-items: center; gap: .3rem;
+      padding: .6rem .3rem; border-radius: 8px; transition: background .3s, transform .25s;
+    }
+    .stat-block:hover { background: rgba(255,255,255,.03); transform: translateY(-2px); }
+    .stat-label { font-family: 'Noto Sans KR', sans-serif; font-size: clamp(.5rem, 1vw, .65rem); font-weight: 500; letter-spacing: .1em; color: var(--text-dim); transition: color .3s; }
+    .stat-block:hover .stat-label { color: var(--gold-dim); }
+    .stat-number { font-family: 'JetBrains Mono', monospace; font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 700; line-height: 1; transition: text-shadow .3s, transform .3s; }
+    .stat-block:hover .stat-number { transform: scale(1.08); }
+    .stat-block:nth-child(1) .stat-number { color: var(--gold); text-shadow: 0 0 6px rgba(212,165,116,.4); }
+    .stat-block:nth-child(2) .stat-number { color: var(--gold-bright); text-shadow: 0 0 8px rgba(240,200,136,.5); }
+    .stat-block:nth-child(3) .stat-number { color: var(--text); text-shadow: 0 0 6px rgba(232,228,223,.15); }
+    .stat-block:nth-child(4) .stat-number { color: var(--danger); text-shadow: 0 0 8px rgba(239,68,68,.3); }
+
+    /* ===== STREAK ===== */
+    .streak-section {
+      width: 100%; max-width: 640px; margin-bottom: 1.5rem;
+      display: flex; justify-content: center; gap: 2.5rem;
+      opacity: 0; animation: fadein .8s ease-out .9s forwards;
+    }
+    .streak-item { text-align: center; padding: .6rem .8rem; border-radius: 10px; transition: background .3s, transform .25s; }
+    .streak-item:hover { background: rgba(255,140,90,.05); transform: translateY(-2px); }
+    .streak-value {
+      font-family: 'JetBrains Mono', monospace; font-size: 1.4rem; font-weight: 700;
+      color: var(--accent); display: flex; align-items: center; justify-content: center; gap: .3rem;
+      transition: transform .3s;
+    }
+    .streak-item:hover .streak-value { transform: scale(1.1); }
+    .streak-value .fire { font-size: 1.2rem; }
+    .streak-label { font-family: 'Noto Sans KR', sans-serif; font-size: .6rem; color: var(--text-dim); letter-spacing: .1em; margin-top: .2rem; }
+
+    /* ===== ACHIEVEMENT SECTION ===== */
+    .achievement-section {
+      width: 100%; max-width: 640px; margin-bottom: 2rem;
+      display: grid; grid-template-columns: 140px 1fr; gap: 2rem; align-items: center;
+      opacity: 0; animation: fadein .8s ease-out 1s forwards;
+    }
+    .donut-wrap { position: relative; width: 140px; height: 140px; transition: transform .4s; }
+    .donut-wrap:hover { transform: scale(1.06); }
+    .donut-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .donut-bg { fill: none; stroke: var(--bg-secondary); stroke-width: 8; }
+    .donut-fill { fill: none; stroke: var(--gold); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1.5s cubic-bezier(.22,1,.36,1), stroke .3s; filter: drop-shadow(0 0 6px rgba(74,222,128,.3)); }
+    .donut-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+    .donut-pct { font-family: 'JetBrains Mono', monospace; font-size: 1.6rem; font-weight: 700; color: var(--gold-bright); text-shadow: 0 0 12px rgba(240,200,136,.3); }
+    .donut-label { font-family: 'Noto Sans KR', sans-serif; font-size: .6rem; color: var(--text-dim); letter-spacing: .1em; margin-top: .1rem; }
+    .achievement-details { display: flex; flex-direction: column; gap: .8rem; }
+    .ach-row { display: flex; justify-content: space-between; align-items: center; font-family: 'Noto Sans KR', sans-serif; font-size: .75rem; }
+    .ach-label { color: var(--text-dim); font-weight: 400; }
+    .ach-value { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+    .ach-value.good { color: var(--success); }
+    .ach-value.warn { color: var(--warn); }
+    .ach-value.bad { color: var(--danger); }
+    .ach-value.neutral { color: var(--text); }
+    .ach-message {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .7rem; font-weight: 500; line-height: 1.5;
+      padding: .6rem .8rem; border-radius: 6px;
+      background: rgba(255,107,53,.08); border-left: 2px solid var(--accent); color: var(--accent);
+    }
+
+    /* ===== MONTHLY CHART ===== */
+    .monthly-chart-section {
+      width: 100%; max-width: 640px; margin-bottom: 2rem;
+      opacity: 0; animation: fadein .8s ease-out 1.1s forwards;
+    }
+    .monthly-chart-title { font-family: 'Noto Sans KR', sans-serif; font-size: .65rem; font-weight: 500; letter-spacing: .15em; color: var(--text-dim); margin-bottom: .6rem; }
+    .monthly-bars { display: flex; gap: 6px; align-items: flex-end; height: 80px; }
+    .monthly-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .monthly-bar {
+      width: 100%; border-radius: 3px 3px 0 0; min-height: 4px;
+      transition: height .8s cubic-bezier(.22,1,.36,1), filter .2s, transform .2s; position: relative;
+    }
+    .monthly-bar-wrap:hover .monthly-bar { filter: brightness(1.3); transform: scaleY(1.08); transform-origin: bottom; }
+    .monthly-bar-label { font-family: 'Noto Sans KR', sans-serif; font-size: .5rem; color: var(--text-dim); }
+    .monthly-bar-pct {
+      font-family: 'JetBrains Mono', monospace; font-size: .5rem; color: var(--text-dim);
+      opacity: 0; transition: opacity .2s; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); white-space: nowrap;
+    }
+    .monthly-bar-wrap:hover .monthly-bar-pct { opacity: 1; }
+
+    /* ===== INSIGHTS ===== */
+    .insights-section {
+      width: 100%; max-width: 640px; margin-bottom: 2rem;
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: .8rem;
+      opacity: 0; animation: fadein .8s ease-out 1.15s forwards;
+    }
+    .insight-card {
+      padding: .7rem .9rem; border-radius: 8px;
+      background: rgba(255,255,255,.02); border: 1px solid rgba(106,102,96,.12);
+      transition: transform .25s, border-color .3s, background .3s, box-shadow .3s;
+    }
+    .insight-card:hover { transform: translateY(-3px); border-color: rgba(212,165,116,.2); background: rgba(255,255,255,.04); box-shadow: 0 4px 16px rgba(0,0,0,.2); }
+    .insight-label { font-family: 'Noto Sans KR', sans-serif; font-size: .6rem; color: var(--text-dim); letter-spacing: .05em; margin-bottom: .25rem; }
+    .insight-value { font-family: 'JetBrains Mono', monospace; font-size: .9rem; font-weight: 600; color: var(--gold-bright); }
+    .insight-value.trend-up { color: var(--success); }
+    .insight-value.trend-down { color: var(--danger); }
+
+    /* ===== MINI BAR CHART ===== */
+    .mini-chart-section { width: 100%; max-width: 640px; margin-bottom: 2rem; opacity: 0; animation: fadein .8s ease-out 1.2s forwards; }
+    .mini-chart-title { font-family: 'Noto Sans KR', sans-serif; font-size: .65rem; font-weight: 500; letter-spacing: .15em; color: var(--text-dim); margin-bottom: .6rem; }
+    .mini-chart { display: flex; gap: 2px; align-items: flex-end; height: 40px; padding: 4px 0; }
+    .mini-bar { flex: 1; border-radius: 2px 2px 0 0; min-width: 2px; transition: height .5s cubic-bezier(.22,1,.36,1), background .3s; cursor: pointer; position: relative; }
+    .mini-bar:hover { filter: brightness(1.5); }
+    .mini-bar.empty { background: linear-gradient(180deg, rgba(106,102,96,.2) 0%, rgba(106,102,96,.08) 100%); height: 6px; }
+    .mini-bar.no-goal-passed { background: linear-gradient(180deg, #f87171 0%, #b91c1c 60%, rgba(120,30,30,.4) 100%); height: 10px; box-shadow: 0 0 4px rgba(239,68,68,.15); }
+    .mini-bar.has-goal { background: linear-gradient(180deg, #f0c888 0%, #ff8c5a 50%, #d4a574 100%); height: 24px; box-shadow: 0 0 6px rgba(240,200,136,.2); }
+    .mini-bar.complete { background: linear-gradient(180deg, #86efac 0%, #4ade80 40%, #22d3ee 100%); height: 100%; box-shadow: 0 0 8px rgba(74,222,128,.25); }
+    .mini-bar.current-bar { background: linear-gradient(180deg, #fffbe6 0%, #ffd866 40%, #ffb347 100%); height: 30px; box-shadow: 0 0 10px rgba(255,251,230,.4), 0 0 20px rgba(255,179,71,.2); }
+    .mini-bar.future-goal { background: linear-gradient(180deg, rgba(212,165,116,.4) 0%, rgba(212,165,116,.15) 100%); height: 20px; }
+
+    /* ===== PROGRESS BAR ===== */
+    .progress-section { width: 100%; max-width: 640px; margin-bottom: 1.5rem; }
+    .progress-label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+    .progress-title { font-family: 'Noto Sans KR', sans-serif; font-size: .65rem; font-weight: 500; letter-spacing: .15em; color: var(--text-dim); }
+    .progress-percentage { font-family: 'JetBrains Mono', monospace; font-size: .7rem; font-weight: 500; color: var(--gold); letter-spacing: .05em; }
+    .progress-section:hover .progress-percentage { color: var(--gold-bright); text-shadow: 0 0 8px rgba(240,200,136,.3); }
+    .progress-track { width: 100%; height: 4px; background: var(--bg-secondary); border-radius: 2px; overflow: visible; position: relative; transition: height .2s; }
+    .progress-section:hover .progress-track { height: 6px; }
+    .progress-fill {
+      height: 100%; border-radius: 2px;
+      background: linear-gradient(90deg, #d4a574 0%, #f0c888 30%, #ff8c5a 60%, #f0c888 80%, #fffbe6 100%);
+      width: 0%; position: relative; transition: width 1.8s cubic-bezier(.22,1,.36,1);
+    }
+    .progress-fill::after {
+      content: ''; position: absolute; right: -3px; top: -3px;
+      width: 10px; height: 10px; border-radius: 50%; background: var(--gold-bright);
+      box-shadow: 0 0 10px rgba(240,200,136,.6); opacity: 0; transition: opacity .5s ease 1.5s;
+    }
+    .progress-fill.active::after { opacity: 1; }
+
+    /* ===== DATA MANAGEMENT ===== */
+    .data-section {
+      width: 100%; max-width: 640px; margin-top: 1rem; margin-bottom: 1rem;
+      display: flex; justify-content: center; gap: .8rem; flex-wrap: wrap;
+    }
+    .data-btn {
+      padding: .45rem 1rem; border-radius: 6px; font-family: 'Noto Sans KR', sans-serif;
+      font-size: .65rem; font-weight: 500; cursor: pointer; letter-spacing: .05em;
+      transition: all .2s; border: 1px solid rgba(106,102,96,.2);
+      background: rgba(255,255,255,.03); color: var(--text-dim);
+    }
+    .data-btn:hover { border-color: var(--gold-dim); color: var(--gold); background: rgba(212,165,116,.06); }
+    #importFileInput { display: none; }
+
+    /* ===== FOOTER ===== */
+    .days-remaining {
+      text-align: center; margin-top: .8rem;
+      font-family: 'Noto Sans KR', sans-serif; font-size: .8rem; font-weight: 300; color: var(--text-dim);
+      opacity: 0; animation: fadein 1s ease-out 1.5s forwards; transition: color .3s;
+    }
+    .days-remaining:hover { color: var(--text); }
+    .days-remaining b { color: var(--gold); font-weight: 700; font-family: 'JetBrains Mono', monospace; transition: color .3s, text-shadow .3s; }
+    .days-remaining:hover b { color: var(--gold-bright); text-shadow: 0 0 10px rgba(240,200,136,.4); }
+
+    /* ===== CONFETTI CANVAS ===== */
+    #confettiCanvas {
+      position: fixed; inset: 0; z-index: 99999; pointer-events: none; display: none;
+    }
+
+    /* ===== GOAL SIDE PANEL ===== */
+    .panel-overlay {
+      position: fixed; inset: 0; z-index: 10000;
+      background: rgba(0,0,0,.5); backdrop-filter: blur(4px);
+      opacity: 0; pointer-events: none; transition: opacity .3s;
+    }
+    .panel-overlay.open { opacity: 1; pointer-events: all; }
+    .goal-panel {
+      position: fixed; top: 0; right: -400px; width: 380px; height: 100vh;
+      z-index: 10001; overflow-y: auto; background: var(--bg-panel);
+      border-left: 1px solid rgba(212,165,116,.15);
+      box-shadow: -10px 0 40px rgba(0,0,0,.5);
+      transition: right .35s cubic-bezier(.22,1,.36,1);
+      padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 1.2rem;
+    }
+    .goal-panel.open { right: 0; }
+    .panel-close {
+      position: absolute; top: 1rem; right: 1rem; width: 32px; height: 32px; border: none;
+      background: rgba(255,255,255,.05); border-radius: 50%;
+      color: var(--text-dim); font-size: 1.1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, color .2s;
+    }
+    .panel-close:hover { background: rgba(255,255,255,.1); color: var(--text); }
+    .panel-header { font-family: 'Noto Sans KR', sans-serif; padding-right: 2rem; }
+    .panel-week-num { font-family: 'JetBrains Mono', monospace; font-size: 1.8rem; font-weight: 700; color: var(--gold-bright); }
+    .panel-date-range { font-size: .8rem; color: var(--text-dim); margin-top: .2rem; }
+    .panel-status { display: inline-block; font-size: .65rem; font-weight: 500; padding: .2rem .6rem; border-radius: 12px; margin-top: .4rem; }
+    .panel-status.elapsed { background: rgba(212,165,116,.15); color: var(--gold); }
+    .panel-status.now { background: rgba(240,200,136,.2); color: var(--gold-bright); }
+    .panel-status.upcoming { background: rgba(106,102,96,.15); color: var(--text-dim); }
+    .panel-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(106,102,96,.2), transparent); }
+    .panel-field label {
+      display: block; font-family: 'Noto Sans KR', sans-serif;
+      font-size: .75rem; font-weight: 500; color: var(--text-dim);
+      margin-bottom: .5rem; letter-spacing: .05em;
+    }
+    .panel-field textarea {
+      width: 100%; min-height: 70px; padding: .6rem .8rem;
+      background: rgba(255,255,255,.03); border: 1px solid rgba(106,102,96,.2);
+      border-radius: 8px; color: var(--text); font-family: 'Noto Sans KR', sans-serif;
+      font-size: .8rem; line-height: 1.6; resize: vertical; transition: border-color .2s;
+    }
+    .panel-field textarea:focus { outline: none; border-color: var(--gold-dim); }
+    .panel-field textarea::placeholder { color: rgba(106,102,96,.5); }
+    .panel-checkbox {
+      display: flex; align-items: center; gap: .6rem; cursor: pointer;
+      font-family: 'Noto Sans KR', sans-serif; font-size: .85rem; color: var(--text); user-select: none;
+    }
+    .panel-checkbox input[type="checkbox"] { display: none; }
+    .check-box {
+      width: 22px; height: 22px; border-radius: 5px; flex-shrink: 0;
+      border: 2px solid var(--gold-dim); background: transparent;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, border-color .2s, transform .2s;
+    }
+    .panel-checkbox input:checked + .check-box { background: var(--success); border-color: var(--success); transform: scale(1.1); }
+    .check-box svg { width: 14px; height: 14px; stroke: var(--bg); stroke-width: 3; fill: none; opacity: 0; transition: opacity .2s; }
+    .panel-checkbox input:checked + .check-box svg { opacity: 1; }
+    .panel-actions { display: flex; gap: .6rem; margin-top: .3rem; flex-wrap: wrap; }
+    .btn {
+      flex: 1; padding: .65rem .8rem; border: none; border-radius: 8px;
+      font-family: 'Noto Sans KR', sans-serif; font-size: .75rem; font-weight: 600;
+      cursor: pointer; transition: transform .15s, box-shadow .2s, opacity .2s; letter-spacing: .03em;
+      min-width: 0;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-save { background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 100%); color: var(--bg); box-shadow: 0 2px 12px rgba(212,165,116,.3); }
+    .btn-save:hover { box-shadow: 0 4px 20px rgba(212,165,116,.5); }
+    .btn-delete { background: rgba(239,68,68,.1); color: var(--danger); border: 1px solid rgba(239,68,68,.2); }
+    .btn-delete:hover { background: rgba(239,68,68,.2); }
+    .btn-repeat { background: rgba(74,222,128,.08); color: var(--success); border: 1px solid rgba(74,222,128,.2); }
+    .btn-repeat:hover { background: rgba(74,222,128,.15); }
+
+    /* ===== TASK LIST ===== */
+    .task-count { float: right; font-family: 'JetBrains Mono', monospace; font-size: .65rem; color: var(--gold-dim); font-weight: 400; }
+    .task-list { display: flex; flex-direction: column; gap: .5rem; margin-bottom: .8rem; max-height: 280px; overflow-y: auto; }
+    .task-list::-webkit-scrollbar { width: 4px; }
+    .task-list::-webkit-scrollbar-thumb { background: rgba(212,165,116,.2); border-radius: 2px; }
+    .task-item {
+      display: flex; align-items: center; gap: .5rem; padding: .55rem .6rem; border-radius: 8px;
+      background: rgba(255,255,255,.03); border: 1px solid rgba(106,102,96,.15);
+      transition: background .2s, border-color .2s, opacity .3s;
+    }
+    .task-item:hover { background: rgba(255,255,255,.06); border-color: rgba(106,102,96,.3); }
+    .task-item.completed { opacity: .55; }
+    .task-item.completed .task-text { text-decoration: line-through; color: var(--text-dim); }
+    .task-text { flex: 1; font-family: 'Noto Sans KR', sans-serif; font-size: .8rem; color: var(--text); line-height: 1.5; word-break: break-word; }
+    .task-remove {
+      width: 24px; height: 24px; border: none; background: transparent;
+      color: var(--text-dim); font-size: 1.1rem; cursor: pointer; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity .2s, background .2s, color .2s; flex-shrink: 0;
+    }
+    .task-item:hover .task-remove { opacity: .7; }
+    .task-remove:hover { opacity: 1 !important; background: rgba(239,68,68,.15); color: var(--danger); }
+    .task-add { display: flex; gap: .4rem; align-items: center; }
+    .task-add-input {
+      flex: 1; padding: .55rem .8rem; background: rgba(255,255,255,.03);
+      border: 1px solid rgba(106,102,96,.2); border-radius: 8px; color: var(--text);
+      font-family: 'Noto Sans KR', sans-serif; font-size: .8rem; transition: border-color .2s;
+    }
+    .task-add-input:focus { outline: none; border-color: var(--gold-dim); }
+    .task-add-input::placeholder { color: rgba(106,102,96,.5); }
+    .task-add-input:disabled { opacity: .35; cursor: not-allowed; }
+    .task-add-btn {
+      width: 36px; height: 36px; border: 1px solid var(--gold-dim);
+      background: rgba(212,165,116,.1); color: var(--gold); border-radius: 8px;
+      font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background .2s, border-color .2s, transform .15s; flex-shrink: 0;
+    }
+    .task-add-btn:hover { background: rgba(212,165,116,.2); border-color: var(--gold); }
+    .task-add-btn:active { transform: scale(.93); }
+    .task-add-btn:disabled { opacity: .3; cursor: not-allowed; }
+    .panel-empty-msg {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .75rem; color: rgba(239,68,68,.6);
+      font-style: italic; line-height: 1.6; padding: .5rem 0;
+    }
+
+    /* ===== POMODORO TRIGGER ===== */
+    .pomo-trigger {
+      position: fixed; top: 50%; left: 0; z-index: 10000;
+      transform: translateY(-50%);
+      background: linear-gradient(135deg, rgba(212,165,116,.15) 0%, rgba(20,16,24,.85) 100%);
+      border: 1px solid rgba(212,165,116,.2); border-left: none;
+      border-radius: 0 12px 12px 0;
+      padding: .6rem .5rem .6rem .35rem;
+      cursor: pointer; color: var(--gold);
+      font-size: 1.2rem; line-height: 1;
+      backdrop-filter: blur(12px);
+      transition: all .25s; writing-mode: vertical-rl;
+      display: flex; align-items: center; gap: .3rem;
+      box-shadow: 4px 0 20px rgba(0,0,0,.3);
+    }
+    .pomo-trigger:hover { background: linear-gradient(135deg, rgba(212,165,116,.25) 0%, rgba(30,24,36,.9) 100%); padding-right: .7rem; box-shadow: 4px 0 30px rgba(212,165,116,.15); }
+    .pomo-trigger .pomo-trigger-label { font-family: 'Noto Sans KR', sans-serif; font-size: .6rem; letter-spacing: .15em; font-weight: 500; }
+    .pomo-trigger.has-active { border-color: var(--accent); }
+    .pomo-trigger.has-active::before {
+      content: ""; position: absolute; top: 8px; right: 6px;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent); box-shadow: 0 0 8px var(--accent);
+      animation: pomo-pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pomo-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.7)} }
+
+    /* ===== POMODORO PANEL ===== */
+    .pomo-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45);
+      z-index: 10000; backdrop-filter: blur(4px);
+    }
+    .pomo-overlay.open { display: block; }
+    .pomo-panel {
+      position: fixed; top: 0; left: -420px; width: 380px; height: 100vh;
+      z-index: 10001; overflow-y: auto; background: var(--bg-panel);
+      border-right: 1px solid rgba(212,165,116,.15);
+      box-shadow: 10px 0 40px rgba(0,0,0,.5);
+      transition: left .35s cubic-bezier(.22,1,.36,1);
+      padding: 2rem 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
+    }
+    .pomo-panel.open { left: 0; }
+    .pomo-panel-close {
+      position: absolute; top: 1rem; right: 1rem; width: 32px; height: 32px; border: none;
+      background: rgba(255,255,255,.05); border-radius: 50%;
+      color: var(--text-dim); font-size: 1.1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, color .2s;
+    }
+    .pomo-panel-close:hover { background: rgba(255,255,255,.1); color: var(--text); }
+    .pomo-title {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 600;
+      color: var(--gold-bright); letter-spacing: .05em; text-align: center;
+    }
+    .pomo-mode-tabs {
+      display: flex; gap: .4rem; width: 100%;
+    }
+    .pomo-mode-tab {
+      flex: 1; padding: .55rem .3rem; border: 1px solid rgba(212,165,116,.15);
+      border-radius: 8px; background: transparent;
+      color: var(--text-dim); font-family: 'Noto Sans KR', sans-serif;
+      font-size: .7rem; font-weight: 500; cursor: pointer;
+      transition: all .2s; text-align: center;
+    }
+    .pomo-mode-tab.active { background: rgba(212,165,116,.12); border-color: var(--gold-dim); color: var(--gold-bright); }
+    .pomo-mode-tab:hover:not(.active) { border-color: rgba(212,165,116,.3); color: var(--text); }
+    .pomo-mode-tab.mode-work.active { border-color: var(--accent); color: var(--accent); background: rgba(255,140,90,.1); }
+    .pomo-mode-tab.mode-short.active { border-color: var(--success); color: var(--success); background: rgba(74,222,128,.08); }
+    .pomo-mode-tab.mode-long.active { border-color: #60a5fa; color: #60a5fa; background: rgba(96,165,250,.08); }
+
+    /* Timer ring */
+    .pomo-timer-wrap {
+      position: relative; width: 220px; height: 220px; margin: .5rem 0;
+    }
+    .pomo-timer-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .pomo-timer-bg { fill: none; stroke: rgba(106,102,96,.15); stroke-width: 6; }
+    .pomo-timer-fill {
+      fill: none; stroke: var(--accent); stroke-width: 6;
+      stroke-linecap: round;
+      transition: stroke-dashoffset .5s linear, stroke .3s;
+    }
+    .pomo-timer-fill.mode-work { stroke: var(--accent); filter: drop-shadow(0 0 8px rgba(255,140,90,.4)); }
+    .pomo-timer-fill.mode-short { stroke: var(--success); filter: drop-shadow(0 0 8px rgba(74,222,128,.3)); }
+    .pomo-timer-fill.mode-long { stroke: #60a5fa; filter: drop-shadow(0 0 8px rgba(96,165,250,.3)); }
+    .pomo-timer-center {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+    .pomo-time-display {
+      font-family: 'JetBrains Mono', monospace; font-size: 3rem; font-weight: 700;
+      color: var(--text); letter-spacing: .05em; line-height: 1;
+    }
+    .pomo-mode-label {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .7rem; font-weight: 500;
+      color: var(--text-dim); margin-top: .3rem; letter-spacing: .1em;
+    }
+
+    /* Controls */
+    .pomo-controls { display: flex; gap: .6rem; align-items: center; }
+    .pomo-btn {
+      border: none; border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s; font-family: 'Noto Sans KR', sans-serif;
+    }
+    .pomo-btn-main {
+      width: 56px; height: 56px; font-size: 1.4rem;
+      background: linear-gradient(135deg, var(--accent) 0%, #ff6b3a 100%);
+      color: #fff; box-shadow: 0 4px 20px rgba(255,140,90,.3);
+    }
+    .pomo-btn-main:hover { box-shadow: 0 4px 28px rgba(255,140,90,.5); transform: scale(1.05); }
+    .pomo-btn-main.running { background: linear-gradient(135deg, rgba(255,255,255,.15) 0%, rgba(255,255,255,.05) 100%); color: var(--text-dim); box-shadow: 0 2px 12px rgba(0,0,0,.3); }
+    .pomo-btn-sub {
+      width: 40px; height: 40px; font-size: .9rem;
+      background: rgba(255,255,255,.05); color: var(--text-dim);
+      border: 1px solid rgba(106,102,96,.2);
+    }
+    .pomo-btn-sub:hover { background: rgba(255,255,255,.1); color: var(--text); }
+
+    /* Session dots */
+    .pomo-sessions {
+      display: flex; flex-direction: column; align-items: center; gap: .5rem; width: 100%;
+    }
+    .pomo-sessions-label {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .7rem;
+      color: var(--text-dim); letter-spacing: .08em;
+    }
+    .pomo-dots { display: flex; gap: .5rem; justify-content: center; flex-wrap: wrap; }
+    .pomo-dot {
+      width: 12px; height: 12px; border-radius: 50%;
+      border: 1.5px solid rgba(212,165,116,.25);
+      transition: all .3s;
+    }
+    .pomo-dot.filled {
+      background: var(--accent); border-color: var(--accent);
+      box-shadow: 0 0 8px rgba(255,140,90,.4);
+    }
+    .pomo-dot.current {
+      border-color: var(--accent);
+      animation: pomo-pulse 1.5s ease-in-out infinite;
+    }
+
+    /* Stats */
+    .pomo-stats {
+      display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; width: 100%;
+      padding-top: .5rem; border-top: 1px solid rgba(106,102,96,.12);
+    }
+    .pomo-stat {
+      text-align: center; padding: .6rem; border-radius: 8px;
+      background: rgba(255,255,255,.02); border: 1px solid rgba(106,102,96,.1);
+    }
+    .pomo-stat-value {
+      font-family: 'JetBrains Mono', monospace; font-size: 1.3rem; font-weight: 700;
+      color: var(--gold-bright);
+    }
+    .pomo-stat-label {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .6rem;
+      color: var(--text-dim); margin-top: .15rem;
+    }
+
+    /* Settings row */
+    .pomo-settings {
+      width: 100%; display: flex; flex-direction: column; gap: .5rem;
+      padding-top: .5rem; border-top: 1px solid rgba(106,102,96,.12);
+    }
+    .pomo-setting-row {
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: 'Noto Sans KR', sans-serif; font-size: .7rem; color: var(--text-dim);
+    }
+    .pomo-setting-row input[type="number"] {
+      width: 52px; padding: .3rem .4rem; border: 1px solid rgba(106,102,96,.2);
+      border-radius: 6px; background: rgba(255,255,255,.04); color: var(--text);
+      font-family: 'JetBrains Mono', monospace; font-size: .75rem; text-align: center;
+    }
+    .pomo-setting-row input[type="number"]:focus { outline: none; border-color: var(--gold-dim); }
+
+    @media (max-width: 700px) {
+      .pomo-panel { width: 100%; left: -100%; }
+      .pomo-timer-wrap { width: 180px; height: 180px; }
+      .pomo-time-display { font-size: 2.4rem; }
+    }
+
+    /* ===== LIFE GOAL BADGE ===== */
+    .life-goal-badge {
+      position: fixed; top: 1rem; right: 1rem; z-index: 9999;
+      padding: .5rem 1rem; border-radius: 10px;
+      background: linear-gradient(135deg, rgba(14,14,22,.85) 0%, rgba(26,10,46,.75) 100%);
+      border: 1px solid rgba(212,165,116,.15);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 4px 24px rgba(0,0,0,.3);
+      cursor: pointer; transition: all .3s; max-width: 200px;
+    }
+    .life-goal-badge:hover {
+      border-color: rgba(240,200,136,.35);
+      box-shadow: 0 4px 32px rgba(212,165,116,.15), 0 0 60px rgba(240,200,136,.06);
+      transform: translateY(-2px);
+    }
+    .life-goal-badge .life-goal-edit-hint {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .4rem;
+      color: var(--text-dim); opacity: 0; transition: opacity .2s;
+      text-align: center; margin-top: .2rem; letter-spacing: .05em;
+    }
+    .life-goal-badge:hover .life-goal-edit-hint { opacity: .6; }
+    /* Life goal edit modal */
+    .life-goal-modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 100000;
+      background: rgba(0,0,0,.6); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center;
+    }
+    .life-goal-modal-overlay.open { display: flex; }
+    .life-goal-modal {
+      background: var(--bg-panel); border: 1px solid rgba(212,165,116,.2);
+      border-radius: 14px; padding: 1.8rem; width: 320px;
+      box-shadow: 0 16px 60px rgba(0,0,0,.5);
+    }
+    .life-goal-modal-title {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .9rem; font-weight: 700;
+      color: var(--gold-bright); margin-bottom: 1rem; text-align: center;
+    }
+    .life-goal-modal-field { margin-bottom: .7rem; }
+    .life-goal-modal-field label {
+      display: block; font-family: 'Noto Sans KR', sans-serif;
+      font-size: .65rem; font-weight: 500; color: var(--text-dim);
+      margin-bottom: .3rem; letter-spacing: .05em;
+    }
+    .life-goal-modal-field input {
+      width: 100%; padding: .5rem .7rem;
+      background: rgba(255,255,255,.04); border: 1px solid rgba(212,165,116,.2);
+      border-radius: 7px; color: var(--gold-bright); font-family: 'JetBrains Mono', monospace;
+      font-size: .85rem; font-weight: 600; transition: border-color .2s;
+    }
+    .life-goal-modal-field input:focus { outline: none; border-color: var(--gold); }
+    .life-goal-modal-field input::placeholder { color: rgba(106,102,96,.5); font-weight: 400; }
+    .life-goal-modal-actions { display: flex; gap: .5rem; margin-top: 1rem; }
+    .life-goal-modal-actions .btn { flex: 1; }
+    .life-goal-deadline {
+      font-family: 'JetBrains Mono', monospace; font-size: .55rem;
+      color: var(--text-dim); letter-spacing: .08em; margin-bottom: .2rem;
+    }
+    .life-goal-amount {
+      font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 700;
+      background: linear-gradient(135deg, var(--gold-bright), var(--gold), #fff8e1);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; line-height: 1.2;
+    }
+    .life-goal-label {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .5rem;
+      color: var(--text-dim); letter-spacing: .12em; margin-top: .15rem;
+    }
+    .life-goal-dday {
+      font-family: 'JetBrains Mono', monospace; font-size: .6rem; font-weight: 600;
+      color: var(--accent); margin-top: .25rem;
+    }
+
+    /* ===== MUSIC PLAYER ===== */
+    .music-fab {
+      position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 10000;
+      width: 48px; height: 48px; border-radius: 50%;
+      background: linear-gradient(135deg, rgba(212,165,116,.2) 0%, rgba(14,14,22,.9) 100%);
+      border: 1px solid rgba(212,165,116,.25);
+      color: var(--gold); font-size: 1.2rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 20px rgba(0,0,0,.4);
+      transition: all .25s;
+    }
+    .music-fab:hover { transform: scale(1.08); box-shadow: 0 4px 28px rgba(212,165,116,.2); border-color: var(--gold-dim); }
+    .music-fab.playing { animation: music-spin 3s linear infinite; border-color: var(--gold); }
+    @keyframes music-spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+    .music-fab.playing:hover { animation-play-state: paused; }
+
+    .music-panel {
+      position: fixed; bottom: 5rem; right: 1.5rem; z-index: 10000;
+      width: 260px; padding: 1.2rem;
+      background: rgba(14,14,22,.95); border: 1px solid rgba(212,165,116,.15);
+      border-radius: 14px; backdrop-filter: blur(16px);
+      box-shadow: 0 8px 40px rgba(0,0,0,.5);
+      opacity: 0; pointer-events: none; transform: translateY(10px);
+      transition: all .25s ease-out;
+    }
+    .music-panel.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+    .music-panel-title {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .65rem;
+      color: var(--text-dim); letter-spacing: .1em; margin-bottom: .1rem;
+    }
+    .music-panel-track {
+      font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 600;
+      color: var(--gold-bright); margin-bottom: .8rem; line-height: 1.3;
+    }
+    .music-controls { display: flex; align-items: center; gap: .6rem; margin-bottom: .8rem; }
+    .music-play-btn {
+      width: 38px; height: 38px; border-radius: 50%; border: none;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 100%);
+      color: var(--bg); font-size: 1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s; flex-shrink: 0;
+    }
+    .music-play-btn:hover { box-shadow: 0 2px 16px rgba(212,165,116,.4); transform: scale(1.05); }
+    .music-vol-wrap { flex: 1; display: flex; align-items: center; gap: .4rem; }
+    .music-vol-icon { font-size: .8rem; color: var(--text-dim); cursor: pointer; }
+    .music-vol-slider {
+      flex: 1; -webkit-appearance: none; appearance: none;
+      height: 3px; border-radius: 2px;
+      background: linear-gradient(90deg, var(--gold-dim) 0%, rgba(106,102,96,.2) 100%);
+      outline: none;
+    }
+    .music-vol-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 12px; height: 12px;
+      border-radius: 50%; background: var(--gold); cursor: pointer;
+      box-shadow: 0 0 6px rgba(212,165,116,.4);
+    }
+    .music-progress {
+      width: 100%; height: 2px; border-radius: 1px;
+      background: rgba(106,102,96,.2); overflow: hidden;
+    }
+    .music-progress-fill {
+      height: 100%; width: 0%; border-radius: 1px;
+      background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+      transition: width .5s linear;
+    }
+    #ytPlayer { position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; pointer-events: none; }
+
+    /* ===== TOOLTIP ===== */
+    .week-tooltip {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .7rem; line-height: 1.6;
+      background: rgba(10,10,15,.95); border: 1px solid var(--gold-dim);
+      border-radius: 6px; padding: 8px 14px; color: var(--text);
+      backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(0,0,0,.5);
+    }
+    .week-tooltip strong { color: var(--gold-bright); font-weight: 600; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 700px) {
+      #app { padding: 1.5rem 1rem 3rem; }
+      .week-grid, .month-labels { gap: 4px; }
+      .week-cell { width: 24px; height: 24px; }
+      .month-col { gap: 4px; }
+      .stats-section { grid-template-columns: repeat(2, 1fr); gap: .8rem; }
+      .achievement-section { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+      .goal-panel { width: 100%; right: -100%; }
+      .mini-chart { height: 32px; }
+      .insights-section { grid-template-columns: 1fr; }
+      .monthly-bars { height: 60px; gap: 4px; }
+    }
+    @media (max-width: 420px) {
+      .week-cell { width: 18px; height: 18px; }
+      .week-grid, .month-labels { gap: 3px; }
+      .month-col { gap: 3px; }
+      .week-cell .goal-dot { width: 4px; height: 4px; bottom: -2px; }
+      .streak-section { gap: 1.5rem; }
+    }
+
+    /* ===== MIND (무의식 리프레이밍) TRIGGER ===== */
+    .mind-trigger {
+      position: fixed; top: 50%; right: 0; z-index: 10000;
+      transform: translateY(-50%);
+      background: linear-gradient(135deg, rgba(138,92,246,.15) 0%, rgba(20,16,24,.85) 100%);
+      border: 1px solid rgba(138,92,246,.2); border-right: none;
+      border-radius: 12px 0 0 12px;
+      padding: .6rem .35rem .6rem .5rem;
+      cursor: pointer; color: #a78bfa;
+      font-size: 1.2rem; line-height: 1;
+      backdrop-filter: blur(12px);
+      transition: all .25s; writing-mode: vertical-rl;
+      display: flex; align-items: center; gap: .3rem;
+      box-shadow: -4px 0 20px rgba(0,0,0,.3);
+    }
+    .mind-trigger:hover { background: linear-gradient(135deg, rgba(138,92,246,.25) 0%, rgba(30,24,36,.9) 100%); padding-left: .7rem; box-shadow: -4px 0 30px rgba(138,92,246,.15); }
+    .mind-trigger .mind-trigger-label { font-family: 'Noto Sans KR', sans-serif; font-size: .6rem; letter-spacing: .15em; font-weight: 500; }
+
+    /* ===== MIND PANEL ===== */
+    .mind-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45);
+      z-index: 10000; backdrop-filter: blur(4px);
+    }
+    .mind-overlay.open { display: block; }
+    .mind-panel {
+      position: fixed; top: 0; right: -440px; width: 400px; height: 100vh;
+      z-index: 10001; overflow-y: auto; background: var(--bg-panel);
+      border-left: 1px solid rgba(138,92,246,.15);
+      box-shadow: -10px 0 40px rgba(0,0,0,.5);
+      transition: right .35s cubic-bezier(.22,1,.36,1);
+      padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 1.2rem;
+    }
+    .mind-panel.open { right: 0; }
+    .mind-panel-close {
+      position: absolute; top: 1rem; right: 1rem; width: 32px; height: 32px; border: none;
+      background: rgba(255,255,255,.05); border-radius: 50%;
+      color: var(--text-dim); font-size: 1.1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, color .2s;
+    }
+    .mind-panel-close:hover { background: rgba(255,255,255,.1); color: var(--text); }
+    .mind-panel-title {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 600;
+      color: #c4b5fd; letter-spacing: .03em; display: flex; align-items: center; gap: .5rem;
+    }
+    .mind-panel-subtitle {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .65rem; font-weight: 400;
+      color: var(--text-dim); line-height: 1.6; margin-top: -.4rem;
+    }
+    .mind-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(138,92,246,.2), transparent); }
+
+    /* Entry list */
+    .mind-entries { display: flex; flex-direction: column; gap: 1rem; }
+    .mind-entry {
+      padding: .9rem; border-radius: 10px;
+      background: rgba(138,92,246,.04); border: 1px solid rgba(138,92,246,.12);
+      transition: border-color .3s, box-shadow .3s;
+      position: relative;
+    }
+    .mind-entry:hover { border-color: rgba(138,92,246,.25); box-shadow: 0 2px 16px rgba(138,92,246,.08); }
+    .mind-entry-delete {
+      position: absolute; top: .5rem; right: .5rem; width: 22px; height: 22px;
+      border: none; background: transparent; color: var(--text-dim); font-size: .85rem;
+      cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: all .2s;
+    }
+    .mind-entry:hover .mind-entry-delete { opacity: .5; }
+    .mind-entry-delete:hover { opacity: 1 !important; background: rgba(239,68,68,.15); color: var(--danger); }
+
+    .mind-pattern-row {
+      display: flex; align-items: flex-start; gap: .5rem; margin-bottom: .6rem;
+    }
+    .mind-pattern-card {
+      flex: 1; padding: .5rem .6rem; border-radius: 7px;
+      font-family: 'Noto Sans KR', sans-serif; font-size: .75rem; line-height: 1.5;
+      word-break: break-word;
+    }
+    .mind-pattern-card.from {
+      background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.15);
+      color: #fca5a5;
+    }
+    .mind-pattern-card.to {
+      background: rgba(74,222,128,.06); border: 1px solid rgba(74,222,128,.15);
+      color: #86efac;
+    }
+    .mind-pattern-label {
+      font-size: .5rem; font-weight: 600; letter-spacing: .1em; margin-bottom: .2rem;
+      display: block; opacity: .7;
+    }
+    .mind-pattern-card.from .mind-pattern-label { color: #f87171; }
+    .mind-pattern-card.to .mind-pattern-label { color: #4ade80; }
+    .mind-arrow {
+      color: rgba(138,92,246,.5); font-size: 1rem; flex-shrink: 0;
+      margin-top: 1.2rem; display: flex; align-items: center;
+    }
+
+    .mind-trigger-situation {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .65rem; color: var(--text-dim);
+      padding: .3rem .5rem; border-radius: 5px; background: rgba(255,255,255,.02);
+      margin-bottom: .6rem; line-height: 1.5;
+    }
+    .mind-trigger-situation::before {
+      content: "⚡ "; font-size: .6rem;
+    }
+
+    /* Counter */
+    .mind-bottom-row {
+      display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+    }
+    .mind-counter {
+      display: flex; align-items: center; gap: .4rem;
+    }
+    .mind-counter-btn {
+      padding: .3rem .6rem; border-radius: 6px;
+      border: 1px solid rgba(255,140,90,.2); background: rgba(255,140,90,.06);
+      color: var(--accent); font-family: 'Noto Sans KR', sans-serif;
+      font-size: .6rem; font-weight: 600; cursor: pointer;
+      transition: all .2s; white-space: nowrap;
+    }
+    .mind-counter-btn:hover { background: rgba(255,140,90,.15); border-color: rgba(255,140,90,.4); transform: scale(1.04); }
+    .mind-counter-btn:active { transform: scale(.95); }
+    .mind-counter-num {
+      font-family: 'JetBrains Mono', monospace; font-size: .8rem; font-weight: 700;
+      color: var(--accent); min-width: 20px; text-align: center;
+    }
+    .mind-counter-label {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .5rem; color: var(--text-dim);
+    }
+
+    /* Stage */
+    .mind-stage-wrap { display: flex; gap: .25rem; }
+    .mind-stage-btn {
+      padding: .2rem .45rem; border-radius: 20px;
+      border: 1px solid rgba(106,102,96,.2); background: transparent;
+      color: var(--text-dim); font-family: 'Noto Sans KR', sans-serif;
+      font-size: .5rem; font-weight: 500; cursor: pointer;
+      transition: all .2s; white-space: nowrap;
+    }
+    .mind-stage-btn:hover { border-color: rgba(138,92,246,.3); color: #c4b5fd; }
+    .mind-stage-btn.active-stage-0 {
+      background: rgba(251,191,36,.1); border-color: rgba(251,191,36,.3); color: #fbbf24;
+    }
+    .mind-stage-btn.active-stage-1 {
+      background: rgba(96,165,250,.1); border-color: rgba(96,165,250,.3); color: #60a5fa;
+    }
+    .mind-stage-btn.active-stage-2 {
+      background: rgba(74,222,128,.1); border-color: rgba(74,222,128,.3); color: #4ade80;
+    }
+
+    /* Add form */
+    .mind-add-section {
+      padding-top: .8rem; border-top: 1px solid rgba(138,92,246,.1);
+    }
+    .mind-add-title {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .7rem; font-weight: 600;
+      color: #c4b5fd; margin-bottom: .6rem; letter-spacing: .05em;
+    }
+    .mind-add-field { margin-bottom: .5rem; }
+    .mind-add-field label {
+      display: block; font-family: 'Noto Sans KR', sans-serif;
+      font-size: .6rem; font-weight: 500; color: var(--text-dim);
+      margin-bottom: .25rem; letter-spacing: .05em;
+    }
+    .mind-add-field input, .mind-add-field textarea {
+      width: 100%; padding: .5rem .7rem;
+      background: rgba(255,255,255,.03); border: 1px solid rgba(138,92,246,.15);
+      border-radius: 7px; color: var(--text); font-family: 'Noto Sans KR', sans-serif;
+      font-size: .75rem; line-height: 1.5; transition: border-color .2s;
+    }
+    .mind-add-field textarea { min-height: 50px; resize: vertical; }
+    .mind-add-field input:focus, .mind-add-field textarea:focus {
+      outline: none; border-color: rgba(138,92,246,.4);
+    }
+    .mind-add-field input::placeholder, .mind-add-field textarea::placeholder {
+      color: rgba(106,102,96,.5);
+    }
+    .mind-add-btn {
+      width: 100%; padding: .6rem; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+      color: #fff; font-family: 'Noto Sans KR', sans-serif;
+      font-size: .75rem; font-weight: 600; cursor: pointer;
+      transition: box-shadow .2s, transform .15s; letter-spacing: .03em;
+    }
+    .mind-add-btn:hover { box-shadow: 0 4px 20px rgba(138,92,246,.3); }
+    .mind-add-btn:active { transform: scale(.97); }
+
+    .mind-empty {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .75rem; color: var(--text-dim);
+      text-align: center; padding: 2rem 1rem; line-height: 1.8;
+    }
+    .mind-empty-icon { font-size: 2rem; margin-bottom: .5rem; display: block; opacity: .5; }
+
+    .mind-stats-row {
+      display: flex; gap: .6rem; margin-top: -.2rem;
+    }
+    .mind-stat-mini {
+      flex: 1; text-align: center; padding: .45rem; border-radius: 7px;
+      background: rgba(255,255,255,.02); border: 1px solid rgba(106,102,96,.1);
+    }
+    .mind-stat-mini-value {
+      font-family: 'JetBrains Mono', monospace; font-size: .9rem; font-weight: 700;
+      color: #c4b5fd;
+    }
+    .mind-stat-mini-label {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .5rem;
+      color: var(--text-dim); margin-top: .1rem;
+    }
+
+    @media (max-width: 700px) {
+      .mind-panel { width: 100%; right: -100%; }
+      .mind-pattern-row { flex-direction: column; }
+      .mind-arrow { transform: rotate(90deg); margin: 0 auto; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .star-field__layer--medium, .star-field__layer--large { animation: none; opacity: .8; }
+      .nebula, .nebula::after { animation: none; }
+      .week-current { animation: none; }
+      .week-cell { animation: none; opacity: 1; }
+      .progress-fill { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="matrix-bg"></div>
+
+  <svg style="position:absolute;width:0;height:0"><filter id="grain-filter"><feTurbulence type="fractalNoise" baseFrequency=".65" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter></svg>
+  <div class="nebula"></div>
+  <div class="star-field"><div class="star-field__layer--small"></div><div class="star-field__layer--medium"></div><div class="star-field__layer--large"></div></div>
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- Life Goal Badge -->
+  <div class="life-goal-badge" id="lifeGoalBadge">
+    <div class="life-goal-deadline" id="lifeGoalDeadline"></div>
+    <div class="life-goal-amount" id="lifeGoalAmount"></div>
+    <div class="life-goal-label" id="lifeGoalLabel"></div>
+    <div class="life-goal-dday" id="lifeGoalDday"></div>
+    <div class="life-goal-edit-hint">클릭하여 수정</div>
+  </div>
+
+  <!-- Life Goal Edit Modal -->
+  <div class="life-goal-modal-overlay" id="lifeGoalModalOverlay">
+    <div class="life-goal-modal">
+      <div class="life-goal-modal-title">🎯 최종 목표 설정</div>
+      <div class="life-goal-modal-field">
+        <label>목표 금액 / 내용</label>
+        <input type="text" id="lgEditAmount" placeholder="예: ₩ 100억, 매출 50억, FIRE 달성">
+      </div>
+      <div class="life-goal-modal-field">
+        <label>목표 라벨</label>
+        <input type="text" id="lgEditLabel" placeholder="예: 자산 목표, 매출 목표, 인생 목표">
+      </div>
+      <div class="life-goal-modal-field">
+        <label>목표 기한 (YYYY-MM-DD)</label>
+        <input type="date" id="lgEditDate">
+      </div>
+      <div class="life-goal-modal-actions">
+        <button class="btn btn-save" id="lgEditSave">저장</button>
+        <button class="btn btn-delete" id="lgEditCancel">취소</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Music Player -->
+  <div id="ytPlayer"></div>
+  <button class="music-fab" id="musicFab" title="음악">🎵</button>
+  <div class="music-panel" id="musicPanel">
+    <div class="music-panel-title">NOW PLAYING</div>
+    <div class="music-panel-track">No Time For Caution<br><span style="font-size:.75rem;color:var(--text-dim);font-family:'Noto Sans KR',sans-serif;font-weight:400">Hans Zimmer — Interstellar OST</span></div>
+    <div class="music-controls">
+      <button class="music-play-btn" id="musicPlayBtn">▶</button>
+      <div class="music-vol-wrap">
+        <span class="music-vol-icon" id="musicVolIcon">🔊</span>
+        <input type="range" class="music-vol-slider" id="musicVolSlider" min="0" max="100" value="40">
+      </div>
+    </div>
+    <div class="music-progress"><div class="music-progress-fill" id="musicProgressFill"></div></div>
+  </div>
+
+  <!-- Pomodoro Trigger -->
+  <button class="pomo-trigger" id="pomoTrigger">
+    🍅<span class="pomo-trigger-label">FOCUS</span>
+  </button>
+
+  <!-- Pomodoro Panel -->
+  <div class="pomo-overlay" id="pomoOverlay"></div>
+  <div class="pomo-panel" id="pomoPanel">
+    <button class="pomo-panel-close" id="pomoPanelClose">✕</button>
+    <div class="pomo-title">Pomodoro</div>
+
+    <div class="pomo-mode-tabs">
+      <button class="pomo-mode-tab mode-work active" data-mode="work">🎯 집중</button>
+      <button class="pomo-mode-tab mode-short" data-mode="short">☕ 짧은 휴식</button>
+      <button class="pomo-mode-tab mode-long" data-mode="long">🌿 긴 휴식</button>
+    </div>
+
+    <div class="pomo-timer-wrap">
+      <svg class="pomo-timer-svg" viewBox="0 0 220 220">
+        <circle class="pomo-timer-bg" cx="110" cy="110" r="100"/>
+        <circle class="pomo-timer-fill mode-work" id="pomoTimerFill" cx="110" cy="110" r="100"
+                stroke-dasharray="628.32" stroke-dashoffset="0"/>
+      </svg>
+      <div class="pomo-timer-center">
+        <div class="pomo-time-display" id="pomoTimeDisplay">25:00</div>
+        <div class="pomo-mode-label" id="pomoModeLabel">집중 시간</div>
+      </div>
+    </div>
+
+    <div class="pomo-controls">
+      <button class="pomo-btn pomo-btn-sub" id="pomoReset" title="리셋">↺</button>
+      <button class="pomo-btn pomo-btn-main" id="pomoStartPause" title="시작">▶</button>
+      <button class="pomo-btn pomo-btn-sub" id="pomoSkip" title="건너뛰기">⏭</button>
+    </div>
+
+    <div class="pomo-sessions">
+      <div class="pomo-sessions-label">오늘의 세션</div>
+      <div class="pomo-dots" id="pomoDots"></div>
+    </div>
+
+    <div class="pomo-stats">
+      <div class="pomo-stat">
+        <div class="pomo-stat-value" id="pomoTodayCount">0</div>
+        <div class="pomo-stat-label">오늘 완료</div>
+      </div>
+      <div class="pomo-stat">
+        <div class="pomo-stat-value" id="pomoTotalMin">0</div>
+        <div class="pomo-stat-label">총 집중 (분)</div>
+      </div>
+    </div>
+
+    <div class="pomo-settings">
+      <div class="pomo-setting-row">
+        <span>집중 시간 (분)</span>
+        <input type="number" id="pomoWorkMin" min="1" max="90" value="25">
+      </div>
+      <div class="pomo-setting-row">
+        <span>짧은 휴식 (분)</span>
+        <input type="number" id="pomoShortMin" min="1" max="30" value="5">
+      </div>
+      <div class="pomo-setting-row">
+        <span>긴 휴식 (분)</span>
+        <input type="number" id="pomoLongMin" min="1" max="60" value="15">
+      </div>
+      <div class="pomo-setting-row">
+        <span>긴 휴식 주기</span>
+        <input type="number" id="pomoCycleCount" min="2" max="8" value="4">
+      </div>
+    </div>
+  </div>
+
+  <!-- Mind (무의식 리프레이밍) Trigger -->
+  <button class="mind-trigger" id="mindTrigger">
+    🧠<span class="mind-trigger-label">무의식</span>
+  </button>
+
+  <!-- Mind Panel -->
+  <div class="mind-overlay" id="mindOverlay"></div>
+  <div class="mind-panel" id="mindPanel">
+    <button class="mind-panel-close" id="mindPanelClose">✕</button>
+    <div class="mind-panel-title">🧠 무의식 리프레이밍</div>
+    <div class="mind-panel-subtitle">알고 있지만 고치지 못하는 패턴을 기록하고,<br>인지할 때마다 카운트하세요. 인지가 변화의 시작입니다.</div>
+
+    <div class="mind-stats-row">
+      <div class="mind-stat-mini">
+        <div class="mind-stat-mini-value" id="mindTotalEntries">0</div>
+        <div class="mind-stat-mini-label">등록 패턴</div>
+      </div>
+      <div class="mind-stat-mini">
+        <div class="mind-stat-mini-value" id="mindTotalCatches">0</div>
+        <div class="mind-stat-mini-label">총 인지 횟수</div>
+      </div>
+      <div class="mind-stat-mini">
+        <div class="mind-stat-mini-value" id="mindMasteredCount">0</div>
+        <div class="mind-stat-mini-label">무의식화 완료</div>
+      </div>
+    </div>
+
+    <div class="mind-divider"></div>
+    <div class="mind-entries" id="mindEntries"></div>
+
+    <div class="mind-add-section">
+      <div class="mind-add-title">+ 새 패턴 등록</div>
+      <div class="mind-add-field">
+        <label>🔴 고치고 싶은 무의식</label>
+        <textarea id="mindFromInput" placeholder="예: 불안할 때 SNS를 무의식적으로 켠다"></textarea>
+      </div>
+      <div class="mind-add-field">
+        <label>🟢 바꾸고 싶은 무의식</label>
+        <textarea id="mindToInput" placeholder="예: 불안할 때 심호흡 3회를 한다"></textarea>
+      </div>
+      <div class="mind-add-field">
+        <label>⚡ 트리거 상황 (선택)</label>
+        <input type="text" id="mindTriggerInput" placeholder="예: 업무 스트레스, 자기 전, 식후 등">
+      </div>
+      <button class="mind-add-btn" id="mindAddBtn">패턴 등록하기</button>
+    </div>
+  </div>
+
+  <div class="panel-overlay" id="panelOverlay"></div>
+  <div class="goal-panel" id="goalPanel">
+    <button class="panel-close" id="panelClose">✕</button>
+    <div class="panel-header">
+      <div class="panel-week-num" id="panelWeekNum">제 -- 주</div>
+      <div class="panel-date-range" id="panelDateRange">---</div>
+      <div class="panel-status" id="panelStatus">---</div>
+    </div>
+    <div class="panel-divider"></div>
+    <div class="panel-empty-msg" id="panelEmptyMsg" style="display:none"></div>
+    <div class="panel-field">
+      <label>🎯 이번 주 실행 목록 <span class="task-count" id="taskCount">0 / 5</span></label>
+      <div class="task-list" id="taskList"></div>
+      <div class="task-add">
+        <input type="text" class="task-add-input" id="taskAddInput" placeholder="구체적인 실행 항목을 적으세요..." maxlength="80">
+        <button class="task-add-btn" id="taskAddBtn">+</button>
+      </div>
+    </div>
+    <div class="panel-field">
+      <label>📝 이번 주 회고</label>
+      <textarea id="reflectionInput" placeholder="이번 주를 돌아보며 한마디..."></textarea>
+    </div>
+    <div class="panel-actions">
+      <button class="btn btn-save" id="btnSave">저장</button>
+      <button class="btn btn-repeat" id="btnRepeat">↻ 다음 주 복사</button>
+      <button class="btn btn-delete" id="btnDelete">전체 삭제</button>
+    </div>
+  </div>
+
+  <div id="app">
+    <header class="header" id="headerEl">
+      <div class="year-nav">
+        <button class="year-nav-btn" id="yearPrev">◀</button>
+        <div class="year-display" id="yearDisplay" data-year="2026">2026</div>
+        <button class="year-nav-btn" id="yearNext">▶</button>
+      </div>
+      <div class="subtitle" id="subtitleEl">52주 중 제 <span class="hl" id="subtitleWeek">--</span>주</div>
+    </header>
+
+    <div class="yearly-goal-section">
+      <div class="yearly-goal-label">올해의 목표</div>
+      <div class="yearly-goal-display" id="yearlyGoalDisplay">
+        <span class="yearly-goal-text" id="yearlyGoalText" style="display:none"></span>
+        <span class="yearly-goal-placeholder" id="yearlyGoalPlaceholder">클릭하여 올해의 목표를 설정하세요</span>
+        <div class="yearly-goal-edit" id="yearlyGoalEdit">
+          <input type="text" class="yearly-goal-input" id="yearlyGoalInput" placeholder="올해 반드시 이루고 싶은 목표..." maxlength="60">
+        </div>
+      </div>
+    </div>
+
+    <div class="clock-section">
+      <div class="current-time" id="currentTime">--:--:--</div>
+      <div class="current-date" id="currentDate">---</div>
+    </div>
+
+    <div class="quote-section">
+      <div class="quote-text" id="quoteText"></div>
+    </div>
+
+    <section class="grid-section">
+      <div class="month-labels">
+        <span class="month-label">1월</span><span class="month-label">2월</span>
+        <span class="month-label">3월</span><span class="month-label">4월</span>
+        <span class="month-label">5월</span><span class="month-label">6월</span>
+        <span class="month-label">7월</span><span class="month-label">8월</span>
+        <span class="month-label">9월</span><span class="month-label">10월</span>
+        <span class="month-label">11월</span><span class="month-label">12월</span>
+      </div>
+      <div class="week-grid" id="weekGrid"></div>
+      <div class="grid-legend">
+        <div class="legend-item"><span class="legend-dot passed"></span>경과</div>
+        <div class="legend-item"><span class="legend-dot empty"></span>목표 없이 경과</div>
+        <div class="legend-item"><span class="legend-dot complete"></span>달성 완료</div>
+        <div class="legend-item"><span class="legend-dot current"></span>이번 주</div>
+        <div class="legend-item"><span class="legend-dot future"></span>미래</div>
+      </div>
+    </section>
+
+    <section class="stats-section">
+      <div class="stat-block"><span class="stat-label">지나간 주</span><span class="stat-number" id="weeksElapsed">0</span></div>
+      <div class="stat-block"><span class="stat-label">현재 주</span><span class="stat-number" id="currentWeek">0</span></div>
+      <div class="stat-block"><span class="stat-label">남은 주</span><span class="stat-number" id="weeksRemaining">0</span></div>
+      <div class="stat-block"><span class="stat-label">공백 주</span><span class="stat-number" id="wastedWeeks">0</span></div>
+    </section>
+
+    <section class="streak-section" id="streakSection">
+      <div class="streak-item"><div class="streak-value" id="streakCurrent"><span class="fire">🔥</span> 0</div><div class="streak-label">현재 스트릭</div></div>
+      <div class="streak-item"><div class="streak-value" id="streakBest">0</div><div class="streak-label">최장 스트릭</div></div>
+    </section>
+
+    <section class="achievement-section" id="achievementSection">
+      <div class="donut-wrap">
+        <svg viewBox="0 0 120 120">
+          <defs>
+            <linearGradient id="donutGradSuccess" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#4ade80"/>
+              <stop offset="50%" stop-color="#22d3ee"/>
+              <stop offset="100%" stop-color="#a78bfa"/>
+            </linearGradient>
+            <linearGradient id="donutGradGold" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#f0c888"/>
+              <stop offset="50%" stop-color="#ff8c5a"/>
+              <stop offset="100%" stop-color="#d4a574"/>
+            </linearGradient>
+            <linearGradient id="donutGradDanger" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ef4444"/>
+              <stop offset="50%" stop-color="#f59e0b"/>
+              <stop offset="100%" stop-color="#ef4444"/>
+            </linearGradient>
+          </defs>
+          <circle class="donut-bg" cx="60" cy="60" r="50"/>
+          <circle class="donut-fill" id="donutFill" cx="60" cy="60" r="50" stroke-dasharray="314.16" stroke-dashoffset="314.16"/>
+        </svg>
+        <div class="donut-center">
+          <div class="donut-pct" id="donutPct">0%</div>
+          <div class="donut-label">달성률</div>
+        </div>
+      </div>
+      <div class="achievement-details">
+        <div class="ach-row"><span class="ach-label">설정 항목</span><span class="ach-value neutral" id="achSet">0개 / 0주</span></div>
+        <div class="ach-row"><span class="ach-label">완료 항목</span><span class="ach-value good" id="achDone">0개</span></div>
+        <div class="ach-row"><span class="ach-label">미완료 항목</span><span class="ach-value warn" id="achMissed">0개</span></div>
+        <div class="ach-row"><span class="ach-label">공백 (목표 없이 경과)</span><span class="ach-value bad" id="achEmpty">0주</span></div>
+        <div class="ach-message" id="achMessage">목표를 설정하고 시간을 의미있게 만드세요.</div>
+      </div>
+    </section>
+
+    <section class="monthly-chart-section" id="monthlyChartSection">
+      <div class="monthly-chart-title">월별 달성률</div>
+      <div class="monthly-bars" id="monthlyBars"></div>
+    </section>
+
+    <section class="insights-section" id="insightsSection">
+      <div class="insight-card"><div class="insight-label">📊 주당 평균 항목</div><div class="insight-value" id="insightAvg">-</div></div>
+      <div class="insight-card"><div class="insight-label">🏆 최고의 달</div><div class="insight-value" id="insightBestMonth">-</div></div>
+      <div class="insight-card"><div class="insight-label">📈 최근 추세</div><div class="insight-value" id="insightTrend">-</div></div>
+      <div class="insight-card"><div class="insight-label">✅ 완전 달성 주</div><div class="insight-value" id="insightPerfect">-</div></div>
+    </section>
+
+    <section class="mini-chart-section">
+      <div class="mini-chart-title">주간 달성 현황</div>
+      <div class="mini-chart" id="miniChart"></div>
+    </section>
+
+    <section class="progress-section">
+      <div class="progress-label-row">
+        <span class="progress-title">올해의 진행률</span>
+        <span class="progress-percentage" id="progressPercent">0.0%</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </section>
+
+    <div class="days-remaining" id="daysRemaining"></div>
+
+    <div class="data-section">
+      <button class="data-btn" id="btnExport">📥 데이터 내보내기</button>
+      <button class="data-btn" id="btnImport">📤 데이터 가져오기</button>
+      <input type="file" id="importFileInput" accept=".json">
+    </div>
+  </div>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", function() {
+
+    /* ─── Date Utilities ─────────────────────────────── */
+    function getISOWeek(d) {
+      var t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      var day = t.getUTCDay() || 7;
+      t.setUTCDate(t.getUTCDate() + 4 - day);
+      var y1 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+      return Math.ceil(((t - y1) / 864e5 + 1) / 7);
+    }
+    function weekOneMonday(yr) {
+      var j4 = new Date(yr, 0, 4); var dw = j4.getDay() || 7;
+      j4.setDate(j4.getDate() - (dw - 1)); return j4;
+    }
+    function weekRange(yr, wk) {
+      var m = new Date(weekOneMonday(yr)); m.setDate(m.getDate() + (wk - 1) * 7);
+      var s = new Date(m); s.setDate(m.getDate() + 6);
+      var mn = ["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"];
+      var sm = m.getMonth();
+      // ISO week boundary fix: week 1-2 starting in Dec → January
+      if (wk <= 2 && sm >= 11) sm = 0;
+      // Last weeks crossing into Jan of next year → December
+      if (wk >= 51 && sm <= 0) sm = 11;
+      return { start: mn[m.getMonth()] + " " + m.getDate() + "일", end: mn[s.getMonth()] + " " + s.getDate() + "일", startMonth: sm };
+    }
+
+    var now = new Date();
+    var realYear = now.getFullYear();
+    var realWeek = getISOWeek(now);
+    var viewYear = realYear;
+    var TW = 52;
+    var MAX_TASKS = 5;
+
+    function getVCW() { return viewYear === realYear ? realWeek : (viewYear < realYear ? 53 : 0); }
+
+    /* ─── Goal Storage (multi-task per week) ────────── */
+    function storageKey(yr) { return "temporal-goals-" + yr; }
+    function migrateGoals(data) {
+      var out = {};
+      for (var k in data) {
+        if (!data.hasOwnProperty(k)) continue; var v = data[k];
+        if (v && v.tasks && Array.isArray(v.tasks)) out[k] = v;
+        else if (v && v.goal && typeof v.goal === "string") out[k] = { tasks: [{ text: v.goal, completed: !!v.completed }] };
+      }
+      return out;
+    }
+    function loadGoals(yr) {
+      try { return migrateGoals(JSON.parse(localStorage.getItem(storageKey(yr || viewYear))) || {}); } catch(e) { return {}; }
+    }
+    function saveGoals(data, yr) { try { localStorage.setItem(storageKey(yr || viewYear), JSON.stringify(data)); } catch(e) {} }
+    var goals = loadGoals(); saveGoals(goals);
+
+    function weekHasTasks(w) { var g = goals[w]; return g && g.tasks && g.tasks.length > 0; }
+    function weekTaskStats(w) {
+      var g = goals[w]; if (!g || !g.tasks || !g.tasks.length) return { total: 0, done: 0 };
+      var d = 0; for (var i = 0; i < g.tasks.length; i++) if (g.tasks[i].completed) d++;
+      return { total: g.tasks.length, done: d };
+    }
+
+    /* ─── Build Week Grid (month-column layout) ─────── */
+    var grid = document.getElementById("weekGrid");
+    function buildGrid() {
+      grid.innerHTML = "";
+      // Create 12 month columns
+      var cols = [];
+      for (var m = 0; m < 12; m++) {
+        var col = document.createElement("div");
+        col.className = "month-col";
+        grid.appendChild(col);
+        cols.push(col);
+      }
+      // Place each week in its starting-month column
+      for (var i = 1; i <= 52; i++) {
+        var r = weekRange(viewYear, i);
+        var monthIdx = r.startMonth; // 0-based
+        var c = document.createElement("div"); c.className = "week-cell"; c.setAttribute("data-week", i);
+        var dot = document.createElement("span"); dot.className = "goal-dot"; c.appendChild(dot);
+        c.addEventListener("click", (function(w){return function(){openPanel(w)};})(i));
+        c.addEventListener("mouseenter", showTip); c.addEventListener("mousemove", posTip); c.addEventListener("mouseleave", hideTip);
+        cols[monthIdx].appendChild(c);
+      }
+    }
+    buildGrid();
+
+    /* ─── Apply States (with partial fill) ───────────── */
+    function applyStates() {
+      goals = loadGoals();
+      var CW = getVCW(), wasted = 0;
+      var cells = grid.querySelectorAll(".week-cell");
+      cells.forEach(function(c) {
+        var w = parseInt(c.getAttribute("data-week"), 10);
+        c.className = "week-cell"; c.style.background = "";
+        var dot = c.querySelector(".goal-dot");
+        if (!dot) { dot = document.createElement("span"); dot.className = "goal-dot"; c.appendChild(dot); }
+        var hasTasks = weekHasTasks(w), stats = weekTaskStats(w);
+        var allDone = stats.total > 0 && stats.done === stats.total;
+        if (w < CW) {
+          c.classList.add("week-passed");
+          if (hasTasks) {
+            c.classList.add("has-goal", allDone ? "goal-complete" : "goal-incomplete");
+            if (!allDone && stats.done > 0) {
+              var pct = Math.round((stats.done / stats.total) * 360);
+              c.style.background = "conic-gradient(from 0deg, var(--gold) " + pct + "deg, rgba(140,85,55,.4) " + pct + "deg)";
+            }
+          } else { c.classList.add("no-goal"); wasted++; }
+        } else if (w === CW && viewYear === realYear) {
+          c.classList.add("week-current");
+          if (hasTasks) { c.classList.add("has-goal"); if (allDone) c.classList.add("goal-complete"); }
+        } else {
+          c.classList.add("week-future");
+          if (hasTasks) c.classList.add("has-goal", "goal-future");
+        }
+        c.style.animationDelay = (w * 16) + "ms";
+      });
+      return wasted;
+    }
+    var wastedCount = applyStates();
+
+    /* ─── Streak Calculation ─────────────────────────── */
+    function calcStreak() {
+      var CW = getVCW(), best = 0, streak = 0, current = 0;
+      for (var w = 1; w < CW; w++) {
+        var s = weekTaskStats(w);
+        if (weekHasTasks(w) && s.done === s.total) { streak++; if (streak > best) best = streak; }
+        else streak = 0;
+      }
+      for (var w2 = CW - 1; w2 >= 1; w2--) {
+        var s2 = weekTaskStats(w2);
+        if (weekHasTasks(w2) && s2.done === s2.total) current++; else break;
+      }
+      if (viewYear === realYear) {
+        var sc = weekTaskStats(CW);
+        if (weekHasTasks(CW) && sc.done === sc.total) current++;
+      }
+      if (current > best) best = current;
+      return { current: current, best: best };
+    }
+    function updateStreakUI() {
+      var s = calcStreak();
+      document.getElementById("streakCurrent").innerHTML = (s.current > 0 ? '<span class="fire">🔥</span> ' : '') + s.current + "주";
+      document.getElementById("streakBest").textContent = s.best + "주";
+    }
+
+    /* ─── Achievement Calculation (task-level) ─────── */
+    function calcAchievement() {
+      var CW = getVCW(), weeksWithGoals = 0, totalTasks = 0, doneTasks = 0, emptyPassed = 0;
+      for (var w = 1; w <= TW; w++) {
+        var hasTasks = weekHasTasks(w), stats = weekTaskStats(w);
+        if (w <= CW) {
+          if (hasTasks) { weeksWithGoals++; totalTasks += stats.total; doneTasks += stats.done; }
+          else if (w < CW) emptyPassed++;
+        } else { if (hasTasks) weeksWithGoals++; }
+      }
+      var rate = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
+      return { weeksWithGoals: weeksWithGoals, totalTasks: totalTasks, doneTasks: doneTasks, emptyPassed: emptyPassed, rate: rate };
+    }
+    function updateAchievementUI() {
+      var a = calcAchievement(), circumf = 314.16, offset = circumf * (1 - a.rate / 100);
+      var donut = document.getElementById("donutFill");
+      donut.style.strokeDashoffset = offset;
+      donut.style.stroke = a.rate >= 70 ? "url(#donutGradSuccess)" : a.rate >= 40 ? "url(#donutGradGold)" : "url(#donutGradDanger)";
+      document.getElementById("donutPct").textContent = a.rate + "%";
+      document.getElementById("achSet").textContent = a.totalTasks + "개 / " + a.weeksWithGoals + "주";
+      document.getElementById("achDone").textContent = a.doneTasks + "개";
+      document.getElementById("achMissed").textContent = (a.totalTasks - a.doneTasks) + "개";
+      document.getElementById("achEmpty").textContent = a.emptyPassed + "주";
+      var msg = "";
+      if (a.totalTasks === 0) msg = "아직 단 하나의 실행 항목도 세우지 않았습니다. 지금 바로 시작하세요.";
+      else if (a.rate === 100) msg = "모든 항목을 완료했습니다! 이 기세를 끝까지 유지하세요!";
+      else if (a.rate >= 75) msg = "훌륭합니다. 하지만 완벽은 아닙니다. 끝까지 달리세요.";
+      else if (a.rate >= 50) msg = "절반은 넘겼습니다. 하지만 절반은 놓쳤습니다. 더 분발하세요.";
+      else if (a.rate >= 25) msg = "시작은 했지만 갈 길이 멉니다. 매주를 허투루 보내지 마세요.";
+      else msg = "대부분의 항목을 놓쳤습니다. 지금부터라도 다시 시작하세요.";
+      if (a.emptyPassed > 0) msg += " (" + a.emptyPassed + "주를 기록 없이 흘려보냈습니다)";
+      document.getElementById("achMessage").textContent = msg;
+    }
+
+    /* ─── Monthly Chart ──────────────────────────────── */
+    function buildMonthlyChart() {
+      var container = document.getElementById("monthlyBars");
+      container.innerHTML = "";
+      var CW = getVCW(), mn = ["1","2","3","4","5","6","7","8","9","10","11","12"];
+      var monthData = [];
+      for (var m = 0; m < 12; m++) monthData.push({ total: 0, done: 0 });
+      for (var w = 1; w <= TW; w++) {
+        var r = weekRange(viewYear, w);
+        var stats = weekTaskStats(w);
+        if (stats.total > 0 && w <= CW) { monthData[r.startMonth].total += stats.total; monthData[r.startMonth].done += stats.done; }
+      }
+      for (var m2 = 0; m2 < 12; m2++) {
+        var wrap = document.createElement("div"); wrap.className = "monthly-bar-wrap";
+        var bar = document.createElement("div"); bar.className = "monthly-bar";
+        var pct = monthData[m2].total > 0 ? Math.round((monthData[m2].done / monthData[m2].total) * 100) : 0;
+        var hasData = monthData[m2].total > 0;
+        bar.style.height = hasData ? Math.max(4, pct * 0.76) + "px" : "4px";
+        bar.style.borderRadius = "4px 4px 0 0";
+        if (!hasData) {
+          bar.style.background = "rgba(106,102,96,.15)";
+        } else if (pct === 100) {
+          bar.style.background = "linear-gradient(180deg, #86efac 0%, #4ade80 40%, #22d3ee 100%)";
+          bar.style.boxShadow = "0 0 12px rgba(74,222,128,.25)";
+        } else if (pct >= 50) {
+          bar.style.background = "linear-gradient(180deg, #f0c888 0%, #ff8c5a 50%, #d4a574 100%)";
+          bar.style.boxShadow = "0 0 8px rgba(240,200,136,.2)";
+        } else {
+          bar.style.background = "linear-gradient(180deg, #f59e0b 0%, #ef4444 60%, #b91c1c 100%)";
+          bar.style.boxShadow = "0 0 8px rgba(239,68,68,.2)";
+        }
+        var pctLabel = document.createElement("div"); pctLabel.className = "monthly-bar-pct";
+        pctLabel.textContent = hasData ? pct + "%" : "-";
+        bar.appendChild(pctLabel);
+        var label = document.createElement("div"); label.className = "monthly-bar-label"; label.textContent = mn[m2] + "월";
+        wrap.appendChild(bar); wrap.appendChild(label); container.appendChild(wrap);
+      }
+    }
+
+    /* ─── Insights / Pattern Analysis ────────────────── */
+    function updateInsights() {
+      var CW = getVCW(), totalTasksAll = 0, weeksWithTasks = 0, perfectWeeks = 0;
+      var monthDone = [], monthTotal = [];
+      for (var m = 0; m < 12; m++) { monthDone.push(0); monthTotal.push(0); }
+      for (var w = 1; w < CW; w++) {
+        var stats = weekTaskStats(w), r = weekRange(viewYear, w);
+        if (weekHasTasks(w)) {
+          weeksWithTasks++; totalTasksAll += stats.total;
+          monthTotal[r.startMonth] += stats.total; monthDone[r.startMonth] += stats.done;
+          if (stats.done === stats.total) perfectWeeks++;
+        }
+      }
+      // Check current week too
+      if (viewYear === realYear && weekHasTasks(CW)) {
+        var sc = weekTaskStats(CW); weeksWithTasks++; totalTasksAll += sc.total;
+        var rc = weekRange(viewYear, CW);
+        monthTotal[rc.startMonth] += sc.total; monthDone[rc.startMonth] += sc.done;
+        if (sc.done === sc.total) perfectWeeks++;
+      }
+      // Average tasks per week
+      var avg = weeksWithTasks > 0 ? (totalTasksAll / weeksWithTasks).toFixed(1) : "-";
+      document.getElementById("insightAvg").textContent = avg === "-" ? "-" : avg + "개";
+      // Best month
+      var bestM = -1, bestRate = -1;
+      for (var m2 = 0; m2 < 12; m2++) {
+        if (monthTotal[m2] > 0) {
+          var rate = monthDone[m2] / monthTotal[m2];
+          if (rate > bestRate) { bestRate = rate; bestM = m2; }
+        }
+      }
+      document.getElementById("insightBestMonth").textContent = bestM >= 0 ? (bestM + 1) + "월 (" + Math.round(bestRate * 100) + "%)" : "-";
+      // Trend: compare last 4 weeks vs 4 weeks before
+      var recent = { total: 0, done: 0 }, older = { total: 0, done: 0 };
+      for (var w2 = Math.max(1, CW - 4); w2 < CW; w2++) {
+        var s2 = weekTaskStats(w2); recent.total += s2.total; recent.done += s2.done;
+      }
+      for (var w3 = Math.max(1, CW - 8); w3 < Math.max(1, CW - 4); w3++) {
+        var s3 = weekTaskStats(w3); older.total += s3.total; older.done += s3.done;
+      }
+      var rRate = recent.total > 0 ? recent.done / recent.total : 0;
+      var oRate = older.total > 0 ? older.done / older.total : 0;
+      var trendEl = document.getElementById("insightTrend");
+      if (older.total === 0 && recent.total === 0) { trendEl.textContent = "데이터 부족"; trendEl.className = "insight-value"; }
+      else if (rRate > oRate + 0.1) { trendEl.textContent = "↑ 상승세"; trendEl.className = "insight-value trend-up"; }
+      else if (rRate < oRate - 0.1) { trendEl.textContent = "↓ 하락세"; trendEl.className = "insight-value trend-down"; }
+      else { trendEl.textContent = "→ 유지"; trendEl.className = "insight-value"; }
+      // Perfect weeks
+      document.getElementById("insightPerfect").textContent = perfectWeeks + "주";
+    }
+
+    /* ─── Mini Bar Chart ─────────────────────────────── */
+    function buildMiniChart() {
+      var chart = document.getElementById("miniChart"), CW = getVCW();
+      chart.innerHTML = "";
+      for (var w = 1; w <= 52; w++) {
+        var bar = document.createElement("div"); bar.className = "mini-bar"; bar.setAttribute("data-week", w);
+        var hasTasks = weekHasTasks(w), stats = weekTaskStats(w);
+        if (w < CW) {
+          if (hasTasks) {
+            if (stats.done === stats.total) bar.classList.add("complete");
+            else { bar.classList.add("has-goal"); if (stats.total > 0) bar.style.height = Math.max(24, Math.round((stats.done / stats.total) * 100)) + "%"; }
+          } else bar.classList.add("no-goal-passed");
+        } else if (w === CW && viewYear === realYear) bar.classList.add("current-bar");
+        else bar.classList.add(hasTasks ? "future-goal" : "empty");
+        bar.addEventListener("click", (function(wk){return function(){openPanel(wk);};})(w));
+        chart.appendChild(bar);
+      }
+    }
+
+    /* ─── Stats (count-up) ───────────────────────────── */
+    function animVal(el, end, dur) {
+      if (!el) return; var st = null;
+      function step(ts) { if (!st) st = ts; var p = Math.min((ts - st) / dur, 1); el.textContent = Math.round(end * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(step); }
+      requestAnimationFrame(step);
+    }
+
+    function refreshAll() {
+      goals = loadGoals();
+      wastedCount = applyStates();
+      updateAchievementUI();
+      updateStreakUI();
+      buildMiniChart();
+      buildMonthlyChart();
+      updateInsights();
+      document.getElementById("wastedWeeks").textContent = wastedCount;
+    }
+
+    function initStats() {
+      var CW = getVCW(), elapsed = Math.max(0, CW - 1), remaining = Math.max(0, TW - CW);
+      animVal(document.getElementById("weeksElapsed"), elapsed, 1400);
+      animVal(document.getElementById("currentWeek"), CW, 1400);
+      animVal(document.getElementById("weeksRemaining"), remaining, 1400);
+      animVal(document.getElementById("wastedWeeks"), wastedCount, 1400);
+    }
+    setTimeout(initStats, 300);
+
+    /* ─── Progress Bar ───────────────────────────────── */
+    function initProgress() {
+      var endY = new Date(viewYear, 11, 31, 23, 59, 59), startY = new Date(viewYear, 0, 1);
+      var refDate = viewYear === realYear ? now : (viewYear < realYear ? endY : startY);
+      var yearPct = Math.min(100, Math.max(0, ((refDate - startY) / (endY - startY)) * 100));
+      var daysLeft = viewYear === realYear ? Math.ceil((endY - now) / 864e5) : (viewYear < realYear ? 0 : Math.ceil((endY - startY) / 864e5));
+      var pFill = document.getElementById("progressFill"), pPct = document.getElementById("progressPercent");
+      pFill.style.width = "0%"; pFill.classList.remove("active");
+      setTimeout(function() {
+        pFill.style.width = yearPct.toFixed(1) + "%"; setTimeout(function(){pFill.classList.add("active");},100);
+        var st = null;
+        (function anim(ts) { if (!st) st = ts; var p = Math.min((ts - st) / 1600, 1); pPct.textContent = (yearPct * (1 - Math.pow(1 - p, 3))).toFixed(1) + "%"; if (p < 1) requestAnimationFrame(anim); })(performance.now());
+      }, 300);
+      document.getElementById("daysRemaining").innerHTML = viewYear + "년이 끝나기까지 <b>" + daysLeft + "</b>일";
+    }
+    initProgress();
+
+    /* ─── Confetti ────────────────────────────────────── */
+    function launchConfetti() {
+      var canvas = document.getElementById("confettiCanvas");
+      canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+      canvas.style.display = "block";
+      var ctx = canvas.getContext("2d"), particles = [];
+      var colors = ["#f0c888","#d4a574","#4ade80","#ff8c5a","#fffbe6","#e63946","#ff4d4d"];
+      for (var i = 0; i < 100; i++) {
+        particles.push({
+          x: canvas.width / 2 + (Math.random() - .5) * 200, y: canvas.height * .4,
+          vx: (Math.random() - .5) * 12, vy: -(Math.random() * 14 + 4),
+          size: Math.random() * 6 + 3, color: colors[i % colors.length],
+          alpha: 1, rot: Math.random() * 360, rotS: (Math.random() - .5) * 12
+        });
+      }
+      var frame = 0;
+      function anim() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        var alive = false;
+        for (var j = 0; j < particles.length; j++) {
+          var p = particles[j]; p.x += p.vx; p.vy += .2; p.y += p.vy; p.alpha -= .007; p.rot += p.rotS;
+          if (p.alpha <= 0) continue; alive = true;
+          ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot * Math.PI / 180);
+          ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * .6);
+          ctx.restore();
+        }
+        frame++;
+        if (alive && frame < 200) requestAnimationFrame(anim);
+        else { canvas.style.display = "none"; ctx.clearRect(0, 0, canvas.width, canvas.height); }
+      }
+      requestAnimationFrame(anim);
+    }
+
+    /* ─── Goal Panel Logic (multi-task + reflection) ── */
+    var panelEl = document.getElementById("goalPanel"), overlay = document.getElementById("panelOverlay");
+    var taskListEl = document.getElementById("taskList"), taskAddInput = document.getElementById("taskAddInput");
+    var taskAddBtn = document.getElementById("taskAddBtn"), taskCountEl = document.getElementById("taskCount");
+    var reflectionInput = document.getElementById("reflectionInput");
+    var emptyMsg = document.getElementById("panelEmptyMsg");
+    var openWeek = null, panelTasks = [];
+
+    function renderTaskList() {
+      taskListEl.innerHTML = "";
+      panelTasks.forEach(function(task, idx) {
+        var item = document.createElement("div"); item.className = "task-item" + (task.completed ? " completed" : "");
+        var label = document.createElement("label"); label.className = "panel-checkbox"; label.style.cssText = "margin:0;font-size:.8rem";
+        var cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = task.completed;
+        cb.addEventListener("change", function() { panelTasks[idx].completed = cb.checked; renderTaskList(); });
+        var box = document.createElement("span"); box.className = "check-box";
+        box.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
+        label.appendChild(cb); label.appendChild(box);
+        var textSpan = document.createElement("span"); textSpan.className = "task-text"; textSpan.textContent = task.text;
+        var removeBtn = document.createElement("button"); removeBtn.className = "task-remove"; removeBtn.textContent = "×";
+        removeBtn.addEventListener("click", function() { panelTasks.splice(idx, 1); renderTaskList(); });
+        item.appendChild(label); item.appendChild(textSpan); item.appendChild(removeBtn);
+        taskListEl.appendChild(item);
+      });
+      taskCountEl.textContent = panelTasks.length + " / " + MAX_TASKS;
+      var isFull = panelTasks.length >= MAX_TASKS;
+      taskAddInput.disabled = isFull; taskAddBtn.disabled = isFull;
+      taskAddInput.placeholder = isFull ? "최대 " + MAX_TASKS + "개까지 가능합니다" : "구체적인 실행 항목을 적으세요...";
+    }
+    function addTask() {
+      var text = taskAddInput.value.trim();
+      if (!text || panelTasks.length >= MAX_TASKS) return;
+      panelTasks.push({ text: text, completed: false }); taskAddInput.value = ""; renderTaskList(); taskAddInput.focus();
+    }
+    taskAddBtn.addEventListener("click", addTask);
+    taskAddInput.addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); addTask(); } });
+
+    function openPanel(w) {
+      openWeek = w; var r = weekRange(viewYear, w), CW = getVCW();
+      document.getElementById("panelWeekNum").textContent = "제 " + w + "주";
+      document.getElementById("panelDateRange").textContent = r.start + " — " + r.end;
+      var statusEl = document.getElementById("panelStatus");
+      if (w < CW) { statusEl.textContent = "경과"; statusEl.className = "panel-status elapsed"; }
+      else if (w === CW && viewYear === realYear) { statusEl.textContent = "현재"; statusEl.className = "panel-status now"; }
+      else { statusEl.textContent = "예정"; statusEl.className = "panel-status upcoming"; }
+      var g = goals[w];
+      panelTasks = (g && g.tasks) ? g.tasks.map(function(t) { return { text: t.text, completed: !!t.completed }; }) : [];
+      reflectionInput.value = (g && g.reflection) || "";
+      if (w < CW && panelTasks.length === 0) { emptyMsg.textContent = "이 주는 아무 계획 없이 지나갔습니다. 되돌릴 수 없는 시간입니다."; emptyMsg.style.display = "block"; }
+      else emptyMsg.style.display = "none";
+      renderTaskList();
+      panelEl.classList.add("open"); overlay.classList.add("open");
+      setTimeout(function() { taskAddInput.focus(); }, 350);
+    }
+    function closePanel() { panelEl.classList.remove("open"); overlay.classList.remove("open"); openWeek = null; panelTasks = []; }
+    document.getElementById("panelClose").addEventListener("click", closePanel);
+    overlay.addEventListener("click", closePanel);
+
+    document.getElementById("btnSave").addEventListener("click", function() {
+      if (openWeek === null) return;
+      var prevStats = weekTaskStats(openWeek);
+      var wasAllDone = prevStats.total > 0 && prevStats.done === prevStats.total;
+      if (panelTasks.length > 0) {
+        goals[openWeek] = { tasks: panelTasks.map(function(t){return{text:t.text,completed:t.completed};}), reflection: reflectionInput.value.trim() };
+      } else if (reflectionInput.value.trim()) {
+        goals[openWeek] = { tasks: [], reflection: reflectionInput.value.trim() };
+      } else { delete goals[openWeek]; }
+      saveGoals(goals);
+      // Check if newly all-done for confetti
+      var newStats = weekTaskStats(openWeek);
+      var isNowAllDone = newStats.total > 0 && newStats.done === newStats.total;
+      if (isNowAllDone && !wasAllDone) launchConfetti();
+      refreshAll(); closePanel();
+    });
+    document.getElementById("btnDelete").addEventListener("click", function() {
+      if (openWeek === null) return; delete goals[openWeek]; saveGoals(goals); refreshAll(); closePanel();
+    });
+    // Repeat: copy uncompleted tasks to next week
+    document.getElementById("btnRepeat").addEventListener("click", function() {
+      if (openWeek === null || openWeek >= 52) return;
+      var nextW = openWeek + 1;
+      var tasksToRepeat = panelTasks.filter(function(t){return !t.completed;}).map(function(t){return{text:t.text,completed:false};});
+      if (tasksToRepeat.length === 0) { tasksToRepeat = panelTasks.map(function(t){return{text:t.text,completed:false};}); }
+      if (tasksToRepeat.length === 0) return;
+      var existing = goals[nextW];
+      var existingTasks = (existing && existing.tasks) ? existing.tasks : [];
+      var merged = existingTasks.concat(tasksToRepeat).slice(0, MAX_TASKS);
+      goals[nextW] = { tasks: merged, reflection: (existing && existing.reflection) || "" };
+      saveGoals(goals); refreshAll();
+      alert("제 " + nextW + "주에 " + tasksToRepeat.length + "개 항목이 복사되었습니다.");
+    });
+
+    /* ─── Tooltip ────────────────────────────────────── */
+    var tip = document.createElement("div"); tip.className = "week-tooltip";
+    tip.style.cssText = "position:fixed;pointer-events:none;opacity:0;transition:opacity .2s,transform .2s;z-index:10000;transform:translateY(4px)";
+    document.body.appendChild(tip);
+    function showTip(e) {
+      var w = parseInt(e.currentTarget.getAttribute("data-week"), 10), CW = getVCW();
+      var r = weekRange(viewYear, w), stats = weekTaskStats(w), g = goals[w], goalLine = "";
+      if (stats.total > 0) {
+        goalLine = "<br><span style='color:" + (stats.done === stats.total ? "var(--success)" : "var(--warn)") + ";font-size:.6rem'>" + stats.done + "/" + stats.total + " 완료";
+        if (g && g.tasks && g.tasks[0]) { var safe = g.tasks[0].text.substring(0, 20).replace(/</g, "&lt;").replace(/>/g, "&gt;"); goalLine += " · " + safe + (g.tasks[0].text.length > 20 || g.tasks.length > 1 ? "…" : ""); }
+        goalLine += "</span>";
+      } else if (w < CW) goalLine = "<br><span style='color:var(--danger);font-size:.6rem;opacity:.7'>기록 없음</span>";
+      if (g && g.reflection) goalLine += "<br><span style='color:var(--text-dim);font-size:.55rem'>📝 회고 있음</span>";
+      tip.innerHTML = "<strong>" + w + "주차</strong> " + r.start + " – " + r.end + goalLine;
+      tip.style.opacity = "1"; tip.style.transform = "translateY(0)"; posTip(e);
+    }
+    function posTip(e) {
+      var x = e.clientX + 14, y = e.clientY - 60, rect = tip.getBoundingClientRect();
+      if (x + rect.width > window.innerWidth) x = e.clientX - rect.width - 14;
+      if (y < 0) y = e.clientY + 14;
+      tip.style.left = x + "px"; tip.style.top = y + "px";
+    }
+    function hideTip() { tip.style.opacity = "0"; tip.style.transform = "translateY(4px)"; }
+
+    /* ─── Year Navigation ────────────────────────────── */
+    function switchYear(yr) {
+      viewYear = yr; goals = loadGoals(); saveGoals(goals);
+      var yearEl = document.getElementById("yearDisplay");
+      yearEl.textContent = yr; yearEl.setAttribute("data-year", yr);
+      var header = document.getElementById("headerEl");
+      if (yr !== realYear) header.classList.add("viewing-other"); else header.classList.remove("viewing-other");
+      var CW = getVCW();
+      if (yr === realYear) {
+        document.getElementById("subtitleEl").innerHTML = '52주 중 제 <span class="hl" id="subtitleWeek">' + realWeek + '</span>주';
+      } else {
+        document.getElementById("subtitleEl").innerHTML = '<span style="color:var(--text-dim)">' + yr + '년 기록</span>';
+      }
+      wastedCount = applyStates(); initStats(); initProgress();
+      updateAchievementUI(); updateStreakUI(); buildMiniChart(); buildMonthlyChart(); updateInsights();
+      renderYearlyGoal();
+    }
+    document.getElementById("yearPrev").addEventListener("click", function() { switchYear(viewYear - 1); });
+    document.getElementById("yearNext").addEventListener("click", function() { switchYear(viewYear + 1); });
+
+    /* ─── Yearly Goal ────────────────────────────────── */
+    var ygDisplay = document.getElementById("yearlyGoalDisplay"), ygText = document.getElementById("yearlyGoalText");
+    var ygPlaceholder = document.getElementById("yearlyGoalPlaceholder"), ygEdit = document.getElementById("yearlyGoalEdit");
+    var ygInput = document.getElementById("yearlyGoalInput"), ygEditing = false;
+    function ygKey() { return "temporal-yearly-goal-" + viewYear; }
+    function loadYearlyGoal() { try { return localStorage.getItem(ygKey()) || ""; } catch(e) { return ""; } }
+    function saveYearlyGoal(val) { try { localStorage.setItem(ygKey(), val); } catch(e) {} }
+    function renderYearlyGoal() {
+      var g = loadYearlyGoal();
+      if (g) { ygText.textContent = g; ygText.style.display = ""; ygPlaceholder.style.display = "none"; }
+      else { ygText.style.display = "none"; ygPlaceholder.style.display = ""; }
+    }
+    function startEditYG() { if (ygEditing) return; ygEditing = true; ygInput.value = loadYearlyGoal(); ygText.style.display = "none"; ygPlaceholder.style.display = "none"; ygEdit.classList.add("active"); setTimeout(function(){ygInput.focus();},50); }
+    function finishEditYG(save) { if (!ygEditing) return; ygEditing = false; ygEdit.classList.remove("active"); if (save) saveYearlyGoal(ygInput.value.trim()); renderYearlyGoal(); }
+    ygDisplay.addEventListener("click", function() { if (!ygEditing) startEditYG(); });
+    ygInput.addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); finishEditYG(true); } if (e.key === "Escape") finishEditYG(false); });
+    ygInput.addEventListener("blur", function() { setTimeout(function(){finishEditYG(true);}, 100); });
+    renderYearlyGoal();
+
+    /* ─── Data Export / Import ────────────────────────── */
+    document.getElementById("btnExport").addEventListener("click", function() {
+      var allData = { goals: {}, yearlyGoals: {}, exportDate: new Date().toISOString().slice(0,10) };
+      for (var y = 2020; y <= realYear + 1; y++) {
+        var gKey = "temporal-goals-" + y, yKey = "temporal-yearly-goal-" + y;
+        var gVal = localStorage.getItem(gKey), yVal = localStorage.getItem(yKey);
+        if (gVal) try { allData.goals[y] = JSON.parse(gVal); } catch(e) {}
+        if (yVal) allData.yearlyGoals[y] = yVal;
+      }
+      var blob = new Blob([JSON.stringify(allData, null, 2)], { type: "application/json" });
+      var a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+      a.download = "temporal-map-backup-" + allData.exportDate + ".json";
+      a.click(); URL.revokeObjectURL(a.href);
+    });
+    document.getElementById("btnImport").addEventListener("click", function() {
+      document.getElementById("importFileInput").click();
+    });
+    document.getElementById("importFileInput").addEventListener("change", function(e) {
+      var file = e.target.files[0]; if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        try {
+          var data = JSON.parse(ev.target.result);
+          if (data.goals) {
+            for (var y in data.goals) { if (data.goals.hasOwnProperty(y)) localStorage.setItem("temporal-goals-" + y, JSON.stringify(data.goals[y])); }
+          }
+          if (data.yearlyGoals) {
+            for (var y2 in data.yearlyGoals) { if (data.yearlyGoals.hasOwnProperty(y2)) localStorage.setItem("temporal-yearly-goal-" + y2, data.yearlyGoals[y2]); }
+          }
+          switchYear(viewYear);
+          alert("데이터를 성공적으로 불러왔습니다!");
+        } catch(err) { alert("파일을 읽을 수 없습니다. 올바른 JSON 파일인지 확인하세요."); }
+      };
+      reader.readAsText(file); e.target.value = "";
+    });
+
+    /* ─── Motivational Quotes ────────────────────────── */
+    var quotes = [
+      "계획 없는 목표는 그저 소원일 뿐이다.",
+      "오늘 하지 않으면, 내일의 당신도 하지 않는다.",
+      "작은 진전이라도, 진전은 진전이다.",
+      "완벽을 기다리지 마라. 지금 시작하라.",
+      "시간은 당신의 편이 아니다. 당신이 시간의 편에 서야 한다.",
+      "매주 한 발자국이면, 일 년이면 52걸음이다.",
+      "후회는 행동하지 않은 시간에서 자란다.",
+      "당신의 한 해는 52개의 기회로 이루어져 있다.",
+      "지금 이 순간이 가장 빠른 시작점이다.",
+      "목표가 없는 주는 존재하지 않은 주와 같다.",
+      "지금 편하면 미래의 너는 죽는다.",
+      "네가 쉬는 동안 누군가는 달리고 있다.",
+      "100억은 앉아서 오지 않는다. 일어나라.",
+      "고통은 일시적이지만, 포기는 영원하다.",
+      "아직도 핸드폰을 보고 있을 시간인가?"
+    ];
+    var quoteEl = document.getElementById("quoteText"), qi = Math.floor(Math.random() * quotes.length);
+    quoteEl.textContent = "「 " + quotes[qi] + " 」";
+    setInterval(function() {
+      quoteEl.style.opacity = "0";
+      setTimeout(function() { qi = (qi + 1) % quotes.length; quoteEl.textContent = "「 " + quotes[qi] + " 」"; quoteEl.style.opacity = "1"; }, 500);
+    }, 8000);
+
+    /* ─── Clock ──────────────────────────────────────── */
+    var timeEl = document.getElementById("currentTime"), dateEl = document.getElementById("currentDate");
+    var dayKo = ["일요일","월요일","화요일","수요일","목요일","금요일","토요일"];
+    function pad(n) { return n < 10 ? "0" + n : "" + n; }
+    function tick() {
+      var d = new Date();
+      if (timeEl) timeEl.textContent = pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
+      if (dateEl) dateEl.textContent = d.getFullYear() + "년 " + (d.getMonth()+1) + "월 " + d.getDate() + "일 " + dayKo[d.getDay()];
+    }
+    tick(); setInterval(tick, 1000);
+
+    /* ─── Initial Render ─────────────────────────────── */
+    updateAchievementUI(); updateStreakUI(); buildMiniChart(); buildMonthlyChart(); updateInsights();
+    document.getElementById("subtitleWeek").textContent = realWeek;
+
+    /* ─── Keyboard ───────────────────────────────────── */
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Escape" && panelEl.classList.contains("open")) closePanel();
+    });
+
+    /* ─── Life Goal (editable) ───────────────────────── */
+    (function() {
+      var STORAGE_KEY = "temporal-life-goal";
+      var defaults = { amount: "₩ 100억", label: "자산 목표", date: "2030-12-31" };
+
+      function loadGoal() {
+        try { var d = JSON.parse(localStorage.getItem(STORAGE_KEY)); return d && d.amount ? d : defaults; }
+        catch(e) { return defaults; }
+      }
+      function saveGoal(data) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+      }
+
+      var goal = loadGoal();
+      var badge = document.getElementById("lifeGoalBadge");
+      var deadlineEl = document.getElementById("lifeGoalDeadline");
+      var amountEl = document.getElementById("lifeGoalAmount");
+      var labelEl = document.getElementById("lifeGoalLabel");
+      var ddayEl = document.getElementById("lifeGoalDday");
+      var modalOverlay = document.getElementById("lifeGoalModalOverlay");
+      var editAmount = document.getElementById("lgEditAmount");
+      var editLabel = document.getElementById("lgEditLabel");
+      var editDate = document.getElementById("lgEditDate");
+
+      function formatDate(dateStr) {
+        var parts = dateStr.split("-");
+        return parts[0] + ". " + parseInt(parts[1],10) + ". " + parseInt(parts[2],10);
+      }
+
+      function renderBadge() {
+        goal = loadGoal();
+        deadlineEl.textContent = formatDate(goal.date);
+        amountEl.textContent = goal.amount;
+        labelEl.textContent = goal.label;
+        updateDday();
+      }
+
+      function updateDday() {
+        var parts = goal.date.split("-");
+        var target = new Date(parseInt(parts[0],10), parseInt(parts[1],10) - 1, parseInt(parts[2],10));
+        var diff = Math.ceil((target - new Date()) / 864e5);
+        ddayEl.textContent = diff >= 0 ? "D-" + diff.toLocaleString() : "D+" + Math.abs(diff).toLocaleString();
+      }
+
+      function openModal() {
+        editAmount.value = goal.amount;
+        editLabel.value = goal.label;
+        editDate.value = goal.date;
+        modalOverlay.classList.add("open");
+        setTimeout(function() { editAmount.focus(); }, 100);
+      }
+      function closeModal() { modalOverlay.classList.remove("open"); }
+
+      badge.addEventListener("click", openModal);
+      modalOverlay.addEventListener("click", function(e) { if (e.target === modalOverlay) closeModal(); });
+      document.getElementById("lgEditCancel").addEventListener("click", closeModal);
+      document.getElementById("lgEditSave").addEventListener("click", function() {
+        var a = editAmount.value.trim(), l = editLabel.value.trim(), d = editDate.value;
+        if (!a || !d) return;
+        goal = { amount: a, label: l || "목표", date: d };
+        saveGoal(goal);
+        renderBadge();
+        closeModal();
+      });
+      document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape" && modalOverlay.classList.contains("open")) closeModal();
+      });
+
+      renderBadge();
+      setInterval(updateDday, 60000);
+    })();
+
+    /* ─── Music Player (YouTube IFrame API) ─────────── */
+    (function() {
+      var YT_VIDEO_ID = "m3zvVGJrTP8";
+      var fab = document.getElementById("musicFab");
+      var panel = document.getElementById("musicPanel");
+      var playBtn = document.getElementById("musicPlayBtn");
+      var volSlider = document.getElementById("musicVolSlider");
+      var volIcon = document.getElementById("musicVolIcon");
+      var progressFill = document.getElementById("musicProgressFill");
+      var player = null, isReady = false, isPlaying = false, panelOpen = false;
+      var progressInterval = null;
+
+      // Load YouTube IFrame API
+      var tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      document.head.appendChild(tag);
+
+      window.onYouTubeIframeAPIReady = function() {
+        player = new YT.Player("ytPlayer", {
+          height: "1", width: "1",
+          videoId: YT_VIDEO_ID,
+          playerVars: { autoplay: 0, loop: 1, playlist: YT_VIDEO_ID, controls: 0, disablekb: 1, fs: 0, modestbranding: 1, rel: 0 },
+          events: {
+            onReady: function(e) {
+              isReady = true;
+              e.target.setVolume(parseInt(volSlider.value, 10));
+            },
+            onStateChange: function(e) {
+              if (e.data === YT.PlayerState.PLAYING) {
+                isPlaying = true; fab.classList.add("playing"); playBtn.textContent = "⏸";
+                startProgress();
+              } else if (e.data === YT.PlayerState.ENDED) {
+                player.seekTo(0); player.playVideo();
+              } else if (e.data === YT.PlayerState.PAUSED) {
+                isPlaying = false; fab.classList.remove("playing"); playBtn.textContent = "▶";
+                stopProgress();
+              }
+            }
+          }
+        });
+      };
+
+      function startProgress() {
+        stopProgress();
+        progressInterval = setInterval(function() {
+          if (player && isReady && isPlaying) {
+            var cur = player.getCurrentTime(), dur = player.getDuration();
+            if (dur > 0) progressFill.style.width = ((cur / dur) * 100) + "%";
+          }
+        }, 500);
+      }
+      function stopProgress() { if (progressInterval) { clearInterval(progressInterval); progressInterval = null; } }
+
+      function togglePlay() {
+        if (!isReady) return;
+        if (isPlaying) player.pauseVideo(); else player.playVideo();
+      }
+
+      // FAB: click toggles panel
+      fab.addEventListener("click", function(e) {
+        e.stopPropagation();
+        panelOpen = !panelOpen;
+        panel.classList.toggle("open", panelOpen);
+      });
+
+      // Play button
+      playBtn.addEventListener("click", togglePlay);
+
+      // Volume
+      volSlider.addEventListener("input", function() {
+        if (!isReady) return;
+        var v = parseInt(volSlider.value, 10);
+        player.setVolume(v);
+        volIcon.textContent = v === 0 ? "🔇" : v < 40 ? "🔉" : "🔊";
+        volSlider.style.background = "linear-gradient(90deg, var(--gold-dim) " + v + "%, rgba(106,102,96,.2) " + v + "%)";
+      });
+
+      // Mute toggle
+      volIcon.addEventListener("click", function() {
+        if (!isReady) return;
+        if (player.isMuted()) { player.unMute(); volSlider.value = player.getVolume(); volIcon.textContent = "🔊"; }
+        else { player.mute(); volIcon.textContent = "🔇"; }
+      });
+
+      // Close panel on outside click
+      document.addEventListener("click", function(e) {
+        if (panelOpen && !panel.contains(e.target) && e.target !== fab) {
+          panelOpen = false; panel.classList.remove("open");
+        }
+      });
+
+      // Set initial slider gradient
+      var iv = parseInt(volSlider.value, 10);
+      volSlider.style.background = "linear-gradient(90deg, var(--gold-dim) " + iv + "%, rgba(106,102,96,.2) " + iv + "%)";
+    })();
+
+    /* ─── Pomodoro Timer ────────────────────────────── */
+    (function() {
+      var pomoPanel = document.getElementById("pomoPanel");
+      var pomoOverlay = document.getElementById("pomoOverlay");
+      var pomoTrigger = document.getElementById("pomoTrigger");
+      var pomoClose = document.getElementById("pomoPanelClose");
+      var timeDisplay = document.getElementById("pomoTimeDisplay");
+      var modeLabel = document.getElementById("pomoModeLabel");
+      var timerFill = document.getElementById("pomoTimerFill");
+      var startPauseBtn = document.getElementById("pomoStartPause");
+      var resetBtn = document.getElementById("pomoReset");
+      var skipBtn = document.getElementById("pomoSkip");
+      var dotsEl = document.getElementById("pomoDots");
+      var todayCountEl = document.getElementById("pomoTodayCount");
+      var totalMinEl = document.getElementById("pomoTotalMin");
+      var modeTabs = document.querySelectorAll(".pomo-mode-tab");
+
+      var CIRCUMFERENCE = 2 * Math.PI * 100; // 628.32
+      var pomoState = {
+        mode: "work", // work, short, long
+        running: false,
+        timeLeft: 25 * 60, // seconds
+        totalTime: 25 * 60,
+        interval: null,
+        sessionsToday: 0,
+        totalFocusMin: 0,
+        sessionGoal: 4,
+        workMin: 25,
+        shortMin: 5,
+        longMin: 15,
+        cycleCount: 4,
+        todayDate: null
+      };
+
+      var MODE_LABELS = { work: "집중 시간", short: "짧은 휴식", long: "긴 휴식" };
+      var MODE_CLASSES = { work: "mode-work", short: "mode-short", long: "mode-long" };
+
+      // Load saved pomo state
+      function loadPomoData() {
+        try {
+          var d = JSON.parse(localStorage.getItem("temporal-pomo") || "{}");
+          var today = new Date().toDateString();
+          if (d.todayDate === today) {
+            pomoState.sessionsToday = d.sessionsToday || 0;
+            pomoState.totalFocusMin = d.totalFocusMin || 0;
+          }
+          if (d.workMin) pomoState.workMin = d.workMin;
+          if (d.shortMin) pomoState.shortMin = d.shortMin;
+          if (d.longMin) pomoState.longMin = d.longMin;
+          if (d.cycleCount) pomoState.cycleCount = d.cycleCount;
+          pomoState.sessionGoal = pomoState.cycleCount;
+          pomoState.todayDate = today;
+        } catch(e) {}
+      }
+      function savePomoData() {
+        try {
+          localStorage.setItem("temporal-pomo", JSON.stringify({
+            todayDate: new Date().toDateString(),
+            sessionsToday: pomoState.sessionsToday,
+            totalFocusMin: pomoState.totalFocusMin,
+            workMin: pomoState.workMin,
+            shortMin: pomoState.shortMin,
+            longMin: pomoState.longMin,
+            cycleCount: pomoState.cycleCount
+          }));
+        } catch(e) {}
+      }
+      loadPomoData();
+
+      // Apply settings from inputs
+      document.getElementById("pomoWorkMin").value = pomoState.workMin;
+      document.getElementById("pomoShortMin").value = pomoState.shortMin;
+      document.getElementById("pomoLongMin").value = pomoState.longMin;
+      document.getElementById("pomoCycleCount").value = pomoState.cycleCount;
+
+      function readSettings() {
+        var w = parseInt(document.getElementById("pomoWorkMin").value, 10) || 25;
+        var s = parseInt(document.getElementById("pomoShortMin").value, 10) || 5;
+        var l = parseInt(document.getElementById("pomoLongMin").value, 10) || 15;
+        var c = parseInt(document.getElementById("pomoCycleCount").value, 10) || 4;
+        pomoState.workMin = Math.max(1, Math.min(90, w));
+        pomoState.shortMin = Math.max(1, Math.min(30, s));
+        pomoState.longMin = Math.max(1, Math.min(60, l));
+        pomoState.cycleCount = Math.max(2, Math.min(8, c));
+        pomoState.sessionGoal = pomoState.cycleCount;
+        savePomoData();
+      }
+      ["pomoWorkMin","pomoShortMin","pomoLongMin","pomoCycleCount"].forEach(function(id) {
+        document.getElementById(id).addEventListener("change", function() {
+          readSettings();
+          if (!pomoState.running) { setMode(pomoState.mode); }
+        });
+      });
+
+      // Format time
+      function formatTime(s) {
+        var m = Math.floor(s / 60), sec = s % 60;
+        return (m < 10 ? "0" : "") + m + ":" + (sec < 10 ? "0" : "") + sec;
+      }
+
+      // Update ring
+      function updateRing() {
+        var pct = pomoState.totalTime > 0 ? pomoState.timeLeft / pomoState.totalTime : 1;
+        timerFill.style.strokeDashoffset = CIRCUMFERENCE * pct;
+      }
+
+      // Update display
+      function updateDisplay() {
+        timeDisplay.textContent = formatTime(pomoState.timeLeft);
+        modeLabel.textContent = MODE_LABELS[pomoState.mode];
+        updateRing();
+        // Update trigger indicator
+        if (pomoState.running) { pomoTrigger.classList.add("has-active"); }
+        else { pomoTrigger.classList.remove("has-active"); }
+        // Update start/pause button
+        startPauseBtn.textContent = pomoState.running ? "⏸" : "▶";
+        startPauseBtn.className = "pomo-btn pomo-btn-main" + (pomoState.running ? " running" : "");
+        // Stats
+        todayCountEl.textContent = pomoState.sessionsToday;
+        totalMinEl.textContent = pomoState.totalFocusMin;
+      }
+
+      // Render dots
+      function renderDots() {
+        dotsEl.innerHTML = "";
+        var total = pomoState.sessionGoal;
+        for (var i = 0; i < total; i++) {
+          var dot = document.createElement("span");
+          dot.className = "pomo-dot";
+          var cycleIdx = pomoState.sessionsToday % total;
+          if (i < cycleIdx) dot.classList.add("filled");
+          else if (i === cycleIdx && pomoState.running && pomoState.mode === "work") dot.classList.add("current");
+          dotsEl.appendChild(dot);
+        }
+      }
+
+      // Set mode
+      function setMode(mode) {
+        pomoState.mode = mode;
+        var mins = mode === "work" ? pomoState.workMin : mode === "short" ? pomoState.shortMin : pomoState.longMin;
+        pomoState.totalTime = mins * 60;
+        pomoState.timeLeft = mins * 60;
+        timerFill.className = "pomo-timer-fill " + MODE_CLASSES[mode];
+        modeTabs.forEach(function(tab) {
+          tab.classList.toggle("active", tab.getAttribute("data-mode") === mode);
+        });
+        updateDisplay(); renderDots();
+      }
+
+      // Sound: short "삑" beep on start
+      function playStartBeep() {
+        try {
+          var ctx = new (window.AudioContext || window.webkitAudioContext)();
+          var osc = ctx.createOscillator();
+          var gain = ctx.createGain();
+          osc.type = "sine"; osc.frequency.value = 880; // A5
+          gain.gain.setValueAtTime(0, ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.start(ctx.currentTime);
+          osc.stop(ctx.currentTime + 0.2);
+        } catch(e) {}
+      }
+
+      // Sound: "삐비빅" alarm on timer end
+      function playEndAlarm() {
+        try {
+          var ctx = new (window.AudioContext || window.webkitAudioContext)();
+          var pattern = [
+            { freq: 1046.50, start: 0,    dur: 0.12 },  // C6 삐
+            { freq: 1046.50, start: 0.18, dur: 0.12 },  // C6 비
+            { freq: 1318.51, start: 0.36, dur: 0.25 }   // E6 빅 (longer)
+          ];
+          pattern.forEach(function(note) {
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.type = "square";
+            osc.frequency.value = note.freq;
+            gain.gain.setValueAtTime(0, ctx.currentTime + note.start);
+            gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + note.start + 0.015);
+            gain.gain.setValueAtTime(0.18, ctx.currentTime + note.start + note.dur - 0.03);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + note.start + note.dur);
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.start(ctx.currentTime + note.start);
+            osc.stop(ctx.currentTime + note.start + note.dur + 0.05);
+          });
+          // Repeat the pattern once more after a short pause
+          setTimeout(function() {
+            try {
+              var ctx2 = new (window.AudioContext || window.webkitAudioContext)();
+              pattern.forEach(function(note) {
+                var osc = ctx2.createOscillator();
+                var gain = ctx2.createGain();
+                osc.type = "square";
+                osc.frequency.value = note.freq;
+                gain.gain.setValueAtTime(0, ctx2.currentTime + note.start);
+                gain.gain.linearRampToValueAtTime(0.18, ctx2.currentTime + note.start + 0.015);
+                gain.gain.setValueAtTime(0.18, ctx2.currentTime + note.start + note.dur - 0.03);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx2.currentTime + note.start + note.dur);
+                osc.connect(gain); gain.connect(ctx2.destination);
+                osc.start(ctx2.currentTime + note.start);
+                osc.stop(ctx2.currentTime + note.start + note.dur + 0.05);
+              });
+            } catch(e2) {}
+          }, 700);
+        } catch(e) {}
+      }
+
+      // Timer complete
+      function timerComplete() {
+        clearInterval(pomoState.interval);
+        pomoState.running = false;
+        playEndAlarm();
+
+        if (pomoState.mode === "work") {
+          pomoState.sessionsToday++;
+          pomoState.totalFocusMin += pomoState.workMin;
+          savePomoData();
+          // Decide next: long break or short break
+          var nextMode = (pomoState.sessionsToday % pomoState.cycleCount === 0) ? "long" : "short";
+          setMode(nextMode);
+        } else {
+          // Break ended, back to work
+          setMode("work");
+        }
+        updateDisplay(); renderDots();
+      }
+
+      // Start
+      function startTimer() {
+        if (pomoState.running) return;
+        readSettings();
+        playStartBeep();
+        pomoState.running = true;
+        updateDisplay(); renderDots();
+        pomoState.interval = setInterval(function() {
+          pomoState.timeLeft--;
+          if (pomoState.timeLeft <= 0) {
+            pomoState.timeLeft = 0;
+            timerComplete();
+          }
+          updateDisplay();
+        }, 1000);
+      }
+
+      // Pause
+      function pauseTimer() {
+        clearInterval(pomoState.interval);
+        pomoState.running = false;
+        updateDisplay();
+      }
+
+      // Reset
+      function resetTimer() {
+        clearInterval(pomoState.interval);
+        pomoState.running = false;
+        var mins = pomoState.mode === "work" ? pomoState.workMin : pomoState.mode === "short" ? pomoState.shortMin : pomoState.longMin;
+        pomoState.totalTime = mins * 60;
+        pomoState.timeLeft = mins * 60;
+        updateDisplay(); renderDots();
+      }
+
+      // Skip to next
+      function skipTimer() {
+        clearInterval(pomoState.interval);
+        pomoState.running = false;
+        if (pomoState.mode === "work") {
+          var nextMode = ((pomoState.sessionsToday + 1) % pomoState.cycleCount === 0) ? "long" : "short";
+          setMode(nextMode);
+        } else {
+          setMode("work");
+        }
+      }
+
+      // Event listeners
+      startPauseBtn.addEventListener("click", function() {
+        if (pomoState.running) pauseTimer(); else startTimer();
+      });
+      resetBtn.addEventListener("click", resetTimer);
+      skipBtn.addEventListener("click", skipTimer);
+      modeTabs.forEach(function(tab) {
+        tab.addEventListener("click", function() {
+          if (pomoState.running) return; // Don't switch modes while running
+          setMode(tab.getAttribute("data-mode"));
+        });
+      });
+
+      // Panel open/close
+      function openPomo() { pomoPanel.classList.add("open"); pomoOverlay.classList.add("open"); }
+      function closePomo() { pomoPanel.classList.remove("open"); pomoOverlay.classList.remove("open"); }
+      pomoTrigger.addEventListener("click", openPomo);
+      pomoClose.addEventListener("click", closePomo);
+      pomoOverlay.addEventListener("click", closePomo);
+      document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape" && pomoPanel.classList.contains("open")) closePomo();
+      });
+
+      // Initial render
+      setMode("work");
+    })();
+
+    /* ─── 무의식 리프레이밍 (Mind Reframing) ──────────── */
+    (function() {
+      var mindPanel = document.getElementById("mindPanel");
+      var mindOverlay = document.getElementById("mindOverlay");
+      var mindTrigger = document.getElementById("mindTrigger");
+      var mindClose = document.getElementById("mindPanelClose");
+      var entriesEl = document.getElementById("mindEntries");
+      var fromInput = document.getElementById("mindFromInput");
+      var toInput = document.getElementById("mindToInput");
+      var triggerInput = document.getElementById("mindTriggerInput");
+      var addBtn = document.getElementById("mindAddBtn");
+
+      var STORAGE_KEY = "temporal-unconscious";
+      var STAGES = ["인지 단계", "의식적 실행", "무의식화"];
+
+      function loadData() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+        catch(e) { return []; }
+      }
+      function saveData(data) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+      }
+      var entries = loadData();
+
+      function updateStats() {
+        document.getElementById("mindTotalEntries").textContent = entries.length;
+        var totalCatches = 0, mastered = 0;
+        for (var i = 0; i < entries.length; i++) {
+          totalCatches += (entries[i].catches || 0);
+          if (entries[i].stage === 2) mastered++;
+        }
+        document.getElementById("mindTotalCatches").textContent = totalCatches;
+        document.getElementById("mindMasteredCount").textContent = mastered;
+      }
+
+      function renderEntries() {
+        entriesEl.innerHTML = "";
+        if (entries.length === 0) {
+          entriesEl.innerHTML = '<div class="mind-empty"><span class="mind-empty-icon">🧠</span>아직 등록된 패턴이 없습니다.<br>고치고 싶은 무의식을 기록해보세요.</div>';
+          updateStats();
+          return;
+        }
+        for (var i = 0; i < entries.length; i++) {
+          (function(idx) {
+            var e = entries[idx];
+            var entry = document.createElement("div");
+            entry.className = "mind-entry";
+
+            // Delete button
+            var delBtn = document.createElement("button");
+            delBtn.className = "mind-entry-delete"; delBtn.textContent = "×";
+            delBtn.addEventListener("click", function() {
+              entries.splice(idx, 1); saveData(entries); renderEntries();
+            });
+            entry.appendChild(delBtn);
+
+            // Pattern row: FROM → TO
+            var patRow = document.createElement("div");
+            patRow.className = "mind-pattern-row";
+
+            var fromCard = document.createElement("div");
+            fromCard.className = "mind-pattern-card from";
+            fromCard.innerHTML = '<span class="mind-pattern-label">고치고 싶은</span>' + escHtml(e.from);
+
+            var arrow = document.createElement("div");
+            arrow.className = "mind-arrow"; arrow.textContent = "→";
+
+            var toCard = document.createElement("div");
+            toCard.className = "mind-pattern-card to";
+            toCard.innerHTML = '<span class="mind-pattern-label">바꾸고 싶은</span>' + escHtml(e.to);
+
+            patRow.appendChild(fromCard);
+            patRow.appendChild(arrow);
+            patRow.appendChild(toCard);
+            entry.appendChild(patRow);
+
+            // Trigger situation
+            if (e.trigger) {
+              var trigDiv = document.createElement("div");
+              trigDiv.className = "mind-trigger-situation";
+              trigDiv.textContent = e.trigger;
+              entry.appendChild(trigDiv);
+            }
+
+            // Bottom row: counter + stage
+            var bottom = document.createElement("div");
+            bottom.className = "mind-bottom-row";
+
+            // Counter
+            var counter = document.createElement("div");
+            counter.className = "mind-counter";
+            var cBtn = document.createElement("button");
+            cBtn.className = "mind-counter-btn";
+            cBtn.textContent = "⚡ 또 그랬다";
+            cBtn.addEventListener("click", function() {
+              entries[idx].catches = (entries[idx].catches || 0) + 1;
+              saveData(entries); renderEntries();
+            });
+            var cNum = document.createElement("span");
+            cNum.className = "mind-counter-num";
+            cNum.textContent = e.catches || 0;
+            var cLabel = document.createElement("span");
+            cLabel.className = "mind-counter-label";
+            cLabel.textContent = "회 인지";
+            counter.appendChild(cBtn);
+            counter.appendChild(cNum);
+            counter.appendChild(cLabel);
+
+            // Stage
+            var stageWrap = document.createElement("div");
+            stageWrap.className = "mind-stage-wrap";
+            for (var s = 0; s < STAGES.length; s++) {
+              (function(si) {
+                var sBtn = document.createElement("button");
+                sBtn.className = "mind-stage-btn";
+                if ((e.stage || 0) === si) sBtn.classList.add("active-stage-" + si);
+                sBtn.textContent = STAGES[si];
+                sBtn.addEventListener("click", function() {
+                  entries[idx].stage = si;
+                  saveData(entries); renderEntries();
+                });
+                stageWrap.appendChild(sBtn);
+              })(s);
+            }
+
+            bottom.appendChild(counter);
+            bottom.appendChild(stageWrap);
+            entry.appendChild(bottom);
+            entriesEl.appendChild(entry);
+          })(i);
+        }
+        updateStats();
+      }
+
+      function escHtml(str) {
+        return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      }
+
+      // Add new entry
+      addBtn.addEventListener("click", function() {
+        var f = fromInput.value.trim(), t = toInput.value.trim();
+        if (!f || !t) return;
+        entries.push({
+          from: f, to: t,
+          trigger: triggerInput.value.trim(),
+          catches: 0, stage: 0,
+          created: new Date().toISOString()
+        });
+        saveData(entries);
+        fromInput.value = ""; toInput.value = ""; triggerInput.value = "";
+        renderEntries();
+      });
+
+      // Open/close
+      function openMind() { mindPanel.classList.add("open"); mindOverlay.classList.add("open"); }
+      function closeMind() { mindPanel.classList.remove("open"); mindOverlay.classList.remove("open"); }
+      mindTrigger.addEventListener("click", openMind);
+      mindClose.addEventListener("click", closeMind);
+      mindOverlay.addEventListener("click", closeMind);
+      document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape" && mindPanel.classList.contains("open")) closeMind();
+      });
+
+      // Initial render
+      renderEntries();
+    })();
+
+    /* ─── PWA ────────────────────────────────────────── */
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(function(){});
+    }
+
+  });
+  </script>
+</body>
+</html>
