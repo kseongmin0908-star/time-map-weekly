@@ -1178,9 +1178,74 @@
       .week-cell { animation: none; opacity: 1; }
       .progress-fill { transition: none; }
     }
+    /* ===== AUTH SCREEN ===== */
+    .auth-screen {
+      position: fixed; inset: 0; z-index: 10000;
+      display: flex; align-items: center; justify-content: center;
+      background: radial-gradient(ellipse at 50% 30%, rgba(26,10,46,.6) 0%, rgba(10,10,15,.98) 70%);
+      flex-direction: column;
+    }
+    .auth-title {
+      font-family: 'Cormorant Garamond', serif; font-size: 3rem; font-weight: 300;
+      color: var(--gold-bright); letter-spacing: .15em; margin-bottom: .5rem;
+    }
+    .auth-subtitle {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .95rem; color: var(--text-dim);
+      margin-bottom: 2.5rem; letter-spacing: .05em;
+    }
+    .auth-google-btn {
+      display: none;
+      align-items: center; gap: .75rem;
+      padding: .85rem 2rem; border-radius: 12px; border: 1px solid rgba(255,255,255,.15);
+      background: rgba(255,255,255,.95); color: #333; font-size: .95rem;
+      font-family: 'Noto Sans KR', sans-serif; font-weight: 500;
+      cursor: pointer; transition: all .2s;
+      box-shadow: 0 4px 20px rgba(0,0,0,.3);
+    }
+    .auth-google-btn:hover {
+      background: #fff; box-shadow: 0 4px 30px rgba(255,255,255,.15);
+      transform: translateY(-1px);
+    }
+    .auth-google-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+    .auth-loading {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .85rem;
+      color: var(--text-dim);
+    }
+    @keyframes auth-pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+    .auth-loading { animation: auth-pulse 1.5s ease-in-out infinite; }
+
+    .user-bar {
+      display: flex; align-items: center; gap: .75rem;
+      width: 100%; padding: .75rem 1rem; margin-bottom: 1rem;
+      background: rgba(255,255,255,.03); border: 1px solid rgba(106,102,96,.12);
+      border-radius: 12px;
+    }
+    .user-avatar { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--gold-dim); }
+    .user-name { flex: 1; font-size: .85rem; color: var(--text-dim); font-family: 'Noto Sans KR', sans-serif; }
+    .user-logout {
+      padding: .35rem .75rem; border-radius: 8px; border: 1px solid rgba(239,68,68,.3);
+      background: transparent; color: var(--danger); font-size: .75rem;
+      font-family: 'Noto Sans KR', sans-serif; cursor: pointer; transition: all .2s;
+    }
+    .user-logout:hover { background: rgba(239,68,68,.1); }
+
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+
+  <!-- Auth Screen -->
+  <div class="auth-screen" id="authScreen">
+    <div class="auth-container">
+      <div class="auth-title">시간의 지도</div>
+      <div class="auth-subtitle">나의 한 해를 시각화하세요</div>
+      <button class="auth-google-btn" id="googleLoginBtn">
+        <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.99 23.99 0 0 0 0 24c0 3.77.9 7.35 2.56 10.52l7.97-5.93z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.93C6.51 42.62 14.62 48 24 48z"/></svg>
+        Google로 로그인
+      </button>
+      <div class="auth-loading" id="authLoading">인증 확인 중...</div>
+    </div>
+  </div>
 
   <div class="matrix-bg"></div>
 
@@ -1385,7 +1450,12 @@
     </div>
   </div>
 
-  <div id="app">
+  <div id="app" style="display:none">
+    <div class="user-bar" id="userBar" style="display:none">
+      <img class="user-avatar" id="userAvatar" src="" alt="">
+      <span class="user-name" id="userName"></span>
+      <button class="user-logout" id="userLogout">로그아웃</button>
+    </div>
     <header class="header" id="headerEl">
       <div class="year-nav">
         <button class="year-nav-btn" id="yearPrev">◀</button>
@@ -1518,7 +1588,104 @@
   </div>
 
   <script>
+  // Supabase Client
+  var SUPABASE_URL = "https://chraccbntoyupexwqaix.supabase.co";
+  var SUPABASE_ANON = "sb_publishable_Z89Ks__9E2RJy7QmsnnAag_53ZuxMaA";
+  var _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+  var _currentUser = null;
+
   document.addEventListener("DOMContentLoaded", function() {
+
+    /* ─── Auth Flow ──────────────────────────────────── */
+    var authScreen = document.getElementById("authScreen");
+    var authLoading = document.getElementById("authLoading");
+    var googleBtn = document.getElementById("googleLoginBtn");
+    var appEl = document.getElementById("app");
+
+    googleBtn.addEventListener("click", function() {
+      _supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: window.location.origin + window.location.pathname }
+      });
+    });
+
+    document.getElementById("userLogout").addEventListener("click", function() {
+      _supabase.auth.signOut().then(function() {
+        _currentUser = null;
+        authScreen.style.display = "flex";
+        authLoading.style.display = "none";
+        googleBtn.style.display = "flex";
+        appEl.style.display = "none";
+      });
+    });
+
+    function showApp(user) {
+      _currentUser = user;
+      authScreen.style.display = "none";
+      appEl.style.display = "flex";
+      document.getElementById("userBar").style.display = "flex";
+      document.getElementById("userAvatar").src = (user.user_metadata && user.user_metadata.avatar_url) || "";
+      document.getElementById("userName").textContent = (user.user_metadata && user.user_metadata.full_name) || user.email;
+    }
+
+    // Async function that loads Supabase data, caches it, then re-renders
+    async function initAppData() {
+      if (!_currentUser) return;
+      try {
+        // Load weekly goals from Supabase and cache
+        var supaGoals = await SupaDB.loadGoals(viewYear);
+        if (supaGoals && Object.keys(supaGoals).length > 0) {
+          goals = supaGoals;
+          saveGoalsLocal(goals);
+        }
+        // Load yearly goal from Supabase and cache
+        var supaYG = await SupaDB.loadYearlyGoal(viewYear);
+        if (supaYG !== null && supaYG !== undefined) {
+          localStorage.setItem("temporal-yearly-goal-" + viewYear, supaYG);
+        }
+        // Load life goal from Supabase and cache
+        var supaLG = await SupaDB.loadLifeGoal();
+        if (supaLG) {
+          localStorage.setItem("temporal-life-goal", JSON.stringify(supaLG));
+        }
+        // Load mind entries from Supabase and cache
+        var supaMind = await SupaDB.loadMindEntries();
+        if (supaMind) {
+          localStorage.setItem("temporal-unconscious", JSON.stringify(supaMind));
+        }
+      } catch(e) { /* fallback to localStorage which is already loaded */ }
+      // Re-render everything with the loaded data
+      if (typeof refreshAll === "function") refreshAll();
+      if (typeof renderYearlyGoal === "function") renderYearlyGoal();
+    }
+
+    // Check existing session
+    _supabase.auth.getSession().then(function(res) {
+      if (res.data.session) {
+        showApp(res.data.session.user);
+        // Async load from Supabase after UI shows
+        initAppData();
+      } else {
+        authScreen.style.display = "flex";
+        authLoading.style.display = "none";
+        googleBtn.style.display = "flex";
+        appEl.style.display = "none";
+      }
+    });
+
+    // React to auth state changes
+    _supabase.auth.onAuthStateChange(function(event, session) {
+      if (event === "SIGNED_IN" && session) {
+        showApp(session.user);
+        initAppData();
+      } else if (event === "SIGNED_OUT") {
+        _currentUser = null;
+        authScreen.style.display = "flex";
+        authLoading.style.display = "none";
+        googleBtn.style.display = "flex";
+        appEl.style.display = "none";
+      }
+    });
 
     /* ─── Date Utilities ─────────────────────────────── */
     function getISOWeek(d) {
@@ -1564,11 +1731,172 @@
       }
       return out;
     }
-    function loadGoals(yr) {
+    function loadGoalsLocal(yr) {
       try { return migrateGoals(JSON.parse(localStorage.getItem(storageKey(yr || viewYear))) || {}); } catch(e) { return {}; }
     }
-    function saveGoals(data, yr) { try { localStorage.setItem(storageKey(yr || viewYear), JSON.stringify(data)); } catch(e) {} }
-    var goals = loadGoals(); saveGoals(goals);
+    function saveGoalsLocal(data, yr) { try { localStorage.setItem(storageKey(yr || viewYear), JSON.stringify(data)); } catch(e) {} }
+
+    /* ─── SupaDB Helper ──────────────────────────────── */
+    var SupaDB = {
+      async loadGoals(yr) {
+        if (!_currentUser) return loadGoalsLocal(yr);
+        try {
+          var { data } = await _supabase.from('weekly_goals').select('week, tasks').eq('user_id', _currentUser.id).eq('year', yr || viewYear);
+          if (!data || data.length === 0) {
+            // Fallback to localStorage
+            var local = loadGoalsLocal(yr);
+            // If local has data, migrate it to Supabase
+            if (Object.keys(local).length > 0) {
+              for (var wk in local) {
+                if (local.hasOwnProperty(wk) && local[wk].tasks) {
+                  _supabase.from('weekly_goals').upsert({
+                    user_id: _currentUser.id, year: yr || viewYear, week: parseInt(wk, 10), tasks: local[wk]
+                  }, { onConflict: 'user_id,year,week' }).then(function(){});
+                }
+              }
+            }
+            return local;
+          }
+          var goals = {};
+          data.forEach(function(r) { goals[r.week] = r.tasks; });
+          // Cache to localStorage
+          saveGoalsLocal(goals, yr);
+          return goals;
+        } catch(e) { return loadGoalsLocal(yr); }
+      },
+      async saveGoals(weekNum, tasksData, yr) {
+        if (!_currentUser) return;
+        try {
+          await _supabase.from('weekly_goals').upsert({
+            user_id: _currentUser.id, year: yr || viewYear, week: parseInt(weekNum, 10), tasks: tasksData
+          }, { onConflict: 'user_id,year,week' });
+        } catch(e) {}
+      },
+      async deleteGoals(weekNum, yr) {
+        if (!_currentUser) return;
+        try {
+          await _supabase.from('weekly_goals').delete()
+            .eq('user_id', _currentUser.id).eq('year', yr || viewYear).eq('week', parseInt(weekNum, 10));
+        } catch(e) {}
+      },
+      async loadYearlyGoal(yr) {
+        if (!_currentUser) return null;
+        try {
+          var { data } = await _supabase.from('yearly_goals').select('goal_text').eq('user_id', _currentUser.id).eq('year', yr || viewYear).maybeSingle();
+          if (data && data.goal_text) return data.goal_text;
+          // Fallback: migrate from localStorage
+          var local = localStorage.getItem("temporal-yearly-goal-" + (yr || viewYear)) || "";
+          if (local) {
+            _supabase.from('yearly_goals').upsert({
+              user_id: _currentUser.id, year: yr || viewYear, goal_text: local
+            }, { onConflict: 'user_id,year' }).then(function(){});
+          }
+          return local;
+        } catch(e) { return null; }
+      },
+      async saveYearlyGoal(val, yr) {
+        if (!_currentUser) return;
+        try {
+          await _supabase.from('yearly_goals').upsert({
+            user_id: _currentUser.id, year: yr || viewYear, goal_text: val
+          }, { onConflict: 'user_id,year' });
+        } catch(e) {}
+      },
+      async loadLifeGoal() {
+        if (!_currentUser) return null;
+        try {
+          var { data } = await _supabase.from('life_goals').select('amount, label, target_date').eq('user_id', _currentUser.id).maybeSingle();
+          if (data && data.amount) return { amount: data.amount, label: data.label, date: data.target_date };
+          return null;
+        } catch(e) { return null; }
+      },
+      async saveLifeGoal(goalData) {
+        if (!_currentUser) return;
+        try {
+          await _supabase.from('life_goals').upsert({
+            user_id: _currentUser.id, amount: goalData.amount, label: goalData.label, target_date: goalData.date
+          }, { onConflict: 'user_id' });
+        } catch(e) {}
+      },
+      async loadPomoData() {
+        if (!_currentUser) return null;
+        try {
+          var today = new Date().toISOString().slice(0, 10);
+          var { data } = await _supabase.from('pomodoro_sessions').select('sessions_today, total_sessions, today_date').eq('user_id', _currentUser.id).maybeSingle();
+          return data || null;
+        } catch(e) { return null; }
+      },
+      async savePomoData(sessionsToday, totalSessions) {
+        if (!_currentUser) return;
+        try {
+          var today = new Date().toISOString().slice(0, 10);
+          await _supabase.from('pomodoro_sessions').upsert({
+            user_id: _currentUser.id, today_date: today, sessions_today: sessionsToday, total_sessions: totalSessions
+          }, { onConflict: 'user_id' });
+        } catch(e) {}
+      },
+      async loadMindEntries() {
+        if (!_currentUser) return null;
+        try {
+          var { data } = await _supabase.from('unconscious_entries').select('id, from_pattern, to_pattern, trigger_text, catches, stage').eq('user_id', _currentUser.id).order('id', { ascending: true });
+          if (data && data.length > 0) {
+            return data.map(function(r) { return { id: r.id, from: r.from_pattern, to: r.to_pattern, trigger: r.trigger_text, catches: r.catches || 0, stage: r.stage || 0 }; });
+          }
+          return null;
+        } catch(e) { return null; }
+      },
+      async saveMindEntry(entry) {
+        if (!_currentUser) return;
+        try {
+          await _supabase.from('unconscious_entries').insert({
+            user_id: _currentUser.id, from_pattern: entry.from, to_pattern: entry.to, trigger_text: entry.trigger, catches: entry.catches || 0, stage: entry.stage || 0
+          });
+        } catch(e) {}
+      },
+      async updateMindEntry(id, updates) {
+        if (!_currentUser) return;
+        try {
+          var obj = {};
+          if (updates.catches !== undefined) obj.catches = updates.catches;
+          if (updates.stage !== undefined) obj.stage = updates.stage;
+          await _supabase.from('unconscious_entries').update(obj).eq('id', id).eq('user_id', _currentUser.id);
+        } catch(e) {}
+      },
+      async deleteMindEntry(id) {
+        if (!_currentUser) return;
+        try {
+          await _supabase.from('unconscious_entries').delete().eq('id', id).eq('user_id', _currentUser.id);
+        } catch(e) {}
+      }
+    };
+
+    // Supabase-aware wrappers (sync with localStorage cache + async Supabase)
+    function loadGoals(yr) {
+      return loadGoalsLocal(yr);
+    }
+    function saveGoals(data, yr) {
+      saveGoalsLocal(data, yr);
+      // Fire-and-forget: save each week individually to Supabase
+      if (_currentUser) {
+        var targetYr = yr || viewYear;
+        for (var wk in data) {
+          if (data.hasOwnProperty(wk)) {
+            SupaDB.saveGoals(wk, data[wk], targetYr);
+          }
+        }
+      }
+    }
+    function saveGoalsSingle(weekNum, tasksData, yr) {
+      // Save entire goals object locally
+      var allGoals = loadGoalsLocal(yr);
+      if (tasksData) { allGoals[weekNum] = tasksData; } else { delete allGoals[weekNum]; }
+      saveGoalsLocal(allGoals, yr);
+      // Fire-and-forget to Supabase
+      if (tasksData) { SupaDB.saveGoals(weekNum, tasksData, yr); }
+      else { SupaDB.deleteGoals(weekNum, yr); }
+    }
+
+    var goals = loadGoals(); saveGoalsLocal(goals);
 
     function weekHasTasks(w) { var g = goals[w]; return g && g.tasks && g.tasks.length > 0; }
     function weekTaskStats(w) {
@@ -1949,7 +2277,10 @@
       } else if (reflectionInput.value.trim()) {
         goals[openWeek] = { tasks: [], reflection: reflectionInput.value.trim() };
       } else { delete goals[openWeek]; }
-      saveGoals(goals);
+      saveGoalsLocal(goals);
+      // Fire-and-forget Supabase save for this specific week
+      if (goals[openWeek]) { SupaDB.saveGoals(openWeek, goals[openWeek]); }
+      else { SupaDB.deleteGoals(openWeek); }
       // Check if newly all-done for confetti
       var newStats = weekTaskStats(openWeek);
       var isNowAllDone = newStats.total > 0 && newStats.done === newStats.total;
@@ -1957,7 +2288,11 @@
       refreshAll(); closePanel();
     });
     document.getElementById("btnDelete").addEventListener("click", function() {
-      if (openWeek === null) return; delete goals[openWeek]; saveGoals(goals); refreshAll(); closePanel();
+      if (openWeek === null) return;
+      var wkToDelete = openWeek;
+      delete goals[openWeek]; saveGoalsLocal(goals);
+      SupaDB.deleteGoals(wkToDelete);
+      refreshAll(); closePanel();
     });
     // Repeat: copy uncompleted tasks to next week
     document.getElementById("btnRepeat").addEventListener("click", function() {
@@ -1970,7 +2305,7 @@
       var existingTasks = (existing && existing.tasks) ? existing.tasks : [];
       var merged = existingTasks.concat(tasksToRepeat).slice(0, MAX_TASKS);
       goals[nextW] = { tasks: merged, reflection: (existing && existing.reflection) || "" };
-      saveGoals(goals); refreshAll();
+      saveGoalsLocal(goals); SupaDB.saveGoals(nextW, goals[nextW]); refreshAll();
       alert("제 " + nextW + "주에 " + tasksToRepeat.length + "개 항목이 복사되었습니다.");
     });
 
@@ -2000,7 +2335,7 @@
 
     /* ─── Year Navigation ────────────────────────────── */
     function switchYear(yr) {
-      viewYear = yr; goals = loadGoals(); saveGoals(goals);
+      viewYear = yr; goals = loadGoals(); saveGoalsLocal(goals);
       var yearEl = document.getElementById("yearDisplay");
       yearEl.textContent = yr; yearEl.setAttribute("data-year", yr);
       var header = document.getElementById("headerEl");
@@ -2014,6 +2349,20 @@
       wastedCount = applyStates(); initStats(); initProgress();
       updateAchievementUI(); updateStreakUI(); buildMiniChart(); buildMonthlyChart(); updateInsights();
       renderYearlyGoal();
+      // Async load from Supabase for the new year
+      if (_currentUser) {
+        SupaDB.loadGoals(yr).then(function(supaGoals) {
+          if (supaGoals && Object.keys(supaGoals).length > 0) {
+            goals = supaGoals; saveGoalsLocal(goals, yr); refreshAll();
+          }
+        });
+        SupaDB.loadYearlyGoal(yr).then(function(val) {
+          if (val !== null && val !== undefined) {
+            localStorage.setItem("temporal-yearly-goal-" + yr, val);
+            renderYearlyGoal();
+          }
+        });
+      }
     }
     document.getElementById("yearPrev").addEventListener("click", function() { switchYear(viewYear - 1); });
     document.getElementById("yearNext").addEventListener("click", function() { switchYear(viewYear + 1); });
@@ -2024,7 +2373,10 @@
     var ygInput = document.getElementById("yearlyGoalInput"), ygEditing = false;
     function ygKey() { return "temporal-yearly-goal-" + viewYear; }
     function loadYearlyGoal() { try { return localStorage.getItem(ygKey()) || ""; } catch(e) { return ""; } }
-    function saveYearlyGoal(val) { try { localStorage.setItem(ygKey(), val); } catch(e) {} }
+    function saveYearlyGoal(val) {
+      try { localStorage.setItem(ygKey(), val); } catch(e) {}
+      SupaDB.saveYearlyGoal(val);
+    }
     function renderYearlyGoal() {
       var g = loadYearlyGoal();
       if (g) { ygText.textContent = g; ygText.style.display = ""; ygPlaceholder.style.display = "none"; }
@@ -2129,6 +2481,7 @@
       }
       function saveGoal(data) {
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+        SupaDB.saveLifeGoal(data);
       }
 
       var goal = loadGoal();
@@ -2352,6 +2705,7 @@
             cycleCount: pomoState.cycleCount
           }));
         } catch(e) {}
+        SupaDB.savePomoData(pomoState.sessionsToday, pomoState.totalFocusMin);
       }
       loadPomoData();
 
@@ -2610,6 +2964,10 @@
       function saveData(data) {
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
       }
+      // Supabase sync helpers for mind entries
+      function mindSyncAdd(entry) { SupaDB.saveMindEntry(entry); }
+      function mindSyncDelete(entry) { if (entry && entry.id) SupaDB.deleteMindEntry(entry.id); }
+      function mindSyncUpdate(entry) { if (entry && entry.id) SupaDB.updateMindEntry(entry.id, { catches: entry.catches, stage: entry.stage }); }
       var entries = loadData();
 
       function updateStats() {
@@ -2640,7 +2998,7 @@
             var delBtn = document.createElement("button");
             delBtn.className = "mind-entry-delete"; delBtn.textContent = "×";
             delBtn.addEventListener("click", function() {
-              entries.splice(idx, 1); saveData(entries); renderEntries();
+              var removed = entries.splice(idx, 1)[0]; mindSyncDelete(removed); saveData(entries); renderEntries();
             });
             entry.appendChild(delBtn);
 
@@ -2684,7 +3042,7 @@
             cBtn.textContent = "⚡ 또 그랬다";
             cBtn.addEventListener("click", function() {
               entries[idx].catches = (entries[idx].catches || 0) + 1;
-              saveData(entries); renderEntries();
+              mindSyncUpdate(entries[idx]); saveData(entries); renderEntries();
             });
             var cNum = document.createElement("span");
             cNum.className = "mind-counter-num";
@@ -2707,7 +3065,7 @@
                 sBtn.textContent = STAGES[si];
                 sBtn.addEventListener("click", function() {
                   entries[idx].stage = si;
-                  saveData(entries); renderEntries();
+                  mindSyncUpdate(entries[idx]); saveData(entries); renderEntries();
                 });
                 stageWrap.appendChild(sBtn);
               })(s);
@@ -2730,12 +3088,14 @@
       addBtn.addEventListener("click", function() {
         var f = fromInput.value.trim(), t = toInput.value.trim();
         if (!f || !t) return;
-        entries.push({
+        var newEntry = {
           from: f, to: t,
           trigger: triggerInput.value.trim(),
           catches: 0, stage: 0,
           created: new Date().toISOString()
-        });
+        };
+        entries.push(newEntry);
+        mindSyncAdd(newEntry);
         saveData(entries);
         fromInput.value = ""; toInput.value = ""; triggerInput.value = "";
         renderEntries();
