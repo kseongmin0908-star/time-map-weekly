@@ -104,31 +104,32 @@
     }
     .year-nav { display: flex; align-items: center; justify-content: center; gap: .5rem; }
     .year-nav-btn {
-      background: none; border: 1px solid rgba(212,165,116,.2); border-radius: 50%;
-      width: 36px; height: 36px; color: var(--gold-dim); font-size: 1rem;
+      background: rgba(212,165,116,.06); border: 1.5px solid rgba(212,165,116,.35); border-radius: 50%;
+      width: 36px; height: 36px; color: var(--gold); font-size: 1rem;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: all .2s; opacity: .6;
+      transition: all .2s; opacity: .8;
     }
-    .year-nav-btn:hover { border-color: var(--gold); color: var(--gold); opacity: 1; background: rgba(212,165,116,.08); }
+    .year-nav-btn:hover { border-color: var(--gold-bright); color: var(--gold-bright); opacity: 1; background: rgba(212,165,116,.12); box-shadow: 0 0 12px rgba(212,165,116,.2); }
     .year-display {
       font-family: 'Cormorant Garamond', serif;
       font-size: clamp(70px, 14vw, 180px); font-weight: 300;
-      letter-spacing: .08em; line-height: 1; color: #5a1515; opacity: .25;
+      letter-spacing: .08em; line-height: 1; color: #8a3030; opacity: .35;
       user-select: none; position: relative;
       transition: transform .4s, filter .4s;
+      -webkit-text-stroke: 0.5px rgba(255,150,100,.15);
     }
     .year-display:hover { transform: scale(1.03); }
     .year-display::after {
       content: attr(data-year); position: absolute; top: 0; left: 0; right: 0;
-      background: linear-gradient(180deg, #ffc299 0%, #ff9068 10%, #ff6b4a 25%, #ff4d4d 40%, #e63946 60%, #c41e3a 80%, #8b1a2b 100%);
+      background: linear-gradient(180deg, #ffd6b8 0%, #ffaa80 8%, #ff8c5a 20%, #ff6b4a 35%, #ff4d4d 50%, #e63946 65%, #c41e3a 80%, #a01530 100%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       background-clip: text; opacity: 1;
-      filter: drop-shadow(0 0 25px rgba(255, 140, 100, .7)) drop-shadow(0 0 60px rgba(230, 57, 70, .5)) drop-shadow(0 0 110px rgba(196, 30, 58, .3));
+      filter: drop-shadow(0 0 30px rgba(255, 160, 120, .8)) drop-shadow(0 0 70px rgba(255, 77, 77, .6)) drop-shadow(0 0 120px rgba(230, 57, 70, .4));
       animation: horse-fire 3.5s ease-in-out infinite alternate;
     }
     @keyframes horse-fire {
-      0% { filter: drop-shadow(0 0 25px rgba(255, 140, 100, .7)) drop-shadow(0 0 60px rgba(230, 57, 70, .5)) drop-shadow(0 0 110px rgba(196, 30, 58, .3)); }
-      100% { filter: drop-shadow(0 0 40px rgba(255, 194, 153, .85)) drop-shadow(0 0 90px rgba(255, 77, 77, .6)) drop-shadow(0 0 140px rgba(230, 57, 70, .4)); }
+      0% { filter: drop-shadow(0 0 30px rgba(255, 160, 120, .8)) drop-shadow(0 0 70px rgba(255, 77, 77, .6)) drop-shadow(0 0 120px rgba(230, 57, 70, .4)); }
+      100% { filter: drop-shadow(0 0 50px rgba(255, 214, 184, .9)) drop-shadow(0 0 100px rgba(255, 100, 80, .7)) drop-shadow(0 0 160px rgba(230, 57, 70, .5)); }
     }
     .viewing-other .year-display::after {
       background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 40%, var(--gold-dim) 100%);
@@ -306,9 +307,9 @@
     .week-current:hover { animation: fade-in-week .5s ease-out forwards; box-shadow: 0 0 30px rgba(255,251,230,.9),0 0 60px rgba(255,179,71,.5); }
 
     /* Future weeks */
-    .week-future { background: rgba(255,255,255,.02); border-color: rgba(140,135,128,.18); }
+    .week-future { background: rgba(255,255,255,.04); border-color: rgba(180,175,168,.3); box-shadow: inset 0 0 4px rgba(255,255,255,.03); }
     .week-future.has-goal { border-color: rgba(212,165,116,.5); background: rgba(212,165,116,.06); box-shadow: 0 0 6px rgba(212,165,116,.15); }
-    .week-future:hover { border-color: rgba(200,195,188,.5); box-shadow: 0 0 12px rgba(200,195,188,.2); background: rgba(200,195,188,.08); }
+    .week-future:hover { border-color: rgba(220,215,208,.6); box-shadow: 0 0 14px rgba(220,215,208,.25); background: rgba(220,215,208,.1); }
 
     /* ===== GRID LEGEND ===== */
     .grid-legend { display: flex; justify-content: center; gap: 1.2rem; margin-top: .8rem; flex-wrap: wrap; }
@@ -459,29 +460,22 @@
     }
     .progress-fill.active::after { opacity: 1; }
 
-    /* ===== DATA MANAGEMENT ===== */
-    .data-section {
-      width: 100%; max-width: 640px; margin-top: 1rem; margin-bottom: 1rem;
-      display: flex; justify-content: center; gap: .8rem; flex-wrap: wrap;
-    }
-    .data-btn {
-      padding: .45rem 1rem; border-radius: 6px; font-family: 'Noto Sans KR', sans-serif;
-      font-size: .65rem; font-weight: 500; cursor: pointer; letter-spacing: .05em;
-      transition: all .2s; border: 1px solid rgba(106,102,96,.2);
-      background: rgba(255,255,255,.03); color: var(--text-dim);
-    }
-    .data-btn:hover { border-color: var(--gold-dim); color: var(--gold); background: rgba(212,165,116,.06); }
-    #importFileInput { display: none; }
 
     /* ===== FOOTER ===== */
     .days-remaining {
-      text-align: center; margin-top: .8rem;
-      font-family: 'Noto Sans KR', sans-serif; font-size: .8rem; font-weight: 300; color: var(--text-dim);
+      text-align: center; margin-top: 1.5rem; padding: 1.2rem 0;
+      font-family: 'Noto Sans KR', sans-serif; font-size: 1.6rem; font-weight: 400; color: var(--text);
+      letter-spacing: .08em;
       opacity: 0; animation: fadein 1s ease-out 1.5s forwards; transition: color .3s;
     }
-    .days-remaining:hover { color: var(--text); }
-    .days-remaining b { color: var(--gold); font-weight: 700; font-family: 'JetBrains Mono', monospace; transition: color .3s, text-shadow .3s; }
-    .days-remaining:hover b { color: var(--gold-bright); text-shadow: 0 0 10px rgba(240,200,136,.4); }
+    .days-remaining:hover { color: var(--gold-bright); }
+    .days-remaining b {
+      color: var(--gold-bright); font-weight: 900; font-size: 2.2rem;
+      font-family: 'JetBrains Mono', monospace;
+      text-shadow: 0 0 15px rgba(240,200,136,.35);
+      transition: color .3s, text-shadow .3s;
+    }
+    .days-remaining:hover b { color: #fff; text-shadow: 0 0 20px rgba(240,200,136,.6), 0 0 40px rgba(255,140,90,.3); }
 
     /* ===== CONFETTI CANVAS ===== */
     #confettiCanvas {
@@ -925,6 +919,71 @@
       background: linear-gradient(90deg, var(--gold-dim), var(--gold));
       transition: width .5s linear;
     }
+    .music-divider { height: 1px; background: rgba(106,102,96,.15); margin: .8rem 0; }
+    .music-custom-section { display: flex; flex-direction: column; gap: .5rem; }
+    .music-custom-label { font-family: 'Noto Sans KR', sans-serif; font-size: .7rem; font-weight: 500; color: var(--text-dim); }
+    .music-custom-desc {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .6rem; color: rgba(196,191,185,.5);
+      line-height: 1.5; font-weight: 300;
+    }
+    .music-custom-input-wrap { display: flex; gap: .4rem; }
+    .music-custom-input {
+      flex: 1; padding: .4rem .6rem; border-radius: 6px; border: 1px solid rgba(106,102,96,.25);
+      background: rgba(255,255,255,.04); color: var(--text); font-size: .7rem;
+      font-family: 'JetBrains Mono', monospace; outline: none; transition: border-color .2s;
+    }
+    .music-custom-input:focus { border-color: var(--gold-dim); }
+    .music-custom-input::placeholder { color: rgba(196,191,185,.3); }
+    .music-custom-apply {
+      padding: .4rem .7rem; border-radius: 6px; border: 1px solid rgba(212,165,116,.3);
+      background: rgba(212,165,116,.1); color: var(--gold); font-size: .65rem;
+      font-family: 'Noto Sans KR', sans-serif; cursor: pointer; transition: all .2s; white-space: nowrap;
+    }
+    .music-custom-apply:hover { background: rgba(212,165,116,.2); border-color: var(--gold); }
+    .music-loop-section {
+      display: flex; align-items: center; justify-content: space-between; margin-top: .2rem;
+    }
+    .music-loop-label {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .7rem; font-weight: 500; color: var(--text-dim);
+    }
+    .music-loop-toggle-text { font-size: .6rem; color: rgba(196,191,185,.4); }
+    .music-loop-switch { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+    .music-loop-switch input { opacity: 0; width: 0; height: 0; }
+    .music-loop-slider {
+      position: absolute; inset: 0; border-radius: 10px; cursor: pointer;
+      background: rgba(106,102,96,.25); transition: all .3s;
+    }
+    .music-loop-slider::before {
+      content: ""; position: absolute; left: 2px; top: 2px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--text-dim); transition: all .3s;
+    }
+    .music-loop-switch input:checked + .music-loop-slider {
+      background: rgba(212,165,116,.4);
+    }
+    .music-loop-switch input:checked + .music-loop-slider::before {
+      transform: translateX(16px); background: var(--gold-bright);
+    }
+    .music-loop-controls { display: flex; flex-direction: column; gap: .4rem; }
+    .music-loop-row { display: flex; align-items: center; gap: .4rem; }
+    .music-loop-field { flex: 1; display: flex; flex-direction: column; gap: .15rem; }
+    .music-loop-field-label { font-family: 'Noto Sans KR', sans-serif; font-size: .55rem; color: rgba(196,191,185,.4); }
+    .music-loop-time {
+      width: 100%; padding: .35rem .5rem; border-radius: 6px;
+      border: 1px solid rgba(106,102,96,.25); background: rgba(255,255,255,.04);
+      color: var(--gold-bright); font-size: .75rem; font-family: 'JetBrains Mono', monospace;
+      text-align: center; outline: none; transition: border-color .2s;
+    }
+    .music-loop-time:focus { border-color: var(--gold-dim); }
+    .music-loop-time::placeholder { color: rgba(196,191,185,.25); }
+    .music-loop-dash { color: var(--text-dim); font-size: .8rem; margin-top: .8rem; }
+    .music-loop-hint { font-family: 'Noto Sans KR', sans-serif; font-size: .55rem; color: rgba(196,191,185,.3); }
+    .music-custom-reset {
+      padding: .3rem .5rem; border-radius: 6px; border: 1px solid rgba(106,102,96,.15);
+      background: transparent; color: var(--text-dim); font-size: .6rem;
+      font-family: 'Noto Sans KR', sans-serif; cursor: pointer; transition: all .2s; align-self: flex-start;
+    }
+    .music-custom-reset:hover { color: var(--text); border-color: rgba(106,102,96,.3); }
     #ytPlayer { position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; pointer-events: none; }
 
     /* ===== TOOLTIP ===== */
@@ -1222,6 +1281,13 @@
     }
     .user-avatar { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--gold-dim); }
     .user-name { flex: 1; font-size: .85rem; color: var(--text-dim); font-family: 'Noto Sans KR', sans-serif; }
+    .user-export-md {
+      padding: .5rem 1.2rem; border-radius: 8px; border: 1px solid rgba(138,92,246,.25);
+      background: rgba(138,92,246,.05); color: #a78bfa; font-size: .8rem;
+      font-family: 'Noto Sans KR', sans-serif; cursor: pointer; transition: all .2s;
+      margin-top: 1.2rem; letter-spacing: .03em;
+    }
+    .user-export-md:hover { background: rgba(138,92,246,.12); border-color: rgba(138,92,246,.5); color: #c4b5fd; box-shadow: 0 0 12px rgba(138,92,246,.15); }
     .user-logout {
       padding: .35rem .75rem; border-radius: 8px; border: 1px solid rgba(239,68,68,.3);
       background: transparent; color: var(--danger); font-size: .75rem;
@@ -1291,7 +1357,7 @@
   <button class="music-fab" id="musicFab" title="음악">🎵</button>
   <div class="music-panel" id="musicPanel">
     <div class="music-panel-title">NOW PLAYING</div>
-    <div class="music-panel-track">No Time For Caution<br><span style="font-size:.75rem;color:var(--text-dim);font-family:'Noto Sans KR',sans-serif;font-weight:400">Hans Zimmer — Interstellar OST</span></div>
+    <div class="music-panel-track" id="musicTrackInfo">No Time For Caution<br><span style="font-size:.75rem;color:var(--text-dim);font-family:'Noto Sans KR',sans-serif;font-weight:400">Hans Zimmer — Interstellar OST</span></div>
     <div class="music-controls">
       <button class="music-play-btn" id="musicPlayBtn">▶</button>
       <div class="music-vol-wrap">
@@ -1300,6 +1366,37 @@
       </div>
     </div>
     <div class="music-progress"><div class="music-progress-fill" id="musicProgressFill"></div></div>
+    <div class="music-divider"></div>
+    <div class="music-custom-section">
+      <div class="music-custom-label">🎧 나만의 음악 설정</div>
+      <div class="music-custom-desc">경각심과 동기부여를 일으키는 긴장되는 음악으로 설정하시는 것을 권장드립니다</div>
+      <div class="music-custom-input-wrap">
+        <input type="text" class="music-custom-input" id="musicCustomUrl" placeholder="YouTube URL 붙여넣기">
+        <button class="music-custom-apply" id="musicCustomApply">적용</button>
+      </div>
+      <div class="music-loop-section">
+        <div class="music-loop-label">✂️ 구간 반복 <span class="music-loop-toggle-text" id="musicLoopToggleText">(OFF)</span></div>
+        <label class="music-loop-switch">
+          <input type="checkbox" id="musicLoopToggle">
+          <span class="music-loop-slider"></span>
+        </label>
+      </div>
+      <div class="music-loop-controls" id="musicLoopControls" style="display:none">
+        <div class="music-loop-row">
+          <div class="music-loop-field">
+            <span class="music-loop-field-label">시작</span>
+            <input type="text" class="music-loop-time" id="musicLoopStart" placeholder="0:00" value="0:00">
+          </div>
+          <span class="music-loop-dash">—</span>
+          <div class="music-loop-field">
+            <span class="music-loop-field-label">끝</span>
+            <input type="text" class="music-loop-time" id="musicLoopEnd" placeholder="끝까지">
+          </div>
+        </div>
+        <div class="music-loop-hint">형식: 분:초 (예: 1:30, 3:45)</div>
+      </div>
+      <button class="music-custom-reset" id="musicCustomReset">🔄 기본 음악으로 되돌리기</button>
+    </div>
   </div>
 
   <!-- Pomodoro Trigger -->
@@ -1580,11 +1677,8 @@
 
     <div class="days-remaining" id="daysRemaining"></div>
 
-    <div class="data-section">
-      <button class="data-btn" id="btnExport">📥 데이터 내보내기</button>
-      <button class="data-btn" id="btnImport">📤 데이터 가져오기</button>
-      <input type="file" id="importFileInput" accept=".json">
-    </div>
+    <button class="user-export-md" id="userExportMd" title="마크다운으로 내보내기">📝 .md 내보내기</button>
+
   </div>
 
   <script>
@@ -1659,33 +1753,43 @@
       if (typeof renderYearlyGoal === "function") renderYearlyGoal();
     }
 
-    // Check existing session
-    _supabase.auth.getSession().then(function(res) {
-      if (res.data.session) {
-        showApp(res.data.session.user);
-        // Async load from Supabase after UI shows
-        initAppData();
-      } else {
-        authScreen.style.display = "flex";
-        authLoading.style.display = "none";
-        googleBtn.style.display = "flex";
-        appEl.style.display = "none";
-      }
-    });
+    // Dev mode: skip auth on localhost
+    var IS_LOCAL = location.hostname === "localhost" || location.hostname === "127.0.0.1";
 
-    // React to auth state changes
-    _supabase.auth.onAuthStateChange(function(event, session) {
-      if (event === "SIGNED_IN" && session) {
-        showApp(session.user);
-        initAppData();
-      } else if (event === "SIGNED_OUT") {
-        _currentUser = null;
-        authScreen.style.display = "flex";
-        authLoading.style.display = "none";
-        googleBtn.style.display = "flex";
-        appEl.style.display = "none";
-      }
-    });
+    if (IS_LOCAL) {
+      // Localhost → 로그인 없이 바로 앱 표시 (localStorage만 사용)
+      authScreen.style.display = "none";
+      appEl.style.display = "flex";
+      document.getElementById("userBar").style.display = "flex";
+      document.getElementById("userAvatar").src = "";
+      document.getElementById("userName").textContent = "🛠 로컬 개발 모드";
+    } else {
+      // Production → Google OAuth
+      _supabase.auth.getSession().then(function(res) {
+        if (res.data.session) {
+          showApp(res.data.session.user);
+          initAppData();
+        } else {
+          authScreen.style.display = "flex";
+          authLoading.style.display = "none";
+          googleBtn.style.display = "flex";
+          appEl.style.display = "none";
+        }
+      });
+
+      _supabase.auth.onAuthStateChange(function(event, session) {
+        if (event === "SIGNED_IN" && session) {
+          showApp(session.user);
+          initAppData();
+        } else if (event === "SIGNED_OUT") {
+          _currentUser = null;
+          authScreen.style.display = "flex";
+          authLoading.style.display = "none";
+          googleBtn.style.display = "flex";
+          appEl.style.display = "none";
+        }
+      });
+    }
 
     /* ─── Date Utilities ─────────────────────────────── */
     function getISOWeek(d) {
@@ -2389,40 +2493,134 @@
     ygInput.addEventListener("blur", function() { setTimeout(function(){finishEditYG(true);}, 100); });
     renderYearlyGoal();
 
-    /* ─── Data Export / Import ────────────────────────── */
-    document.getElementById("btnExport").addEventListener("click", function() {
-      var allData = { goals: {}, yearlyGoals: {}, exportDate: new Date().toISOString().slice(0,10) };
-      for (var y = 2020; y <= realYear + 1; y++) {
-        var gKey = "temporal-goals-" + y, yKey = "temporal-yearly-goal-" + y;
-        var gVal = localStorage.getItem(gKey), yVal = localStorage.getItem(yKey);
-        if (gVal) try { allData.goals[y] = JSON.parse(gVal); } catch(e) {}
-        if (yVal) allData.yearlyGoals[y] = yVal;
+    /* ─── Markdown Export (Obsidian Compatible) ──────── */
+    document.getElementById("userExportMd").addEventListener("click", function() {
+      var yr = viewYear;
+      var g = loadGoals(yr);
+      var yg = loadYearlyGoal();
+      var lg; try { lg = JSON.parse(localStorage.getItem("temporal-life-goal")); } catch(e) { lg = null; }
+      var pomo; try { pomo = JSON.parse(localStorage.getItem("temporal-pomo")); } catch(e) { pomo = null; }
+      var mind; try { mind = JSON.parse(localStorage.getItem("temporal-unconscious")) || []; } catch(e) { mind = []; }
+
+      var today = new Date().toISOString().slice(0, 10);
+      var mn = ["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"];
+      var STAGES = ["🔴 인지 단계", "🟡 의식적 실행", "🟢 무의식화"];
+      var vcw = getVCW();
+
+      // --- Stats ---
+      var totalSet = 0, totalDone = 0, wasted = 0;
+      for (var w = 1; w <= 52; w++) {
+        if (w > vcw) break;
+        var wg = g[w];
+        if (wg && wg.tasks && wg.tasks.length > 0) {
+          totalSet += wg.tasks.length;
+          for (var t = 0; t < wg.tasks.length; t++) { if (wg.tasks[t].completed) totalDone++; }
+        } else { wasted++; }
       }
-      var blob = new Blob([JSON.stringify(allData, null, 2)], { type: "application/json" });
-      var a = document.createElement("a"); a.href = URL.createObjectURL(blob);
-      a.download = "temporal-map-backup-" + allData.exportDate + ".json";
-      a.click(); URL.revokeObjectURL(a.href);
-    });
-    document.getElementById("btnImport").addEventListener("click", function() {
-      document.getElementById("importFileInput").click();
-    });
-    document.getElementById("importFileInput").addEventListener("change", function(e) {
-      var file = e.target.files[0]; if (!file) return;
-      var reader = new FileReader();
-      reader.onload = function(ev) {
-        try {
-          var data = JSON.parse(ev.target.result);
-          if (data.goals) {
-            for (var y in data.goals) { if (data.goals.hasOwnProperty(y)) localStorage.setItem("temporal-goals-" + y, JSON.stringify(data.goals[y])); }
+      var rate = totalSet > 0 ? Math.round(totalDone / totalSet * 100) : 0;
+
+      // --- Build Markdown ---
+      var md = "";
+
+      // YAML Frontmatter
+      md += "---\n";
+      md += "title: \"시간의 지도 — " + yr + "년\"\n";
+      md += "year: " + yr + "\n";
+      md += "exported: " + today + "\n";
+      md += "tags:\n  - 시간의지도\n  - 목표관리\n  - 주간회고\n  - \"" + yr + "년\"\n";
+      md += "---\n\n";
+
+      // Header
+      md += "# 🗺️ 시간의 지도 — " + yr + "년\n\n";
+      md += "> Exported: " + today + "\n\n";
+
+      // Yearly Goal
+      md += "## 🎯 올해의 목표\n\n";
+      if (yg) md += "> " + yg + "\n\n";
+      else md += "> *(설정되지 않음)*\n\n";
+
+      // Life Goal
+      if (lg && lg.amount) {
+        md += "## 💎 인생 목표\n\n";
+        md += "| 항목 | 내용 |\n|------|------|\n";
+        md += "| 목표 | **" + lg.amount + "** |\n";
+        md += "| 분류 | " + (lg.label || "-") + " |\n";
+        md += "| 기한 | " + (lg.date || "-") + " |\n\n";
+      }
+
+      // Annual Stats
+      md += "## 📊 연간 통계\n\n";
+      md += "| 항목 | 수치 |\n|------|------|\n";
+      md += "| 현재 주차 | " + vcw + " / 52주 |\n";
+      md += "| 설정된 목표 | " + totalSet + "개 |\n";
+      md += "| 완료 | " + totalDone + "개 |\n";
+      md += "| 달성률 | " + rate + "% |\n";
+      md += "| 공백 주 | " + wasted + "주 |\n\n";
+
+      // Weekly Goals by Month
+      md += "## 📅 주간 목표\n\n";
+      for (var m = 0; m < 12; m++) {
+        var monthWeeks = [];
+        for (var wk = 1; wk <= 52; wk++) {
+          var wr = weekRange(yr, wk);
+          if (wr.startMonth === m) monthWeeks.push(wk);
+        }
+        if (monthWeeks.length === 0) continue;
+
+        md += "### " + mn[m] + "\n\n";
+        var hasAny = false;
+        for (var j = 0; j < monthWeeks.length; j++) {
+          var week = monthWeeks[j];
+          var wData = g[week];
+          if (wData && wData.tasks && wData.tasks.length > 0) {
+            hasAny = true;
+            var wr2 = weekRange(yr, week);
+            md += "**" + week + "주차** (" + wr2.start + " ~ " + wr2.end + ")\n";
+            for (var ti = 0; ti < wData.tasks.length; ti++) {
+              var task = wData.tasks[ti];
+              md += "- [" + (task.completed ? "x" : " ") + "] " + task.text + "\n";
+            }
+            md += "\n";
+          } else if (week <= vcw) {
+            hasAny = true;
+            md += "**" + week + "주차** — ⚠️ 목표 미설정\n\n";
           }
-          if (data.yearlyGoals) {
-            for (var y2 in data.yearlyGoals) { if (data.yearlyGoals.hasOwnProperty(y2)) localStorage.setItem("temporal-yearly-goal-" + y2, data.yearlyGoals[y2]); }
-          }
-          switchYear(viewYear);
-          alert("데이터를 성공적으로 불러왔습니다!");
-        } catch(err) { alert("파일을 읽을 수 없습니다. 올바른 JSON 파일인지 확인하세요."); }
-      };
-      reader.readAsText(file); e.target.value = "";
+        }
+        if (!hasAny) md += "*(아직 데이터 없음)*\n\n";
+      }
+
+      // Mind Reframing
+      if (mind.length > 0) {
+        md += "## 🧠 무의식 리프레이밍\n\n";
+        md += "| 기존 패턴 | 새로운 패턴 | 트리거 | 인지 횟수 | 단계 |\n";
+        md += "|-----------|------------|--------|----------|------|\n";
+        for (var mi = 0; mi < mind.length; mi++) {
+          var e = mind[mi];
+          md += "| " + (e.from || "-") + " | " + (e.to || "-") + " | " + (e.trigger || "-") + " | " + (e.catches || 0) + "회 | " + STAGES[e.stage || 0] + " |\n";
+        }
+        md += "\n";
+      }
+
+      // Pomodoro
+      if (pomo) {
+        md += "## 🍅 포모도로\n\n";
+        md += "- 오늘 세션: **" + (pomo.sessionsToday || 0) + "회**\n";
+        md += "- 총 집중 시간: **" + (pomo.totalFocusMin || 0) + "분**\n\n";
+      }
+
+      // Footer
+      md += "---\n\n";
+      md += "*Generated by [시간의 지도](https://time-map-weekly.pages.dev) on " + today + "*\n";
+
+      // Download
+      var blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "시간의지도_" + yr + "_" + today + ".md";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
     });
 
     /* ─── Motivational Quotes ────────────────────────── */
@@ -2545,30 +2743,129 @@
 
     /* ─── Music Player (YouTube IFrame API) ─────────── */
     (function() {
-      var YT_VIDEO_ID = "m3zvVGJrTP8";
+      var DEFAULT_VIDEO_ID = "m3zvVGJrTP8";
+      var DEFAULT_TITLE = "No Time For Caution";
+      var DEFAULT_ARTIST = "Hans Zimmer — Interstellar OST";
+      var STORAGE_KEY = "temporal-music";
+
+      // Load saved music or use default
+      function loadMusicSetting() {
+        try { var d = JSON.parse(localStorage.getItem(STORAGE_KEY)); return d && d.videoId ? d : null; }
+        catch(e) { return null; }
+      }
+      function saveMusicSetting(videoId, title, loopStart, loopEnd) {
+        try {
+          var obj = { videoId: videoId, title: title };
+          if (loopStart !== undefined) obj.loopStart = loopStart;
+          if (loopEnd !== undefined) obj.loopEnd = loopEnd;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+        } catch(e) {}
+      }
+      function clearMusicSetting() {
+        try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+      }
+
+      // Time format helpers (m:ss ↔ seconds)
+      function parseTime(str) {
+        if (!str || !str.trim()) return null;
+        var parts = str.trim().split(":");
+        if (parts.length === 2) return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+        if (parts.length === 1) return parseInt(parts[0], 10);
+        if (parts.length === 3) return parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseInt(parts[2], 10);
+        return null;
+      }
+      function formatTime(sec) {
+        if (sec === null || sec === undefined || isNaN(sec)) return "";
+        sec = Math.floor(sec);
+        var m = Math.floor(sec / 60), s = sec % 60;
+        return m + ":" + (s < 10 ? "0" : "") + s;
+      }
+
+      var saved = loadMusicSetting();
+      var currentVideoId = saved ? saved.videoId : DEFAULT_VIDEO_ID;
+      var loopEnabled = saved && (saved.loopStart !== undefined || saved.loopEnd !== undefined);
+      var loopStartSec = saved ? (saved.loopStart || null) : null;
+      var loopEndSec = saved ? (saved.loopEnd || null) : null;
+
       var fab = document.getElementById("musicFab");
       var panel = document.getElementById("musicPanel");
       var playBtn = document.getElementById("musicPlayBtn");
       var volSlider = document.getElementById("musicVolSlider");
       var volIcon = document.getElementById("musicVolIcon");
       var progressFill = document.getElementById("musicProgressFill");
+      var trackInfo = document.getElementById("musicTrackInfo");
+      var customUrlInput = document.getElementById("musicCustomUrl");
+      var customApply = document.getElementById("musicCustomApply");
+      var customReset = document.getElementById("musicCustomReset");
+      var loopToggle = document.getElementById("musicLoopToggle");
+      var loopControls = document.getElementById("musicLoopControls");
+      var loopToggleText = document.getElementById("musicLoopToggleText");
+      var loopStartInput = document.getElementById("musicLoopStart");
+      var loopEndInput = document.getElementById("musicLoopEnd");
       var player = null, isReady = false, isPlaying = false, panelOpen = false;
       var progressInterval = null;
+      var autoplayAttempted = false;
+      var loopCheckInterval = null;
+
+      // Restore loop UI state
+      if (loopEnabled) {
+        loopToggle.checked = true;
+        loopControls.style.display = "";
+        loopToggleText.textContent = "(ON)";
+        loopToggleText.style.color = "var(--gold)";
+        if (loopStartSec !== null) loopStartInput.value = formatTime(loopStartSec);
+        if (loopEndSec !== null) loopEndInput.value = formatTime(loopEndSec);
+      }
+
+      // Update track display
+      function updateTrackDisplay(title, artist) {
+        trackInfo.innerHTML = title + '<br><span style="font-size:.75rem;color:var(--text-dim);font-family:\'Noto Sans KR\',sans-serif;font-weight:400">' + artist + '</span>';
+      }
+      if (saved) {
+        updateTrackDisplay(saved.title || "커스텀 음악", "사용자 설정");
+      }
+
+      // Extract YouTube video ID from URL
+      function extractVideoId(url) {
+        if (!url) return null;
+        // Already a video ID (11 chars)
+        if (/^[A-Za-z0-9_-]{11}$/.test(url.trim())) return url.trim();
+        var patterns = [
+          /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/)([A-Za-z0-9_-]{11})/,
+          /youtube\.com\/shorts\/([A-Za-z0-9_-]{11})/
+        ];
+        for (var i = 0; i < patterns.length; i++) {
+          var m = url.match(patterns[i]);
+          if (m) return m[1];
+        }
+        return null;
+      }
 
       // Load YouTube IFrame API
       var tag = document.createElement("script");
       tag.src = "https://www.youtube.com/iframe_api";
       document.head.appendChild(tag);
 
-      window.onYouTubeIframeAPIReady = function() {
+      function createPlayer(videoId) {
+        currentVideoId = videoId;
+        if (player && player.destroy) { try { player.destroy(); } catch(e) {} }
         player = new YT.Player("ytPlayer", {
           height: "1", width: "1",
-          videoId: YT_VIDEO_ID,
-          playerVars: { autoplay: 0, loop: 1, playlist: YT_VIDEO_ID, controls: 0, disablekb: 1, fs: 0, modestbranding: 1, rel: 0 },
+          videoId: videoId,
+          playerVars: { autoplay: 1, loop: 1, playlist: videoId, controls: 0, disablekb: 1, fs: 0, modestbranding: 1, rel: 0 },
           events: {
             onReady: function(e) {
               isReady = true;
               e.target.setVolume(parseInt(volSlider.value, 10));
+              // Seek to loop start if set
+              if (loopEnabled && loopStartSec) {
+                e.target.seekTo(loopStartSec, true);
+              }
+              // Autoplay on page load
+              if (!autoplayAttempted) {
+                autoplayAttempted = true;
+                e.target.playVideo();
+              }
             },
             onStateChange: function(e) {
               if (e.data === YT.PlayerState.PLAYING) {
@@ -2583,6 +2880,10 @@
             }
           }
         });
+      }
+
+      window.onYouTubeIframeAPIReady = function() {
+        createPlayer(currentVideoId);
       };
 
       function startProgress() {
@@ -2591,8 +2892,12 @@
           if (player && isReady && isPlaying) {
             var cur = player.getCurrentTime(), dur = player.getDuration();
             if (dur > 0) progressFill.style.width = ((cur / dur) * 100) + "%";
+            // Loop section check
+            if (loopEnabled && loopEndSec !== null && cur >= loopEndSec) {
+              player.seekTo(loopStartSec || 0, true);
+            }
           }
-        }, 500);
+        }, 300);
       }
       function stopProgress() { if (progressInterval) { clearInterval(progressInterval); progressInterval = null; } }
 
@@ -2625,6 +2930,70 @@
         if (!isReady) return;
         if (player.isMuted()) { player.unMute(); volSlider.value = player.getVolume(); volIcon.textContent = "🔊"; }
         else { player.mute(); volIcon.textContent = "🔇"; }
+      });
+
+      // Custom music: apply
+      customApply.addEventListener("click", function() {
+        var url = customUrlInput.value.trim();
+        var vid = extractVideoId(url);
+        if (!vid) { customUrlInput.style.borderColor = "#ef4444"; setTimeout(function(){ customUrlInput.style.borderColor = ""; }, 1500); return; }
+        isReady = false; isPlaying = false; autoplayAttempted = false;
+        progressFill.style.width = "0%";
+        saveMusicSetting(vid, "커스텀 음악");
+        updateTrackDisplay("커스텀 음악", "사용자 설정 · " + vid);
+        createPlayer(vid);
+        customUrlInput.value = "";
+      });
+
+      // Loop toggle
+      loopToggle.addEventListener("change", function() {
+        loopEnabled = loopToggle.checked;
+        loopControls.style.display = loopEnabled ? "" : "none";
+        loopToggleText.textContent = loopEnabled ? "(ON)" : "(OFF)";
+        loopToggleText.style.color = loopEnabled ? "var(--gold)" : "";
+        if (!loopEnabled) {
+          loopStartSec = null; loopEndSec = null;
+          loopStartInput.value = "0:00"; loopEndInput.value = "";
+        }
+        saveCurrentLoop();
+      });
+
+      // Loop time inputs
+      function saveCurrentLoop() {
+        var s = loadMusicSetting();
+        var vid = s ? s.videoId : currentVideoId;
+        var title = s ? s.title : DEFAULT_TITLE;
+        if (loopEnabled) {
+          loopStartSec = parseTime(loopStartInput.value);
+          loopEndSec = parseTime(loopEndInput.value);
+          saveMusicSetting(vid, title, loopStartSec, loopEndSec);
+        } else {
+          saveMusicSetting(vid, title);
+        }
+      }
+      loopStartInput.addEventListener("change", function() {
+        loopStartSec = parseTime(loopStartInput.value);
+        saveCurrentLoop();
+        if (isReady && loopStartSec !== null) player.seekTo(loopStartSec, true);
+      });
+      loopEndInput.addEventListener("change", function() {
+        loopEndSec = parseTime(loopEndInput.value);
+        saveCurrentLoop();
+      });
+
+      // Custom music: reset to default
+      customReset.addEventListener("click", function() {
+        clearMusicSetting();
+        loopEnabled = false; loopStartSec = null; loopEndSec = null;
+        loopToggle.checked = false;
+        loopControls.style.display = "none";
+        loopToggleText.textContent = "(OFF)";
+        loopToggleText.style.color = "";
+        loopStartInput.value = "0:00"; loopEndInput.value = "";
+        isReady = false; isPlaying = false; autoplayAttempted = false;
+        progressFill.style.width = "0%";
+        updateTrackDisplay(DEFAULT_TITLE, DEFAULT_ARTIST);
+        createPlayer(DEFAULT_VIDEO_ID);
       });
 
       // Close panel on outside click
