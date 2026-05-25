@@ -1737,7 +1737,14 @@
     .comment-name {
       font-family: 'Noto Sans KR', sans-serif; font-size: .6rem; font-weight: 600;
       color: var(--text-dim); margin-bottom: .15rem;
+      display: flex; align-items: center; gap: .3rem;
     }
+    .comment-delete-btn {
+      margin-left: auto; background: none; border: none; color: rgba(255,255,255,.2);
+      font-size: .55rem; cursor: pointer; padding: 0 .2rem; line-height: 1;
+      transition: color .2s;
+    }
+    .comment-delete-btn:hover { color: #f87171; }
     .comment-text {
       font-family: 'Noto Sans KR', sans-serif; font-size: .7rem; color: var(--text);
       line-height: 1.6; white-space: pre-wrap;
@@ -4934,7 +4941,7 @@
 
         // Is author?
         var isAuthor = _currentUser && item.user_id === _currentUser.id;
-        var aiBtnHtml = isAuthor && item.feed_type !== 'ai_analysis' && item.feed_type !== 'free'
+        var aiBtnHtml = isAuthor && item.feed_type !== 'ai_analysis'
           ? '<button class="feed-ai-btn" data-feed-id="' + item.id + '">🤖 AI 분석</button>'
           : '';
         var authorBtns = isAuthor && item.feed_type !== 'ai_analysis'
@@ -5131,30 +5138,44 @@
         _supabase.from('feed_comments').select('*').eq('feed_id', feedId).order('created_at', { ascending: true })
           .then(function(res) {
             var comments = res.data || [];
-            var html = '<div class="feed-comments-list">';
+            var listEl = document.createElement('div');
+            listEl.className = 'feed-comments-list';
             if (comments.length === 0) {
-              html += '<div style="text-align:center;padding:.4rem;font-size:.65rem;color:var(--text-dim)">아직 댓글이 없습니다.</div>';
+              listEl.innerHTML = '<div style="text-align:center;padding:.4rem;font-size:.65rem;color:var(--text-dim)">아직 댓글이 없습니다.</div>';
             }
             comments.forEach(function(c) {
               var isAI = c.is_ai;
+              var canDelete = _currentUser && (c.user_id === _currentUser.id);
               var avHtml = isAI ? '<div class="comment-avatar ai-avatar-sm">🤖</div>'
                 : (c.avatar_url ? '<img class="comment-avatar" src="' + c.avatar_url + '" alt="">'
                 : '<div class="comment-avatar" style="background:rgba(212,165,116,.12);display:flex;align-items:center;justify-content:center;font-size:.5rem">👤</div>');
-              html += '<div class="comment-item' + (isAI ? ' ai-comment' : '') + '">' +
-                avHtml +
+              var delBtnHtml = canDelete
+                ? '<button class="comment-delete-btn" data-comment-id="' + c.id + '" title="삭제">✕</button>'
+                : '';
+              var row = document.createElement('div');
+              row.className = 'comment-item' + (isAI ? ' ai-comment' : '');
+              row.innerHTML = avHtml +
                 '<div class="comment-body">' +
-                  '<div class="comment-name">' + (isAI ? '🤖 Claude AI' : escH(c.display_name || '익명')) + '</div>' +
+                  '<div class="comment-name">' + (isAI ? '🤖 Claude AI' : escH(c.display_name || '익명')) + delBtnHtml + '</div>' +
                   '<div class="comment-text">' + escH(c.content) + '</div>' +
                   '<span class="comment-time">' + getTimeAgo(c.created_at) + '</span>' +
-                '</div></div>';
+                '</div>';
+              if (canDelete) {
+                row.querySelector('.comment-delete-btn').addEventListener('click', function() {
+                  deleteComment(c.id, feedId, container);
+                });
+              }
+              listEl.appendChild(row);
             });
-            html += '</div>';
+
+            container.innerHTML = '';
+            container.appendChild(listEl);
             // Comment input
-            html += '<div class="comment-input-wrap">' +
-              '<input type="text" class="comment-input" placeholder="댓글을 입력하세요..." data-feed-id="' + feedId + '">' +
-              '<button class="comment-submit" data-feed-id="' + feedId + '">등록</button>' +
-            '</div>';
-            container.innerHTML = html;
+            var inputWrap = document.createElement('div');
+            inputWrap.className = 'comment-input-wrap';
+            inputWrap.innerHTML = '<input type="text" class="comment-input" placeholder="댓글을 입력하세요..." data-feed-id="' + feedId + '">' +
+              '<button class="comment-submit" data-feed-id="' + feedId + '">등록</button>';
+            container.appendChild(inputWrap);
 
             // Submit event
             var submitBtn = container.querySelector('.comment-submit');
@@ -5162,6 +5183,14 @@
             submitBtn.addEventListener('click', function() { submitComment(feedId, inp, container); });
             inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') submitComment(feedId, inp, container); });
           });
+      }
+
+      function deleteComment(commentId, feedId, container) {
+        _supabase.from('feed_comments').delete().eq('id', commentId).then(function() {
+          feedCommentCounts[feedId] = Math.max((feedCommentCounts[feedId] || 1) - 1, 0);
+          loadComments(feedId, container);
+          renderFeed();
+        });
       }
 
       function submitComment(feedId, inputEl, container) {
