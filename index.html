@@ -4867,6 +4867,9 @@
             '<button class="feed-action-btn" data-action="comment" data-feed-id="' + item.id + '">' +
               '<span class="action-icon">💬</span> ' + commentCount +
             '</button>' +
+            '<button class="feed-action-btn feed-copy-btn" data-action="copy" data-feed-id="' + item.id + '" title="텍스트 복사">' +
+              '<span class="action-icon">📋</span>' +
+            '</button>' +
             aiBtnHtml +
           '</div>' +
           '<div class="feed-comments" data-feed-id="' + item.id + '" style="display:none"></div>';
@@ -4884,8 +4887,54 @@
         // Event: Delete
         var delB = card.querySelector('.feed-delete-btn');
         if (delB) delB.addEventListener('click', function() { deletePost(item); });
+        // Event: Copy
+        card.querySelector('[data-action="copy"]').addEventListener('click', function() { copyPostText(item, this); });
 
         return card;
+      }
+
+      /* ── Copy Post to Clipboard ── */
+      function contentToText(type, content, displayName) {
+        var lines = [];
+        var dateStr = content.date ? '[' + content.date + '] ' : '';
+        if (type === 'daily') {
+          lines.push(dateStr + '📋 오늘의 목표');
+          var tasks = content.tasks || [];
+          var done = tasks.filter(function(t) { return t.completed; }).length;
+          tasks.forEach(function(t) { lines.push((t.completed ? '✅ ' : '☐ ') + t.text); });
+          lines.push('달성률: ' + done + '/' + tasks.length);
+          if (content.note) lines.push('💬 ' + content.note);
+        } else if (type === 'retro') {
+          lines.push(dateStr + '📝 오늘의 회고 — ' + (content.score || 5) + '/10점');
+          if (content.went_well) lines.push('✅ 잘한 점: ' + content.went_well);
+          if (content.to_improve) lines.push('💡 아쉬운 점: ' + content.to_improve);
+          if (content.tags && content.tags.length) lines.push('🏷️ ' + content.tags.join(', '));
+        } else if (type === 'free') {
+          if (content.title) lines.push(dateStr + content.title);
+          if (content.body) lines.push(content.body);
+        } else if (type === 'ai_analysis') {
+          lines.push('🤖 AI 분석 결과');
+          if (content.analysis) lines.push(content.analysis);
+        }
+        if (displayName) lines.push('— ' + displayName);
+        return lines.join('\n');
+      }
+
+      function copyPostText(item, btnEl) {
+        var text = contentToText(item.feed_type, item.content, item.display_name);
+        var iconSpan = btnEl.querySelector('.action-icon');
+        navigator.clipboard.writeText(text).then(function() {
+          iconSpan.textContent = '✅';
+          setTimeout(function() { iconSpan.textContent = '📋'; }, 1500);
+        }).catch(function() {
+          // Fallback
+          var ta = document.createElement('textarea');
+          ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+          document.body.removeChild(ta);
+          iconSpan.textContent = '✅';
+          setTimeout(function() { iconSpan.textContent = '📋'; }, 1500);
+        });
       }
 
       /* ── Edit Post ── */
