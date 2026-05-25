@@ -1273,6 +1273,41 @@
     @keyframes auth-pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
     .auth-loading { animation: auth-pulse 1.5s ease-in-out infinite; }
 
+    /* In-app browser warning */
+    .auth-inapp-warn {
+      display: flex; flex-direction: column; align-items: center;
+      gap: .5rem; padding: 1.2rem; margin-top: .5rem;
+      border-radius: 12px; border: 1px solid rgba(251,191,36,.2);
+      background: rgba(251,191,36,.04); max-width: 320px;
+    }
+    .auth-inapp-icon { font-size: 1.8rem; }
+    .auth-inapp-title {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .85rem;
+      font-weight: 700; color: #fbbf24;
+    }
+    .auth-inapp-desc {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .68rem;
+      color: var(--text-dim); text-align: center; line-height: 1.6;
+    }
+    .auth-inapp-btn {
+      width: 100%; padding: .55rem; border-radius: 8px; border: none;
+      background: #4285F4; color: #fff; font-family: 'Noto Sans KR', sans-serif;
+      font-size: .78rem; font-weight: 600; cursor: pointer;
+      transition: background .2s; margin-top: .3rem;
+    }
+    .auth-inapp-btn:hover { background: #3367d6; }
+    .auth-inapp-copy {
+      width: 100%; padding: .45rem; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05);
+      color: var(--text-dim); font-family: 'Noto Sans KR', sans-serif;
+      font-size: .7rem; cursor: pointer; transition: all .2s;
+    }
+    .auth-inapp-copy:hover { background: rgba(255,255,255,.1); }
+    .auth-inapp-hint {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .58rem;
+      color: rgba(255,255,255,.25); text-align: center; margin-top: .2rem;
+    }
+
     .user-bar {
       display: flex; align-items: center; gap: .75rem;
       width: 100%; padding: .75rem 1rem; margin-bottom: 1rem;
@@ -2000,6 +2035,15 @@
         <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.99 23.99 0 0 0 0 24c0 3.77.9 7.35 2.56 10.52l7.97-5.93z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.93C6.51 42.62 14.62 48 24 48z"/></svg>
         Google로 로그인
       </button>
+      <!-- In-app browser warning (hidden by default) -->
+      <div class="auth-inapp-warn" id="authInappWarn" style="display:none">
+        <div class="auth-inapp-icon">🌐</div>
+        <div class="auth-inapp-title">외부 브라우저에서 열어주세요</div>
+        <div class="auth-inapp-desc">카카오톡, 인스타그램 등 인앱 브라우저에서는<br>Google 로그인이 차단됩니다.</div>
+        <button class="auth-inapp-btn" id="authOpenExternal">Chrome / Safari로 열기</button>
+        <button class="auth-inapp-copy" id="authCopyUrl">🔗 링크 복사</button>
+        <div class="auth-inapp-hint">또는 우측 상단 ⋮ 메뉴 → "기본 브라우저로 열기"</div>
+      </div>
       <div class="auth-loading" id="authLoading">인증 확인 중...</div>
     </div>
   </div>
@@ -2589,6 +2633,40 @@
     var authLoading = document.getElementById("authLoading");
     var googleBtn = document.getElementById("googleLoginBtn");
     var appEl = document.getElementById("app");
+
+    // Detect in-app browsers (webview) that block Google OAuth
+    var ua = navigator.userAgent || '';
+    var isInApp = /KAKAOTALK|NAVER|Instagram|FB_IAB|FBAN|FBAV|Line\/|DaumApps|everytimeApp|SamsungBrowser\/(?:[0-6]\.)|wv\)|WebView/i.test(ua)
+      || (/Android/i.test(ua) && /Version\/[\d.]+/i.test(ua) && !/Chrome/i.test(ua));
+    if (isInApp) {
+      googleBtn.style.display = 'none';
+      document.getElementById('authInappWarn').style.display = 'flex';
+      var pageUrl = window.location.href;
+      // Try to open in external browser
+      document.getElementById('authOpenExternal').addEventListener('click', function() {
+        // Android intent:// scheme → opens in Chrome
+        if (/Android/i.test(ua)) {
+          window.location.href = 'intent://' + pageUrl.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+        } else {
+          // iOS: just try window.open
+          window.open(pageUrl, '_system');
+        }
+      });
+      document.getElementById('authCopyUrl').addEventListener('click', function() {
+        var self = this;
+        navigator.clipboard.writeText(pageUrl).then(function() {
+          self.textContent = '✅ 복사됨!';
+          setTimeout(function() { self.textContent = '🔗 링크 복사'; }, 2000);
+        }).catch(function() {
+          var ta = document.createElement('textarea');
+          ta.value = pageUrl; ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+          document.body.removeChild(ta);
+          self.textContent = '✅ 복사됨!';
+          setTimeout(function() { self.textContent = '🔗 링크 복사'; }, 2000);
+        });
+      });
+    }
 
     googleBtn.addEventListener("click", function() {
       _supabase.auth.signInWithOAuth({
