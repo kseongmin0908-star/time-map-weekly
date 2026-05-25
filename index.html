@@ -2131,6 +2131,13 @@
         <div class="comm-section-title">📝 오늘의 회고</div>
         <div class="comm-section-subtitle">하루를 돌아보며 기록하세요. 기록은 성장의 첫걸음입니다.</div>
 
+        <div class="daily-date-header">
+          <button class="daily-date-nav" id="retroDatePrev">◀</button>
+          <span class="daily-date-text" id="retroDateText">2026-05-25</span>
+          <button class="daily-date-nav" id="retroDateNext">▶</button>
+          <span class="daily-date-today" id="retroDateToday" style="display:none">오늘</span>
+        </div>
+
         <div class="retro-score-section">
           <div class="retro-score-label">
             <span>오늘의 점수</span>
@@ -4377,6 +4384,7 @@
 
     /* ─── DAILY RETROSPECTIVE (일일 회고) ───────────── */
     (function() {
+      var retroDate = new Date();
       var scoreSlider = document.getElementById('retroScoreSlider');
       var scoreValue = document.getElementById('retroScoreValue');
       var wentWell = document.getElementById('retroWentWell');
@@ -4385,7 +4393,19 @@
       var saveBtn = document.getElementById('retroSaveBtn');
       var aiBtn = document.getElementById('retroAiBtn');
       var historyEl = document.getElementById('retroHistory');
+      var dateText = document.getElementById('retroDateText');
+      var todayBadge = document.getElementById('retroDateToday');
       var selectedTags = [];
+
+      function dateStr(d) {
+        return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      }
+      function isToday(d) { return dateStr(d) === dateStr(new Date()); }
+
+      function updateRetroDateDisplay() {
+        dateText.textContent = dateStr(retroDate);
+        todayBadge.style.display = isToday(retroDate) ? 'inline' : 'none';
+      }
 
       // Score slider color
       scoreSlider.addEventListener('input', function() {
@@ -4410,11 +4430,6 @@
         });
       });
 
-      function getTodayStr() {
-        var d = new Date();
-        return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-      }
-
       function getTimeStr() {
         var d = new Date();
         return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
@@ -4425,10 +4440,49 @@
         return selectedTags.concat(custom).filter(function(v, i, a) { return a.indexOf(v) === i; });
       }
 
+      function resetRetroForm() {
+        scoreSlider.value = 5; scoreSlider.dispatchEvent(new Event('input'));
+        wentWell.value = '';
+        toImprove.value = '';
+        tagInput.value = '';
+        selectedTags = [];
+        document.querySelectorAll('.retro-tag-chip').forEach(function(c) { c.classList.remove('selected'); });
+        aiBtn.disabled = true;
+      }
+
+      function loadRetroForDate() {
+        var ds = dateStr(retroDate);
+        var existing = localStorage.getItem('temporal-retro-' + ds);
+        resetRetroForm();
+        if (existing) {
+          var r = JSON.parse(existing);
+          scoreSlider.value = r.score; scoreSlider.dispatchEvent(new Event('input'));
+          wentWell.value = r.went_well || '';
+          toImprove.value = r.to_improve || '';
+          selectedTags = [];
+          (r.tags || []).forEach(function(t) {
+            var chip = document.querySelector('.retro-tag-chip[data-tag="'+t+'"]');
+            if (chip) { chip.classList.add('selected'); selectedTags.push(t); }
+          });
+          aiBtn.disabled = false;
+        }
+      }
+
+      // Date navigation
+      document.getElementById('retroDatePrev').addEventListener('click', function() {
+        retroDate.setDate(retroDate.getDate() - 1);
+        updateRetroDateDisplay(); loadRetroForDate();
+      });
+      document.getElementById('retroDateNext').addEventListener('click', function() {
+        retroDate.setDate(retroDate.getDate() + 1);
+        updateRetroDateDisplay(); loadRetroForDate();
+      });
+
       // Save retrospective
       saveBtn.addEventListener('click', function() {
+        var ds = dateStr(retroDate);
         var data = {
-          date: getTodayStr(),
+          date: ds,
           time: getTimeStr(),
           score: parseInt(scoreSlider.value),
           went_well: wentWell.value.trim(),
@@ -4442,15 +4496,15 @@
           return;
         }
         // Save to localStorage
-        var key = 'temporal-retro-' + data.date;
+        var key = 'temporal-retro-' + ds;
         localStorage.setItem(key, JSON.stringify(data));
         // Save list of retro dates
         var dates = JSON.parse(localStorage.getItem('temporal-retro-dates') || '[]');
-        if (dates.indexOf(data.date) === -1) dates.push(data.date);
+        if (dates.indexOf(ds) === -1) dates.push(ds);
         localStorage.setItem('temporal-retro-dates', JSON.stringify(dates));
         // Supabase sync
         if (_currentUser && typeof SupaDB !== 'undefined') {
-          SupaDB.saveRetro(data.date, data);
+          SupaDB.saveRetro(ds, data);
         }
         // Share to feed if enabled
         if (document.getElementById('shareRetro').checked && _currentUser) {
@@ -4462,11 +4516,12 @@
         loadRetroHistory();
       });
 
-      // AI analysis for today
+      // AI analysis for selected date
       aiBtn.addEventListener('click', function() {
-        var todayData = localStorage.getItem('temporal-retro-' + getTodayStr());
-        if (!todayData) { aiBtn.disabled = true; return; }
-        var retro = JSON.parse(todayData);
+        var ds = dateStr(retroDate);
+        var retroData = localStorage.getItem('temporal-retro-' + ds);
+        if (!retroData) { aiBtn.disabled = true; return; }
+        var retro = JSON.parse(retroData);
         aiBtn.classList.add('loading');
         aiBtn.disabled = true;
 
@@ -4477,7 +4532,7 @@
           setTimeout(function() { aiBtn.innerHTML = '<span class="spinner"></span>🤖 AI 오늘 분석'; }, 2000);
           // Post to feed as AI comment
           if (_currentUser) {
-            shareToFeed('ai_analysis', { analysis: result, period: 'day', date: getTodayStr() });
+            shareToFeed('ai_analysis', { analysis: result, period: 'day', date: ds });
           }
         }).catch(function() {
           aiBtn.classList.remove('loading');
@@ -4532,19 +4587,9 @@
 
       function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-      // Check if today's retro exists
-      var todayRetro = localStorage.getItem('temporal-retro-' + getTodayStr());
-      if (todayRetro) {
-        var r = JSON.parse(todayRetro);
-        scoreSlider.value = r.score; scoreSlider.dispatchEvent(new Event('input'));
-        wentWell.value = r.went_well || '';
-        toImprove.value = r.to_improve || '';
-        (r.tags || []).forEach(function(t) {
-          var chip = document.querySelector('.retro-tag-chip[data-tag="'+t+'"]');
-          if (chip) { chip.classList.add('selected'); selectedTags.push(t); }
-        });
-        aiBtn.disabled = false;
-      }
+      // Initialize
+      updateRetroDateDisplay();
+      loadRetroForDate();
     })();
 
     /* ─── SHARE TO FEED ──────────────────────────────── */
