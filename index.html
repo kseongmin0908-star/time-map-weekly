@@ -1712,6 +1712,18 @@
       background: rgba(138,92,246,.12); border-color: rgba(138,92,246,.4);
       color: #c4b5fd; box-shadow: 0 0 12px rgba(138,92,246,.1);
     }
+    .ai-date-picker {
+      width: 100%; margin-bottom: .8rem; display: flex; justify-content: center;
+      animation: fadein .3s ease-out;
+    }
+    .ai-date-input {
+      width: 100%; max-width: 280px; padding: .6rem 1rem; border-radius: 8px;
+      border: 1px solid rgba(138,92,246,.3); background: rgba(138,92,246,.06);
+      color: #c4b5fd; font-family: 'JetBrains Mono', monospace; font-size: .8rem;
+      outline: none; transition: border-color .2s;
+    }
+    .ai-date-input:focus { border-color: rgba(138,92,246,.6); }
+    .ai-date-input::-webkit-calendar-picker-indicator { filter: invert(.7) sepia(.3) hue-rotate(220deg); cursor: pointer; }
     .ai-request-btn {
       width: 100%; padding: .85rem; border-radius: 10px; border: 1.5px solid rgba(138,92,246,.3);
       background: linear-gradient(135deg, rgba(138,92,246,.1) 0%, rgba(99,102,241,.06) 100%);
@@ -2083,72 +2095,7 @@
       <div class="stat-block"><span class="stat-label">공백 주</span><span class="stat-number" id="wastedWeeks">0</span></div>
     </section>
 
-    <section class="streak-section" id="streakSection">
-      <div class="streak-item"><div class="streak-value" id="streakCurrent"><span class="fire">🔥</span> 0</div><div class="streak-label">현재 스트릭</div></div>
-      <div class="streak-item"><div class="streak-value" id="streakBest">0</div><div class="streak-label">최장 스트릭</div></div>
-    </section>
-
-    <section class="achievement-section" id="achievementSection">
-      <div class="donut-wrap">
-        <svg viewBox="0 0 120 120">
-          <defs>
-            <linearGradient id="donutGradSuccess" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#4ade80"/>
-              <stop offset="50%" stop-color="#22d3ee"/>
-              <stop offset="100%" stop-color="#a78bfa"/>
-            </linearGradient>
-            <linearGradient id="donutGradGold" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#f0c888"/>
-              <stop offset="50%" stop-color="#ff8c5a"/>
-              <stop offset="100%" stop-color="#d4a574"/>
-            </linearGradient>
-            <linearGradient id="donutGradDanger" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#ef4444"/>
-              <stop offset="50%" stop-color="#f59e0b"/>
-              <stop offset="100%" stop-color="#ef4444"/>
-            </linearGradient>
-          </defs>
-          <circle class="donut-bg" cx="60" cy="60" r="50"/>
-          <circle class="donut-fill" id="donutFill" cx="60" cy="60" r="50" stroke-dasharray="314.16" stroke-dashoffset="314.16"/>
-        </svg>
-        <div class="donut-center">
-          <div class="donut-pct" id="donutPct">0%</div>
-          <div class="donut-label">달성률</div>
-        </div>
-      </div>
-      <div class="achievement-details">
-        <div class="ach-row"><span class="ach-label">설정 항목</span><span class="ach-value neutral" id="achSet">0개 / 0주</span></div>
-        <div class="ach-row"><span class="ach-label">완료 항목</span><span class="ach-value good" id="achDone">0개</span></div>
-        <div class="ach-row"><span class="ach-label">미완료 항목</span><span class="ach-value warn" id="achMissed">0개</span></div>
-        <div class="ach-row"><span class="ach-label">공백 (목표 없이 경과)</span><span class="ach-value bad" id="achEmpty">0주</span></div>
-        <div class="ach-message" id="achMessage">목표를 설정하고 시간을 의미있게 만드세요.</div>
-      </div>
-    </section>
-
-    <section class="monthly-chart-section" id="monthlyChartSection">
-      <div class="monthly-chart-title">월별 달성률</div>
-      <div class="monthly-bars" id="monthlyBars"></div>
-    </section>
-
-    <section class="insights-section" id="insightsSection">
-      <div class="insight-card"><div class="insight-label">📊 주당 평균 항목</div><div class="insight-value" id="insightAvg">-</div></div>
-      <div class="insight-card"><div class="insight-label">🏆 최고의 달</div><div class="insight-value" id="insightBestMonth">-</div></div>
-      <div class="insight-card"><div class="insight-label">📈 최근 추세</div><div class="insight-value" id="insightTrend">-</div></div>
-      <div class="insight-card"><div class="insight-label">✅ 완전 달성 주</div><div class="insight-value" id="insightPerfect">-</div></div>
-    </section>
-
-    <section class="mini-chart-section">
-      <div class="mini-chart-title">주간 달성 현황</div>
-      <div class="mini-chart" id="miniChart"></div>
-    </section>
-
-    <section class="progress-section">
-      <div class="progress-label-row">
-        <span class="progress-title">올해의 진행률</span>
-        <span class="progress-percentage" id="progressPercent">0.0%</span>
-      </div>
-      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-    </section>
+    <!-- 상세 통계는 분석 탭으로 이동됨 -->
 
     <div class="days-remaining" id="daysRemaining"></div>
 
@@ -2274,9 +2221,83 @@
     <!-- ===== TAB: ANALYSIS ===== -->
     <div class="tab-content" id="tabAnalysis">
 
-      <!-- 데이터 시각화 -->
+      <!-- 주간 목표 통계 (홈에서 이동) -->
       <div class="analysis-section">
-        <div class="analysis-title">📊 나의 데이터</div>
+        <div class="analysis-title">📈 주간 목표 통계</div>
+
+        <section class="streak-section" id="streakSection">
+          <div class="streak-item"><div class="streak-value" id="streakCurrent"><span class="fire">🔥</span> 0</div><div class="streak-label">연속 달성</div></div>
+          <div class="streak-item"><div class="streak-value" id="streakBest">0</div><div class="streak-label">최장 연속 기록</div></div>
+        </section>
+
+        <section class="achievement-section" id="achievementSection">
+          <div class="donut-wrap">
+            <svg viewBox="0 0 120 120">
+              <defs>
+                <linearGradient id="donutGradSuccess" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#4ade80"/>
+                  <stop offset="50%" stop-color="#22d3ee"/>
+                  <stop offset="100%" stop-color="#a78bfa"/>
+                </linearGradient>
+                <linearGradient id="donutGradGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#f0c888"/>
+                  <stop offset="50%" stop-color="#ff8c5a"/>
+                  <stop offset="100%" stop-color="#d4a574"/>
+                </linearGradient>
+                <linearGradient id="donutGradDanger" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#ef4444"/>
+                  <stop offset="50%" stop-color="#f59e0b"/>
+                  <stop offset="100%" stop-color="#ef4444"/>
+                </linearGradient>
+              </defs>
+              <circle class="donut-bg" cx="60" cy="60" r="50"/>
+              <circle class="donut-fill" id="donutFill" cx="60" cy="60" r="50" stroke-dasharray="314.16" stroke-dashoffset="314.16"/>
+            </svg>
+            <div class="donut-center">
+              <div class="donut-pct" id="donutPct">0%</div>
+              <div class="donut-label">달성률</div>
+            </div>
+          </div>
+          <div class="achievement-details">
+            <div class="ach-row"><span class="ach-label">설정 항목</span><span class="ach-value neutral" id="achSet">0개 / 0주</span></div>
+            <div class="ach-row"><span class="ach-label">완료 항목</span><span class="ach-value good" id="achDone">0개</span></div>
+            <div class="ach-row"><span class="ach-label">미완료 항목</span><span class="ach-value warn" id="achMissed">0개</span></div>
+            <div class="ach-row"><span class="ach-label">공백 (목표 없이 경과)</span><span class="ach-value bad" id="achEmpty">0주</span></div>
+            <div class="ach-message" id="achMessage">목표를 설정하고 시간을 의미있게 만드세요.</div>
+          </div>
+        </section>
+
+        <section class="progress-section">
+          <div class="progress-label-row">
+            <span class="progress-title">올해의 진행률</span>
+            <span class="progress-percentage" id="progressPercent">0.0%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        </section>
+
+        <section class="monthly-chart-section" id="monthlyChartSection">
+          <div class="monthly-chart-title">월별 달성률</div>
+          <div class="monthly-bars" id="monthlyBars"></div>
+        </section>
+
+        <section class="insights-section" id="insightsSection">
+          <div class="insight-card"><div class="insight-label">📊 주당 평균 항목</div><div class="insight-value" id="insightAvg">-</div></div>
+          <div class="insight-card"><div class="insight-label">🏆 최고의 달</div><div class="insight-value" id="insightBestMonth">-</div></div>
+          <div class="insight-card"><div class="insight-label">📈 최근 추세</div><div class="insight-value" id="insightTrend">-</div></div>
+          <div class="insight-card"><div class="insight-label">✅ 완전 달성 주</div><div class="insight-value" id="insightPerfect">-</div></div>
+        </section>
+
+        <section class="mini-chart-section">
+          <div class="mini-chart-title">주간 달성 현황</div>
+          <div class="mini-chart" id="miniChart"></div>
+        </section>
+      </div>
+
+      <div class="comm-divider"></div>
+
+      <!-- 일일 데이터 시각화 -->
+      <div class="analysis-section">
+        <div class="analysis-title">📊 일일 데이터</div>
 
         <!-- 점수 추이 -->
         <div class="chart-card">
@@ -2324,10 +2345,15 @@
 
         <div class="ai-period-selector" id="aiPeriodSelector">
           <button class="ai-period-btn active" data-period="day">오늘</button>
+          <button class="ai-period-btn" data-period="custom">📅 날짜 선택</button>
           <button class="ai-period-btn" data-period="week">이번 주</button>
           <button class="ai-period-btn" data-period="month">이번 달</button>
           <button class="ai-period-btn" data-period="year">올해</button>
           <button class="ai-period-btn" data-period="all">전체</button>
+        </div>
+
+        <div class="ai-date-picker" id="aiDatePicker" style="display:none">
+          <input type="date" class="ai-date-input" id="aiDateInput">
         </div>
 
         <button class="ai-request-btn" id="aiRequestBtn">
@@ -2410,10 +2436,57 @@
         if (supaMind) {
           localStorage.setItem("temporal-unconscious", JSON.stringify(supaMind));
         }
+        // Load today's daily goals from Supabase and cache
+        if (typeof SupaDB.loadDailyGoals === 'function') {
+          var todayD = new Date();
+          var todayStr = todayD.getFullYear() + '-' + String(todayD.getMonth()+1).padStart(2,'0') + '-' + String(todayD.getDate()).padStart(2,'0');
+          var supaDG = await SupaDB.loadDailyGoals(todayStr);
+          if (supaDG && supaDG.length > 0) {
+            localStorage.setItem('temporal-daily-' + todayStr, JSON.stringify(supaDG));
+          }
+        }
+        // Load recent retros from Supabase and cache
+        if (typeof SupaDB.loadRetros === 'function') {
+          var supaRetros = await SupaDB.loadRetros(30);
+          if (supaRetros && supaRetros.length > 0) {
+            var retroDatesSet = JSON.parse(localStorage.getItem('temporal-retro-dates') || '[]');
+            supaRetros.forEach(function(sr) {
+              var rd = sr.retro_date;
+              var localData = {
+                date: rd,
+                score: sr.score,
+                went_well: sr.went_well || '',
+                to_improve: sr.to_improve || '',
+                tags: sr.tags || [],
+                created_at: sr.created_at
+              };
+              localStorage.setItem('temporal-retro-' + rd, JSON.stringify(localData));
+              if (retroDatesSet.indexOf(rd) === -1) retroDatesSet.push(rd);
+            });
+            localStorage.setItem('temporal-retro-dates', JSON.stringify(retroDatesSet));
+          }
+        }
+        // Load profile/share settings from Supabase
+        try {
+          var { data: profile } = await _supabase.from('user_profiles').select('*').eq('user_id', _currentUser.id).maybeSingle();
+          if (profile) {
+            localStorage.setItem('temporal-share-weekly', String(profile.share_weekly));
+            localStorage.setItem('temporal-share-daily', String(profile.share_daily));
+            localStorage.setItem('temporal-share-retro', String(profile.share_retro));
+            var sw = document.getElementById('shareWeekly');
+            var sd = document.getElementById('shareDaily');
+            var sr = document.getElementById('shareRetro');
+            if (sw) sw.checked = profile.share_weekly;
+            if (sd) sd.checked = profile.share_daily;
+            if (sr) sr.checked = profile.share_retro;
+          }
+        } catch(e) {}
       } catch(e) { /* fallback to localStorage which is already loaded */ }
       // Re-render everything with the loaded data
       if (typeof refreshAll === "function") refreshAll();
       if (typeof renderYearlyGoal === "function") renderYearlyGoal();
+      if (typeof loadDailyTab === "function") loadDailyTab();
+      if (typeof loadRetroHistory === "function") loadRetroHistory();
     }
 
     // Dev mode: skip auth on localhost
@@ -3269,6 +3342,48 @@
         md += "## 🍅 포모도로\n\n";
         md += "- 오늘 세션: **" + (pomo.sessionsToday || 0) + "회**\n";
         md += "- 총 집중 시간: **" + (pomo.totalFocusMin || 0) + "분**\n\n";
+      }
+
+      // Daily Goals (최근 14일)
+      md += "## 📋 일일 목표 (최근 14일)\n\n";
+      var hasDailyGoals = false;
+      for (var di = 13; di >= 0; di--) {
+        var dd = new Date(); dd.setDate(dd.getDate() - di);
+        var dds = dd.getFullYear() + '-' + String(dd.getMonth()+1).padStart(2,'0') + '-' + String(dd.getDate()).padStart(2,'0');
+        var dTasks = []; try { dTasks = JSON.parse(localStorage.getItem('temporal-daily-' + dds)) || []; } catch(e) { dTasks = []; }
+        if (dTasks.length > 0) {
+          hasDailyGoals = true;
+          var dDone = dTasks.filter(function(t) { return t.completed; }).length;
+          var dPct = Math.round(dDone / dTasks.length * 100);
+          md += "**" + dds + "** (" + dDone + "/" + dTasks.length + " 완료, " + dPct + "%)\n";
+          for (var dti = 0; dti < dTasks.length; dti++) {
+            md += "- [" + (dTasks[dti].completed ? "x" : " ") + "] " + dTasks[dti].text + "\n";
+          }
+          md += "\n";
+        }
+      }
+      if (!hasDailyGoals) md += "*(아직 일일 목표 데이터가 없습니다)*\n\n";
+
+      // Daily Retrospectives (최근 14일)
+      var retroDates = JSON.parse(localStorage.getItem('temporal-retro-dates') || '[]');
+      retroDates.sort().reverse();
+      var recentRetros = retroDates.slice(0, 14);
+      if (recentRetros.length > 0) {
+        md += "## 📝 일일 회고 (최근 14일)\n\n";
+        var totalRetroScore = 0;
+        recentRetros.forEach(function(rd) {
+          var rr = JSON.parse(localStorage.getItem('temporal-retro-' + rd) || 'null');
+          if (!rr) return;
+          totalRetroScore += rr.score;
+          md += "### " + rd + (rr.time ? " " + rr.time : "") + " — " + rr.score + "/10\n\n";
+          if (rr.went_well) md += "**✅ 잘한 점:** " + rr.went_well + "\n\n";
+          if (rr.to_improve) md += "**💡 아쉬운 점:** " + rr.to_improve + "\n\n";
+          if (rr.tags && rr.tags.length > 0) md += "**태그:** `" + rr.tags.join("` `") + "`\n\n";
+          md += "---\n\n";
+        });
+        if (recentRetros.length >= 2) {
+          md += "> 평균 점수: **" + (totalRetroScore / recentRetros.length).toFixed(1) + "/10** (" + recentRetros.length + "일 기준)\n\n";
+        }
       }
 
       // Footer
@@ -4162,7 +4277,7 @@
           window.scrollTo(0, 0);
           // Load data when switching to community or analysis tab
           if (target === 'community') { loadDailyTab(); loadRetroHistory(); loadFeed(); }
-          if (target === 'analysis') { renderAnalysisCharts(); }
+          if (target === 'analysis') { renderAnalysisCharts(); if (typeof refreshAll === 'function') refreshAll(); }
         });
       });
     })();
@@ -4682,13 +4797,21 @@
       var requestBtn = document.getElementById('aiRequestBtn');
       var resultCard = document.getElementById('aiResultCard');
       var resultBody = document.getElementById('aiResultBody');
+      var datePicker = document.getElementById('aiDatePicker');
+      var dateInput = document.getElementById('aiDateInput');
       var selectedPeriod = 'day';
+
+      // Set default date to today
+      var today = new Date();
+      dateInput.value = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
 
       periodBtns.forEach(function(btn) {
         btn.addEventListener('click', function() {
           periodBtns.forEach(function(b) { b.classList.remove('active'); });
           btn.classList.add('active');
           selectedPeriod = btn.getAttribute('data-period');
+          // Show/hide date picker
+          datePicker.style.display = selectedPeriod === 'custom' ? 'flex' : 'none';
         });
       });
 
@@ -4727,6 +4850,10 @@
       var filtered = dates.filter(function(d) {
         var rd = new Date(d);
         if (period === 'day') return d === now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+        if (period === 'custom') {
+          var pick = document.getElementById('aiDateInput').value;
+          return d === pick;
+        }
         if (period === 'week') { var diff = (now - rd) / 86400000; return diff >= 0 && diff <= 7; }
         if (period === 'month') return rd.getFullYear() === now.getFullYear() && rd.getMonth() === now.getMonth();
         if (period === 'year') return rd.getFullYear() === now.getFullYear();
