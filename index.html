@@ -1327,52 +1327,117 @@
     .tab-content.active { display: flex; flex-direction: column; align-items: center; animation: tab-fadein .4s ease-out; }
     @keyframes tab-fadein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* ===== COMMUNITY TAB ===== */
-    .comm-section {
-      width: 100%; max-width: 640px; margin-bottom: 2rem;
+    /* ===== COMMUNITY TAB v2 (소셜 피드) ===== */
+    .comm-header {
+      width: 100%; max-width: 640px; margin-bottom: 1.2rem;
     }
-    .comm-section-title {
-      font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 600;
-      color: var(--gold-bright); letter-spacing: .04em; margin-bottom: .3rem;
-      display: flex; align-items: center; gap: .5rem;
+    .comm-filter-tabs {
+      display: flex; gap: .3rem; margin-bottom: .8rem; flex-wrap: wrap;
     }
-    .comm-section-subtitle {
-      font-family: 'Noto Sans KR', sans-serif; font-size: .65rem; color: var(--text-dim);
-      line-height: 1.5; margin-bottom: 1.2rem;
+    .comm-filter {
+      padding: .45rem .9rem; border-radius: 20px; border: 1px solid rgba(212,165,116,.15);
+      background: rgba(212,165,116,.04); color: var(--text-dim);
+      font-family: 'Noto Sans KR', sans-serif; font-size: .7rem; font-weight: 500;
+      cursor: pointer; transition: all .25s; letter-spacing: .02em;
     }
+    .comm-filter:hover { border-color: var(--gold-dim); color: var(--gold); background: rgba(212,165,116,.08); }
+    .comm-filter.active {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 100%);
+      color: #0a0a0f; border-color: transparent; font-weight: 700;
+      box-shadow: 0 2px 12px rgba(212,165,116,.25);
+    }
+    .comm-write-btn {
+      width: 100%; padding: .85rem; border-radius: 12px; border: 2px dashed rgba(212,165,116,.25);
+      background: rgba(212,165,116,.03); color: var(--gold);
+      font-family: 'Noto Sans KR', sans-serif; font-size: .85rem; font-weight: 600;
+      cursor: pointer; transition: all .25s; letter-spacing: .04em;
+    }
+    .comm-write-btn:hover {
+      border-color: var(--gold); background: rgba(212,165,116,.08);
+      box-shadow: 0 4px 20px rgba(212,165,116,.15); transform: translateY(-1px);
+    }
+
     .comm-divider {
       height: 1px; margin: 2rem 0;
       background: linear-gradient(90deg, transparent, rgba(212,165,116,.15), transparent);
     }
 
-    /* Daily Date Header */
-    .daily-date-header {
-      display: flex; align-items: center; justify-content: center; gap: .8rem;
-      margin-bottom: 1.2rem;
+    /* ===== MODAL ===== */
+    .comm-modal-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(5,5,10,.85); backdrop-filter: blur(8px);
+      display: flex; align-items: flex-start; justify-content: center;
+      padding: 2rem 1rem; overflow-y: auto;
+      animation: fadeIn .2s ease-out;
     }
-    .daily-date-nav {
-      width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(212,165,116,.25);
-      background: rgba(212,165,116,.05); color: var(--gold); font-size: .8rem;
+    .comm-modal {
+      width: 100%; max-width: 560px;
+      background: var(--bg-panel); border: 1px solid rgba(212,165,116,.12);
+      border-radius: 16px; padding: 1.5rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5), 0 0 80px rgba(212,165,116,.05);
+      animation: slideUp .3s ease-out;
+    }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .comm-modal-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;
+    }
+    .comm-modal-header h3 {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 600;
+      color: var(--gold-bright); margin: 0;
+    }
+    .comm-modal-close {
+      width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(106,102,96,.2);
+      background: transparent; color: var(--text-dim); font-size: 1.2rem;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
       transition: all .2s;
     }
-    .daily-date-nav:hover { border-color: var(--gold); background: rgba(212,165,116,.12); }
-    .daily-date-text {
-      font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 600;
-      color: var(--gold-bright); letter-spacing: .05em;
+    .comm-modal-close:hover { border-color: var(--danger); color: var(--danger); background: rgba(239,68,68,.06); }
+
+    /* Type Select */
+    .comm-type-select { display: flex; flex-direction: column; gap: .6rem; }
+    .comm-type-btn {
+      display: flex; align-items: center; gap: .8rem; padding: 1rem 1.2rem;
+      border-radius: 12px; border: 1px solid rgba(106,102,96,.12);
+      background: rgba(255,255,255,.02); color: var(--text); cursor: pointer;
+      transition: all .25s; text-align: left;
     }
-    .daily-date-today {
-      font-family: 'Noto Sans KR', sans-serif; font-size: .55rem; color: var(--text-dim);
-      padding: .15rem .5rem; border-radius: 10px;
-      background: rgba(212,165,116,.1); border: 1px solid rgba(212,165,116,.15);
+    .comm-type-btn:hover {
+      border-color: rgba(212,165,116,.3); background: rgba(212,165,116,.06);
+      transform: translateX(4px);
     }
+    .comm-type-icon { font-size: 1.5rem; flex-shrink: 0; }
+    .comm-type-label {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .85rem; font-weight: 600;
+      color: var(--gold-bright); display: block;
+    }
+    .comm-type-desc {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .65rem; color: var(--text-dim);
+      display: block; margin-top: .15rem;
+    }
+
+    /* ===== FORM TEMPLATES (inside modal) ===== */
+    .comm-form { animation: fadeIn .25s ease-out; }
+    .comm-form-title {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .85rem; font-weight: 600;
+      color: var(--gold-bright); margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem;
+    }
+    .comm-form-back {
+      padding: .25rem .6rem; border-radius: 6px; border: 1px solid rgba(106,102,96,.2);
+      background: transparent; color: var(--text-dim); font-size: .65rem; cursor: pointer;
+      transition: all .2s; margin-right: .5rem;
+    }
+    .comm-form-back:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+    /* Daily form fields */
     .daily-completion {
       text-align: center; margin: .8rem 0 .5rem;
       font-family: 'JetBrains Mono', monospace; font-size: .8rem; color: var(--text-dim);
     }
     .daily-completion b { color: var(--gold-bright); font-weight: 700; }
 
-    /* Daily/Community Save Button */
+    /* Save Button */
     .daily-save-btn {
       width: 100%; padding: 1rem; border-radius: 12px; border: none;
       font-family: 'Noto Sans KR', sans-serif; font-size: 1rem; font-weight: 700;
@@ -1392,7 +1457,7 @@
     .daily-save-btn:hover::before { transform: translateX(100%); }
     .daily-save-btn:active { transform: scale(.98); }
 
-    /* ===== RETRO (회고) ===== */
+    /* ===== RETRO (회고) form inside modal ===== */
     .retro-score-section { margin-bottom: 1.2rem; }
     .retro-score-label {
       font-family: 'Noto Sans KR', sans-serif; font-size: .75rem; font-weight: 500;
@@ -1426,14 +1491,23 @@
       font-size: .75rem; font-weight: 500; color: var(--text-dim);
       margin-bottom: .4rem; letter-spacing: .04em;
     }
-    .retro-field textarea {
+    .retro-field textarea, .comm-form textarea {
       width: 100%; min-height: 80px; padding: .7rem .9rem;
       background: rgba(255,255,255,.03); border: 1px solid rgba(106,102,96,.2);
       border-radius: 10px; color: var(--text); font-family: 'Noto Sans KR', sans-serif;
       font-size: .8rem; line-height: 1.7; resize: vertical; transition: border-color .25s;
+      box-sizing: border-box;
     }
-    .retro-field textarea:focus { outline: none; border-color: var(--gold-dim); box-shadow: 0 0 16px rgba(212,165,116,.08); }
-    .retro-field textarea::placeholder { color: rgba(106,102,96,.45); }
+    .retro-field textarea:focus, .comm-form textarea:focus, .comm-form input:focus {
+      outline: none; border-color: var(--gold-dim); box-shadow: 0 0 16px rgba(212,165,116,.08);
+    }
+    .retro-field textarea::placeholder, .comm-form textarea::placeholder, .comm-form input::placeholder { color: rgba(106,102,96,.45); }
+    .comm-form input[type="text"] {
+      width: 100%; padding: .6rem .9rem;
+      background: rgba(255,255,255,.03); border: 1px solid rgba(106,102,96,.2);
+      border-radius: 10px; color: var(--text); font-family: 'Noto Sans KR', sans-serif;
+      font-size: .8rem; transition: border-color .25s; box-sizing: border-box;
+    }
 
     /* Tags */
     .retro-tags-section { margin-bottom: 1rem; }
@@ -1456,114 +1530,15 @@
       width: 100%; padding: .45rem .7rem;
       background: rgba(255,255,255,.03); border: 1px solid rgba(106,102,96,.15);
       border-radius: 8px; color: var(--text); font-family: 'Noto Sans KR', sans-serif;
-      font-size: .7rem; transition: border-color .2s;
+      font-size: .7rem; transition: border-color .2s; box-sizing: border-box;
     }
     .retro-tag-input:focus { outline: none; border-color: var(--gold-dim); }
     .retro-tag-input::placeholder { color: rgba(106,102,96,.4); }
 
-    /* AI Button */
-    .retro-ai-btn {
-      width: 100%; padding: .8rem; border-radius: 10px; border: 1.5px solid rgba(138,92,246,.3);
-      background: linear-gradient(135deg, rgba(138,92,246,.08) 0%, rgba(99,102,241,.06) 100%);
-      color: #c4b5fd; font-family: 'Noto Sans KR', sans-serif;
-      font-size: .85rem; font-weight: 600; cursor: pointer;
-      transition: all .25s; letter-spacing: .03em; margin-top: .5rem;
-      display: flex; align-items: center; justify-content: center; gap: .5rem;
-    }
-    .retro-ai-btn:hover {
-      border-color: rgba(138,92,246,.5); background: linear-gradient(135deg, rgba(138,92,246,.15) 0%, rgba(99,102,241,.1) 100%);
-      box-shadow: 0 4px 24px rgba(138,92,246,.15); transform: translateY(-1px);
-    }
-    .retro-ai-btn:disabled { opacity: .35; cursor: not-allowed; transform: none; }
-    .retro-ai-btn .spinner {
-      width: 16px; height: 16px; border: 2px solid rgba(196,181,253,.3);
-      border-top-color: #c4b5fd; border-radius: 50%;
-      animation: spin .8s linear infinite; display: none;
-    }
-    .retro-ai-btn.loading .spinner { display: block; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Past Retros List */
-    .retro-history { display: flex; flex-direction: column; gap: .8rem; margin-top: 1.5rem; }
-    .retro-history-title {
-      font-family: 'Noto Sans KR', sans-serif; font-size: .7rem; font-weight: 500;
-      color: var(--text-dim); letter-spacing: .1em; margin-bottom: .3rem;
-    }
-    .retro-card {
-      padding: 1rem; border-radius: 10px;
-      background: rgba(255,255,255,.02); border: 1px solid rgba(106,102,96,.12);
-      transition: all .25s; position: relative;
-    }
-    .retro-card:hover { border-color: rgba(212,165,116,.2); background: rgba(255,255,255,.04); }
-    .retro-card-header {
-      display: flex; justify-content: space-between; align-items: center; margin-bottom: .6rem;
-    }
-    .retro-card-date {
-      font-family: 'JetBrains Mono', monospace; font-size: .7rem; color: var(--text-dim);
-    }
-    .retro-card-score {
-      font-family: 'JetBrains Mono', monospace; font-size: .9rem; font-weight: 700;
-      padding: .2rem .5rem; border-radius: 6px;
-    }
-    .retro-card-score.score-high { color: var(--success); background: rgba(74,222,128,.08); }
-    .retro-card-score.score-mid { color: var(--warn); background: rgba(245,158,11,.08); }
-    .retro-card-score.score-low { color: var(--danger); background: rgba(239,68,68,.08); }
-    .retro-card-body { font-family: 'Noto Sans KR', sans-serif; font-size: .75rem; color: var(--text); line-height: 1.6; }
-    .retro-card-section { margin-bottom: .5rem; }
-    .retro-card-label {
-      font-size: .6rem; font-weight: 600; color: var(--text-dim); letter-spacing: .08em;
-      margin-bottom: .15rem; display: block;
-    }
-    .retro-card-tags { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .5rem; }
-    .retro-card-tag {
-      padding: .15rem .45rem; border-radius: 12px; font-size: .55rem;
-      background: rgba(212,165,116,.08); border: 1px solid rgba(212,165,116,.15);
-      color: var(--gold-dim);
-    }
-    .retro-card-copy {
-      position: absolute; top: .7rem; right: .7rem;
-      padding: .3rem .55rem; border-radius: 6px;
-      border: 1px solid rgba(106,102,96,.15); background: rgba(255,255,255,.03);
-      color: var(--text-dim); font-size: .6rem; cursor: pointer;
-      font-family: 'Noto Sans KR', sans-serif;
-      opacity: 0; transition: all .2s;
-    }
-    .retro-card:hover .retro-card-copy { opacity: .7; }
-    .retro-card-copy:hover { opacity: 1 !important; background: rgba(212,165,116,.1); color: var(--gold); border-color: rgba(212,165,116,.3); }
-    .retro-card-copy.copied { color: var(--success); border-color: rgba(74,222,128,.3); }
-
-    /* ===== SHARE SETTINGS ===== */
-    .share-settings {
-      display: flex; flex-direction: column; gap: .6rem;
-      padding: 1rem; border-radius: 10px;
-      background: rgba(255,255,255,.02); border: 1px solid rgba(106,102,96,.1);
-      margin-bottom: 1.5rem;
-    }
-    .share-setting-row {
-      display: flex; align-items: center; justify-content: space-between;
-      font-family: 'Noto Sans KR', sans-serif; font-size: .75rem; color: var(--text-dim);
-    }
-    .share-toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
-    .share-toggle input { opacity: 0; width: 0; height: 0; }
-    .share-toggle-track {
-      position: absolute; inset: 0; border-radius: 11px; cursor: pointer;
-      background: rgba(106,102,96,.25); transition: all .3s;
-    }
-    .share-toggle-track::before {
-      content: ""; position: absolute; left: 2px; top: 2px;
-      width: 18px; height: 18px; border-radius: 50%;
-      background: var(--text-dim); transition: all .3s;
-    }
-    .share-toggle input:checked + .share-toggle-track {
-      background: rgba(74,222,128,.35);
-    }
-    .share-toggle input:checked + .share-toggle-track::before {
-      transform: translateX(18px); background: var(--success);
-      box-shadow: 0 0 8px rgba(74,222,128,.4);
-    }
-
-    /* ===== COMMUNITY FEED ===== */
-    .feed-list { display: flex; flex-direction: column; gap: .8rem; }
+    /* ===== FEED CARDS (v2) ===== */
+    .comm-feed { width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: .8rem; }
     .feed-empty {
       text-align: center; padding: 2.5rem 1rem;
       font-family: 'Noto Sans KR', sans-serif; font-size: .8rem; color: var(--text-dim);
@@ -1576,29 +1551,25 @@
       transition: all .25s;
     }
     .feed-card:hover { border-color: rgba(212,165,116,.15); background: rgba(255,255,255,.035); }
-    .feed-card.ai-card {
-      border-color: rgba(138,92,246,.2); background: rgba(138,92,246,.03);
-    }
-    .feed-card.ai-card:hover { border-color: rgba(138,92,246,.35); }
     .feed-card-header {
       display: flex; align-items: center; gap: .6rem; margin-bottom: .6rem;
     }
     .feed-avatar {
-      width: 28px; height: 28px; border-radius: 50%;
-      border: 1.5px solid rgba(212,165,116,.2); object-fit: cover;
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 1.5px solid rgba(212,165,116,.2); object-fit: cover; flex-shrink: 0;
     }
     .feed-avatar.ai-avatar {
       background: linear-gradient(135deg, #8b5cf6, #6366f1);
       border-color: rgba(138,92,246,.3);
       display: flex; align-items: center; justify-content: center;
-      font-size: .8rem;
+      font-size: .9rem;
     }
     .feed-name {
       font-family: 'Noto Sans KR', sans-serif; font-size: .75rem; font-weight: 600;
       color: var(--text); flex: 1;
     }
     .feed-badge {
-      padding: .15rem .45rem; border-radius: 10px;
+      padding: .15rem .5rem; border-radius: 10px;
       font-family: 'Noto Sans KR', sans-serif; font-size: .5rem; font-weight: 600;
       letter-spacing: .05em;
     }
@@ -1606,6 +1577,7 @@
     .feed-badge.badge-daily { background: rgba(96,165,250,.1); color: #60a5fa; }
     .feed-badge.badge-retro { background: rgba(74,222,128,.08); color: var(--success); }
     .feed-badge.badge-ai { background: rgba(138,92,246,.1); color: #c4b5fd; }
+    .feed-badge.badge-free { background: rgba(251,191,36,.08); color: #fbbf24; }
     .feed-time {
       font-family: 'JetBrains Mono', monospace; font-size: .55rem; color: var(--text-dim);
     }
@@ -1616,6 +1588,93 @@
     .feed-content .feed-score {
       font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: .85rem;
     }
+
+    /* Feed Actions: Like, Comment, AI */
+    .feed-actions {
+      display: flex; align-items: center; gap: 1rem; margin-top: .8rem;
+      padding-top: .6rem; border-top: 1px solid rgba(106,102,96,.08);
+    }
+    .feed-action-btn {
+      display: flex; align-items: center; gap: .3rem; padding: .3rem .6rem;
+      border-radius: 8px; border: none; background: transparent;
+      color: var(--text-dim); font-family: 'Noto Sans KR', sans-serif;
+      font-size: .65rem; cursor: pointer; transition: all .2s;
+    }
+    .feed-action-btn:hover { background: rgba(255,255,255,.04); color: var(--text); }
+    .feed-action-btn.liked { color: #ef4444; }
+    .feed-action-btn.liked:hover { background: rgba(239,68,68,.06); }
+    .feed-action-btn .action-icon { font-size: .85rem; }
+    .feed-ai-btn {
+      margin-left: auto; display: flex; align-items: center; gap: .3rem;
+      padding: .3rem .7rem; border-radius: 8px; border: 1px solid rgba(138,92,246,.2);
+      background: rgba(138,92,246,.05); color: #c4b5fd;
+      font-family: 'Noto Sans KR', sans-serif; font-size: .6rem; font-weight: 600;
+      cursor: pointer; transition: all .2s;
+    }
+    .feed-ai-btn:hover { border-color: rgba(138,92,246,.4); background: rgba(138,92,246,.1); }
+    .feed-ai-btn.loading { opacity: .5; cursor: wait; }
+
+    /* Comments Section */
+    .feed-comments {
+      margin-top: .6rem; padding-top: .4rem;
+    }
+    .feed-comments-toggle {
+      border: none; background: none; color: var(--text-dim);
+      font-family: 'Noto Sans KR', sans-serif; font-size: .65rem; cursor: pointer;
+      padding: .2rem 0; transition: color .2s;
+    }
+    .feed-comments-toggle:hover { color: var(--gold); }
+    .feed-comments-list {
+      display: flex; flex-direction: column; gap: .5rem; margin-top: .5rem;
+    }
+    .comment-item {
+      display: flex; gap: .5rem; padding: .5rem .6rem;
+      border-radius: 8px; background: rgba(255,255,255,.015);
+    }
+    .comment-item.ai-comment {
+      background: rgba(138,92,246,.04); border-left: 2px solid rgba(138,92,246,.3);
+    }
+    .comment-avatar {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 1px solid rgba(212,165,116,.15); object-fit: cover; flex-shrink: 0;
+    }
+    .comment-avatar.ai-avatar-sm {
+      background: linear-gradient(135deg, #8b5cf6, #6366f1);
+      border-color: rgba(138,92,246,.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .55rem;
+    }
+    .comment-body { flex: 1; }
+    .comment-name {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .6rem; font-weight: 600;
+      color: var(--text-dim); margin-bottom: .15rem;
+    }
+    .comment-text {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .7rem; color: var(--text);
+      line-height: 1.6; white-space: pre-wrap;
+    }
+    .comment-time {
+      font-family: 'JetBrains Mono', monospace; font-size: .45rem; color: var(--text-dim);
+      margin-top: .2rem; display: block;
+    }
+    .comment-input-wrap {
+      display: flex; gap: .4rem; margin-top: .5rem;
+    }
+    .comment-input {
+      flex: 1; padding: .45rem .7rem;
+      background: rgba(255,255,255,.03); border: 1px solid rgba(106,102,96,.15);
+      border-radius: 8px; color: var(--text); font-family: 'Noto Sans KR', sans-serif;
+      font-size: .7rem; transition: border-color .2s;
+    }
+    .comment-input:focus { outline: none; border-color: var(--gold-dim); }
+    .comment-input::placeholder { color: rgba(106,102,96,.4); }
+    .comment-submit {
+      padding: .45rem .7rem; border-radius: 8px; border: none;
+      background: var(--gold); color: #0a0a0f;
+      font-family: 'Noto Sans KR', sans-serif; font-size: .65rem; font-weight: 600;
+      cursor: pointer; transition: all .2s; white-space: nowrap;
+    }
+    .comment-submit:hover { background: var(--gold-bright); }
 
     /* ===== ANALYSIS TAB ===== */
     .analysis-section {
@@ -1677,6 +1736,107 @@
     }
     .daily-bar-col:hover .daily-bar-pct { opacity: 1; }
     .daily-bar-col:hover .daily-bar { filter: brightness(1.3); }
+
+    /* Chart card description */
+    .chart-card-desc {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .6rem; color: var(--text-dim);
+      margin-top: -.4rem; margin-bottom: .8rem; opacity: .7;
+    }
+
+    /* Tag correlation bars */
+    .tag-corr-list { display: flex; flex-direction: column; gap: .5rem; }
+    .tag-corr-row {
+      display: flex; align-items: center; gap: .6rem;
+    }
+    .tag-corr-label {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .65rem; font-weight: 500;
+      color: var(--text-dim); width: 50px; text-align: right; flex-shrink: 0;
+    }
+    .tag-corr-bar-wrap {
+      flex: 1; height: 20px; position: relative;
+      background: rgba(255,255,255,.02); border-radius: 4px; overflow: hidden;
+    }
+    .tag-corr-bar {
+      height: 100%; border-radius: 4px; position: absolute; top: 0;
+      transition: width .6s cubic-bezier(.22,1,.36,1);
+    }
+    .tag-corr-bar.positive { background: linear-gradient(90deg, rgba(74,222,128,.15), rgba(74,222,128,.5)); left: 50%; }
+    .tag-corr-bar.negative { background: linear-gradient(270deg, rgba(239,68,68,.15), rgba(239,68,68,.5)); right: 50%; }
+    .tag-corr-center {
+      position: absolute; left: 50%; top: 0; bottom: 0; width: 1px;
+      background: rgba(106,102,96,.2);
+    }
+    .tag-corr-value {
+      font-family: 'JetBrains Mono', monospace; font-size: .6rem; font-weight: 600;
+      width: 50px; flex-shrink: 0;
+    }
+    .tag-corr-value.positive { color: var(--success); }
+    .tag-corr-value.negative { color: var(--danger); }
+
+    /* Recovery speed */
+    .recovery-speed-metric {
+      display: flex; align-items: center; gap: 1rem; padding: .8rem;
+      background: rgba(255,255,255,.02); border-radius: 10px;
+    }
+    .recovery-big {
+      font-family: 'JetBrains Mono', monospace; font-size: 1.8rem; font-weight: 700;
+      color: var(--gold-bright);
+    }
+    .recovery-unit {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .65rem; color: var(--text-dim);
+    }
+    .recovery-trend {
+      font-size: 1.2rem; margin-left: auto;
+    }
+
+    /* Repeated failures */
+    .failure-list { display: flex; flex-direction: column; gap: .5rem; }
+    .failure-item {
+      display: flex; align-items: center; gap: .6rem; padding: .6rem .8rem;
+      border-radius: 8px; background: rgba(239,68,68,.03);
+      border: 1px solid rgba(239,68,68,.08);
+    }
+    .failure-item.warning { border-color: rgba(245,158,11,.2); background: rgba(245,158,11,.04); }
+    .failure-count {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(239,68,68,.12); color: var(--danger);
+      font-family: 'JetBrains Mono', monospace; font-size: .75rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .failure-text {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .73rem; color: var(--text); flex: 1;
+    }
+    .failure-badge {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .5rem; font-weight: 600;
+      padding: .15rem .4rem; border-radius: 8px;
+      background: rgba(245,158,11,.12); color: #f59e0b;
+    }
+
+    /* Unconscious connection cards */
+    .uc-card {
+      padding: 1rem; border-radius: 10px;
+      border-left: 3px solid rgba(138,92,246,.4);
+      background: rgba(138,92,246,.03); margin-bottom: .8rem;
+    }
+    .uc-failure {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .75rem; font-weight: 600;
+      color: var(--danger); margin-bottom: .6rem;
+    }
+    .uc-pattern {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .7rem; color: var(--text);
+      line-height: 1.6; margin-bottom: .4rem;
+    }
+    .uc-pattern-from { color: var(--text-dim); text-decoration: line-through; }
+    .uc-pattern-to { color: #c4b5fd; font-weight: 500; }
+    .uc-stage {
+      font-family: 'JetBrains Mono', monospace; font-size: .6rem; color: var(--text-dim);
+      margin-bottom: .5rem;
+    }
+    .uc-coaching {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .68rem; color: var(--gold);
+      line-height: 1.6; padding: .5rem .7rem; border-radius: 8px;
+      background: rgba(212,165,116,.05); border: 1px solid rgba(212,165,116,.1);
+    }
 
     /* Tag frequency */
     .tag-freq-list { display: flex; flex-direction: column; gap: .5rem; }
@@ -2102,127 +2262,64 @@
     <button class="user-export-md" id="userExportMd" title="마크다운으로 내보내기">📝 .md 내보내기</button>
     </div><!-- /tabHome -->
 
-    <!-- ===== TAB: COMMUNITY ===== -->
+    <!-- ===== TAB: COMMUNITY (소셜 피드) ===== -->
     <div class="tab-content" id="tabCommunity">
 
-      <!-- 오늘의 일일 목표 -->
-      <div class="comm-section">
-        <div class="comm-section-title">📋 오늘의 목표</div>
-        <div class="comm-section-subtitle">오늘 반드시 실행할 5가지 목표를 설정하세요. 작고 달성 가능한 목표가 가장 강력합니다.</div>
-        <div class="daily-date-header">
-          <button class="daily-date-nav" id="dailyDatePrev">◀</button>
-          <span class="daily-date-text" id="dailyDateText">2026-05-25</span>
-          <button class="daily-date-nav" id="dailyDateNext">▶</button>
-          <span class="daily-date-today" id="dailyDateToday" style="display:none">오늘</span>
+      <!-- 상단: 필터 탭 + 게시물 작성 버튼 -->
+      <div class="comm-header">
+        <div class="comm-filter-tabs">
+          <button class="comm-filter active" data-filter="all">전체</button>
+          <button class="comm-filter" data-filter="daily">오늘의 목표</button>
+          <button class="comm-filter" data-filter="retro">오늘의 회고</button>
+          <button class="comm-filter" data-filter="free">자유</button>
         </div>
-        <div class="task-list" id="dailyTaskList"></div>
-        <div class="task-add">
-          <input type="text" class="task-add-input" id="dailyTaskInput" placeholder="오늘의 실행 항목..." maxlength="80">
-          <button class="task-add-btn" id="dailyTaskAddBtn">+</button>
-        </div>
-        <div class="daily-completion" id="dailyCompletion">완료 <b>0</b> / 5</div>
-        <button class="daily-save-btn" id="dailySaveBtn">💾 저장하기</button>
+        <button class="comm-write-btn" id="commWriteBtn">+ 게시물 작성</button>
       </div>
 
-      <div class="comm-divider"></div>
-
-      <!-- 오늘의 회고 -->
-      <div class="comm-section">
-        <div class="comm-section-title">📝 오늘의 회고</div>
-        <div class="comm-section-subtitle">하루를 돌아보며 기록하세요. 기록은 성장의 첫걸음입니다.</div>
-
-        <div class="daily-date-header">
-          <button class="daily-date-nav" id="retroDatePrev">◀</button>
-          <span class="daily-date-text" id="retroDateText">2026-05-25</span>
-          <button class="daily-date-nav" id="retroDateNext">▶</button>
-          <span class="daily-date-today" id="retroDateToday" style="display:none">오늘</span>
-        </div>
-
-        <div class="retro-score-section">
-          <div class="retro-score-label">
-            <span>오늘의 점수</span>
-            <span class="retro-score-value" id="retroScoreValue" style="color:var(--warn)">5</span>
-          </div>
-          <input type="range" class="retro-score-slider" id="retroScoreSlider" min="1" max="10" value="5">
-          <div class="retro-score-faces"><span>😞 1</span><span>😐 5</span><span>🔥 10</span></div>
-        </div>
-
-        <div class="retro-field">
-          <label>✅ 오늘 잘한 점 (성과)</label>
-          <textarea id="retroWentWell" placeholder="오늘 잘한 일, 달성한 성과를 적어보세요..."></textarea>
-        </div>
-
-        <div class="retro-field">
-          <label>💡 아쉬운 점 (보완할 점)</label>
-          <textarea id="retroToImprove" placeholder="아쉬웠던 점, 다음에 개선할 부분을 적어보세요..."></textarea>
-        </div>
-
-        <div class="retro-tags-section">
-          <label style="display:block;font-family:'Noto Sans KR',sans-serif;font-size:.75rem;font-weight:500;color:var(--text-dim);margin-bottom:.4rem;letter-spacing:.04em">🏷️ 태그</label>
-          <div class="retro-tags-presets" id="retroTagPresets">
-            <span class="retro-tag-chip" data-tag="운동">운동</span>
-            <span class="retro-tag-chip" data-tag="공부">공부</span>
-            <span class="retro-tag-chip" data-tag="업무">업무</span>
-            <span class="retro-tag-chip" data-tag="습관">습관</span>
-            <span class="retro-tag-chip" data-tag="건강">건강</span>
-            <span class="retro-tag-chip" data-tag="관계">관계</span>
-            <span class="retro-tag-chip" data-tag="독서">독서</span>
-            <span class="retro-tag-chip" data-tag="창작">창작</span>
-          </div>
-          <input type="text" class="retro-tag-input" id="retroTagInput" placeholder="직접 입력 (쉼표로 구분)">
-        </div>
-
-        <button class="daily-save-btn" id="retroSaveBtn">💾 회고 저장하기</button>
-        <button class="retro-ai-btn" id="retroAiBtn" disabled>
-          <span class="spinner"></span>
-          🤖 AI 오늘 분석
-        </button>
-
-        <!-- 과거 회고 목록 -->
-        <div class="retro-history" id="retroHistory">
-          <div class="retro-history-title">📚 지난 회고</div>
+      <!-- 피드 리스트 -->
+      <div class="comm-feed" id="commFeed">
+        <div class="feed-empty">
+          <span class="feed-empty-icon">🌌</span>
+          아직 게시물이 없습니다.<br>첫 번째 게시물을 작성해보세요!
         </div>
       </div>
 
-      <div class="comm-divider"></div>
+      <!-- 게시물 작성 모달 -->
+      <div class="comm-modal-overlay" id="commModal" style="display:none;">
+        <div class="comm-modal">
+          <div class="comm-modal-header">
+            <h3>게시물 작성</h3>
+            <button class="comm-modal-close" id="commModalClose">&times;</button>
+          </div>
 
-      <!-- 커뮤니티 피드 -->
-      <div class="comm-section">
-        <div class="comm-section-title">🌐 커뮤니티</div>
-        <div class="comm-section-subtitle">다른 멤버들의 목표와 성장을 확인하고, 서로 영향을 주고받으세요.</div>
+          <!-- 타입 선택 -->
+          <div class="comm-type-select" id="commTypeSelect">
+            <button class="comm-type-btn" data-type="daily">
+              <span class="comm-type-icon">📋</span>
+              <span class="comm-type-label">오늘의 목표</span>
+              <span class="comm-type-desc">오늘 실행할 목표를 설정하세요</span>
+            </button>
+            <button class="comm-type-btn" data-type="retro">
+              <span class="comm-type-icon">📝</span>
+              <span class="comm-type-label">오늘의 회고</span>
+              <span class="comm-type-desc">하루를 돌아보고 기록하세요</span>
+            </button>
+            <button class="comm-type-btn" data-type="free">
+              <span class="comm-type-icon">💬</span>
+              <span class="comm-type-label">자유</span>
+              <span class="comm-type-desc">자유롭게 생각을 나누세요</span>
+            </button>
+          </div>
 
-        <div class="share-settings" id="shareSettings">
-          <div style="font-family:'Noto Sans KR',sans-serif;font-size:.65rem;font-weight:600;color:var(--gold-dim);letter-spacing:.1em;margin-bottom:.2rem">공유 설정</div>
-          <div class="share-setting-row">
-            <span>주간 목표 공유</span>
-            <label class="share-toggle">
-              <input type="checkbox" id="shareWeekly">
-              <span class="share-toggle-track"></span>
-            </label>
-          </div>
-          <div class="share-setting-row">
-            <span>일일 목표 공유</span>
-            <label class="share-toggle">
-              <input type="checkbox" id="shareDaily">
-              <span class="share-toggle-track"></span>
-            </label>
-          </div>
-          <div class="share-setting-row">
-            <span>회고 공유</span>
-            <label class="share-toggle">
-              <input type="checkbox" id="shareRetro">
-              <span class="share-toggle-track"></span>
-            </label>
-          </div>
-        </div>
-
-        <div class="feed-list" id="feedList">
-          <div class="feed-empty">
-            <span class="feed-empty-icon">🌌</span>
-            아직 공유된 항목이 없습니다.<br>공유 설정을 켜고 목표를 저장해보세요.
-          </div>
+          <!-- 템플릿 폼 (타입별 동적 생성) -->
+          <div class="comm-form" id="commForm" style="display:none;"></div>
         </div>
       </div>
+
+      <!-- 공유 설정 (숨겨진 토글 — 기본 ALL ON) -->
+      <input type="checkbox" id="shareWeekly" checked style="display:none">
+      <input type="checkbox" id="shareDaily" checked style="display:none">
+      <input type="checkbox" id="shareRetro" checked style="display:none">
     </div><!-- /tabCommunity -->
 
     <!-- ===== TAB: ANALYSIS ===== -->
@@ -2265,6 +2362,24 @@
             <div style="text-align:center;padding:1rem;font-family:'Noto Sans KR',sans-serif;font-size:.75rem;color:var(--text-dim)">태그 데이터가 쌓이면 표시됩니다</div>
           </div>
         </div>
+
+        <!-- 태그↔점수 상관관계 -->
+        <div class="chart-card">
+          <div class="chart-card-title">🔍 태그↔점수 상관관계</div>
+          <div class="chart-card-desc">특정 태그가 있는 날과 없는 날의 점수 차이를 분석합니다</div>
+          <div class="tag-corr-list" id="tagCorrChart">
+            <div style="text-align:center;padding:1rem;font-family:'Noto Sans KR',sans-serif;font-size:.75rem;color:var(--text-dim)">충분한 데이터가 쌓이면 분석됩니다</div>
+          </div>
+        </div>
+
+        <!-- 회복 속도 -->
+        <div class="chart-card">
+          <div class="chart-card-title">⚡ 회복 속도</div>
+          <div class="chart-card-desc">저점(≤4) 후 회복(≥7)까지 걸리는 평균 일수</div>
+          <div class="recovery-speed" id="recoverySpeed">
+            <div style="text-align:center;padding:1rem;font-family:'Noto Sans KR',sans-serif;font-size:.75rem;color:var(--text-dim)">점수 데이터가 쌓이면 분석됩니다</div>
+          </div>
+        </div>
       </div>
 
       <div class="comm-divider"></div>
@@ -2289,6 +2404,24 @@
           <div class="mini-chart-title">주간 달성 현황</div>
           <div class="mini-chart" id="miniChart"></div>
         </section>
+
+        <!-- 반복 실패 목표 -->
+        <div class="chart-card" style="margin-top:1.2rem">
+          <div class="chart-card-title">⚠️ 반복 실패 목표</div>
+          <div class="chart-card-desc">2회 이상 미완료된 목표를 추적합니다</div>
+          <div id="repeatedFailures">
+            <div style="text-align:center;padding:1rem;font-family:'Noto Sans KR',sans-serif;font-size:.75rem;color:var(--text-dim)">목표 데이터가 쌓이면 분석됩니다</div>
+          </div>
+        </div>
+
+        <!-- 무의식↔실패 연결 -->
+        <div class="chart-card" style="margin-top:1rem">
+          <div class="chart-card-title">🧠 무의식 연결 분석</div>
+          <div class="chart-card-desc">반복 실패하는 목표의 숨겨진 원인을 무의식 패턴에서 찾습니다</div>
+          <div id="unconsciousConnections">
+            <div style="text-align:center;padding:1rem;font-family:'Noto Sans KR',sans-serif;font-size:.75rem;color:var(--text-dim)">무의식 패턴과 반복 실패 데이터가 쌓이면 분석됩니다</div>
+          </div>
+        </div>
       </div>
 
       <div class="comm-divider"></div>
@@ -2488,23 +2621,16 @@
         try {
           var { data: profile } = await _supabase.from('user_profiles').select('*').eq('user_id', _currentUser.id).maybeSingle();
           if (profile) {
-            localStorage.setItem('temporal-share-weekly', String(profile.share_weekly));
-            localStorage.setItem('temporal-share-daily', String(profile.share_daily));
-            localStorage.setItem('temporal-share-retro', String(profile.share_retro));
-            var sw = document.getElementById('shareWeekly');
-            var sd = document.getElementById('shareDaily');
-            var sr = document.getElementById('shareRetro');
-            if (sw) sw.checked = profile.share_weekly;
-            if (sd) sd.checked = profile.share_daily;
-            if (sr) sr.checked = profile.share_retro;
+            localStorage.setItem('temporal-share-weekly', String(profile.share_weekly !== false));
+            localStorage.setItem('temporal-share-daily', String(profile.share_daily !== false));
+            localStorage.setItem('temporal-share-retro', String(profile.share_retro !== false));
           }
         } catch(e) {}
       } catch(e) { /* fallback to localStorage which is already loaded */ }
       // Re-render everything with the loaded data
       if (typeof refreshAll === "function") refreshAll();
       if (typeof renderYearlyGoal === "function") renderYearlyGoal();
-      if (typeof loadDailyTab === "function") loadDailyTab();
-      if (typeof loadRetroHistory === "function") loadRetroHistory();
+      if (typeof loadCommunityFeed === "function") loadCommunityFeed();
     }
 
     // Dev mode: skip auth on localhost
@@ -4294,450 +4420,530 @@
           if (el) { el.classList.add('active'); }
           window.scrollTo(0, 0);
           // Load data when switching to community or analysis tab
-          if (target === 'community') { loadDailyTab(); loadRetroHistory(); loadFeed(); }
+          if (target === 'community') { if (typeof loadCommunityFeed === 'function') loadCommunityFeed(); }
           if (target === 'analysis') { renderAnalysisCharts(); if (typeof refreshAll === 'function') refreshAll(); }
         });
       });
     })();
 
-    /* ─── DAILY GOALS (일일 목표) ────────────────────── */
+    /* ─── COMMUNITY v2: 소셜 피드 + 게시물 작성 + 댓글 + 좋아요 ─── */
     (function() {
-      var dailyDate = new Date();
-      var dailyTasks = [];
-      var MAX_DAILY = 5;
-      var dateText = document.getElementById('dailyDateText');
-      var todayBadge = document.getElementById('dailyDateToday');
-      var taskList = document.getElementById('dailyTaskList');
-      var taskInput = document.getElementById('dailyTaskInput');
-      var addBtn = document.getElementById('dailyTaskAddBtn');
-      var completion = document.getElementById('dailyCompletion');
-      var saveBtn = document.getElementById('dailySaveBtn');
+      var feedEl = document.getElementById('commFeed');
+      var modal = document.getElementById('commModal');
+      var typeSelect = document.getElementById('commTypeSelect');
+      var formEl = document.getElementById('commForm');
+      var currentFilter = 'all';
+      var feedData = [];
+      var feedLikes = {};
+      var feedCommentCounts = {};
 
-      function dateStr(d) {
-        return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-      }
-      function isToday(d) {
-        var t = new Date(); return dateStr(d) === dateStr(t);
-      }
-
-      function updateDateDisplay() {
-        dateText.textContent = dateStr(dailyDate);
-        todayBadge.style.display = isToday(dailyDate) ? 'inline' : 'none';
-      }
-
-      function loadDailyGoals() {
-        var key = 'temporal-daily-' + dateStr(dailyDate);
-        try { dailyTasks = JSON.parse(localStorage.getItem(key)) || []; } catch(e) { dailyTasks = []; }
-        renderDailyTasks();
-      }
-
-      function saveDailyGoals() {
-        var key = 'temporal-daily-' + dateStr(dailyDate);
-        localStorage.setItem(key, JSON.stringify(dailyTasks));
-        // Supabase sync
-        if (_currentUser && typeof SupaDB !== 'undefined') {
-          SupaDB.saveDailyGoals(dateStr(dailyDate), dailyTasks);
-        }
-      }
-
-      function renderDailyTasks() {
-        taskList.innerHTML = '';
-        var done = 0;
-        dailyTasks.forEach(function(task, i) {
-          if (task.completed) done++;
-          var item = document.createElement('div');
-          item.className = 'task-item' + (task.completed ? ' completed' : '');
-          item.innerHTML = '<label class="panel-checkbox"><input type="checkbox"'+(task.completed?' checked':'')+'/><span class="check-box"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span></label><span class="task-text">'+escHtml(task.text)+'</span><button class="task-remove">&times;</button>';
-          var cb = item.querySelector('input');
-          cb.addEventListener('change', function() { dailyTasks[i].completed = cb.checked; renderDailyTasks(); });
-          var rm = item.querySelector('.task-remove');
-          rm.addEventListener('click', function() { dailyTasks.splice(i, 1); renderDailyTasks(); });
-          taskList.appendChild(item);
-        });
-        completion.innerHTML = '완료 <b>' + done + '</b> / ' + dailyTasks.length;
-        taskInput.disabled = dailyTasks.length >= MAX_DAILY;
-        addBtn.disabled = dailyTasks.length >= MAX_DAILY;
-      }
-
-      function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-      addBtn.addEventListener('click', function() {
-        var v = taskInput.value.trim();
-        if (!v || dailyTasks.length >= MAX_DAILY) return;
-        dailyTasks.push({ text: v, completed: false });
-        taskInput.value = '';
-        renderDailyTasks();
-      });
-      taskInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') addBtn.click(); });
-
-      document.getElementById('dailyDatePrev').addEventListener('click', function() {
-        dailyDate.setDate(dailyDate.getDate() - 1); updateDateDisplay(); loadDailyGoals();
-      });
-      document.getElementById('dailyDateNext').addEventListener('click', function() {
-        dailyDate.setDate(dailyDate.getDate() + 1); updateDateDisplay(); loadDailyGoals();
-      });
-
-      saveBtn.addEventListener('click', function() {
-        saveDailyGoals();
-        saveBtn.textContent = '✅ 저장 완료!';
-        setTimeout(function() { saveBtn.textContent = '💾 저장하기'; }, 1500);
-        // Share to feed if enabled
-        if (document.getElementById('shareDaily').checked && _currentUser) {
-          shareToFeed('daily', { date: dateStr(dailyDate), tasks: dailyTasks });
-        }
-      });
-
-      // Expose for tab switching
-      window.loadDailyTab = function() { updateDateDisplay(); loadDailyGoals(); };
-      updateDateDisplay();
-      loadDailyGoals();
-    })();
-
-    /* ─── DAILY RETROSPECTIVE (일일 회고) ───────────── */
-    (function() {
-      var retroDate = new Date();
-      var scoreSlider = document.getElementById('retroScoreSlider');
-      var scoreValue = document.getElementById('retroScoreValue');
-      var wentWell = document.getElementById('retroWentWell');
-      var toImprove = document.getElementById('retroToImprove');
-      var tagInput = document.getElementById('retroTagInput');
-      var saveBtn = document.getElementById('retroSaveBtn');
-      var aiBtn = document.getElementById('retroAiBtn');
-      var historyEl = document.getElementById('retroHistory');
-      var dateText = document.getElementById('retroDateText');
-      var todayBadge = document.getElementById('retroDateToday');
-      var selectedTags = [];
-
-      function dateStr(d) {
-        return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-      }
-      function isToday(d) { return dateStr(d) === dateStr(new Date()); }
-
-      function updateRetroDateDisplay() {
-        dateText.textContent = dateStr(retroDate);
-        todayBadge.style.display = isToday(retroDate) ? 'inline' : 'none';
-      }
-
-      // Score slider color
-      scoreSlider.addEventListener('input', function() {
-        var v = parseInt(scoreSlider.value);
-        scoreValue.textContent = v;
-        if (v <= 3) { scoreValue.style.color = 'var(--danger)'; }
-        else if (v <= 6) { scoreValue.style.color = 'var(--warn)'; }
-        else { scoreValue.style.color = 'var(--success)'; }
-      });
-
-      // Tag preset chips
-      document.querySelectorAll('.retro-tag-chip').forEach(function(chip) {
-        chip.addEventListener('click', function() {
-          var tag = chip.getAttribute('data-tag');
-          if (chip.classList.contains('selected')) {
-            chip.classList.remove('selected');
-            selectedTags = selectedTags.filter(function(t) { return t !== tag; });
-          } else {
-            chip.classList.add('selected');
-            selectedTags.push(tag);
-          }
-        });
-      });
-
-      function getTimeStr() {
+      function escH(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+      function todayStr() {
         var d = new Date();
-        return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+        return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      }
+      function getTimeAgo(iso) {
+        var diff = (Date.now() - new Date(iso).getTime()) / 1000;
+        if (diff < 60) return '방금';
+        if (diff < 3600) return Math.floor(diff/60) + '분 전';
+        if (diff < 86400) return Math.floor(diff/3600) + '시간 전';
+        return Math.floor(diff/86400) + '일 전';
+      }
+      function getUserName() { return (_currentUser && _currentUser.user_metadata && _currentUser.user_metadata.full_name) || (_currentUser && _currentUser.email) || '익명'; }
+      function getUserAvatar() { return (_currentUser && _currentUser.user_metadata && _currentUser.user_metadata.avatar_url) || ''; }
+
+      /* ── Filter Tabs ── */
+      document.querySelectorAll('.comm-filter').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('.comm-filter').forEach(function(b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          currentFilter = btn.getAttribute('data-filter');
+          renderFeed();
+        });
+      });
+
+      /* ── Modal Open/Close ── */
+      document.getElementById('commWriteBtn').addEventListener('click', function() {
+        modal.style.display = 'flex';
+        typeSelect.style.display = 'flex';
+        formEl.style.display = 'none';
+        formEl.innerHTML = '';
+      });
+      document.getElementById('commModalClose').addEventListener('click', function() {
+        modal.style.display = 'none';
+      });
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) modal.style.display = 'none';
+      });
+
+      /* ── Type Selection → Show Form ── */
+      document.querySelectorAll('.comm-type-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var type = btn.getAttribute('data-type');
+          typeSelect.style.display = 'none';
+          formEl.style.display = 'block';
+          buildForm(type);
+        });
+      });
+
+      /* ── Build Form by Type ── */
+      function buildForm(type) {
+        if (type === 'daily') buildDailyForm();
+        else if (type === 'retro') buildRetroForm();
+        else if (type === 'free') buildFreeForm();
       }
 
-      function getAllTags() {
-        var custom = tagInput.value.split(',').map(function(t) { return t.trim(); }).filter(Boolean);
-        return selectedTags.concat(custom).filter(function(v, i, a) { return a.indexOf(v) === i; });
-      }
+      function buildDailyForm() {
+        var tasks = [];
+        var MAX = 5;
+        formEl.innerHTML =
+          '<div class="comm-form-title"><button class="comm-form-back">&larr;</button>📋 오늘의 목표</div>' +
+          '<div id="mDailyTaskList" class="task-list"></div>' +
+          '<div class="task-add" style="margin-bottom:.8rem"><input type="text" class="task-add-input" id="mDailyInput" placeholder="오늘의 실행 항목..." maxlength="80"><button class="task-add-btn" id="mDailyAddBtn">+</button></div>' +
+          '<div class="daily-completion" id="mDailyCompletion">목표 <b>0</b> / 5</div>' +
+          '<div class="retro-field"><label>💬 한마디 (선택)</label><textarea id="mDailyNote" placeholder="오늘의 다짐을 적어보세요..." style="min-height:50px"></textarea></div>' +
+          '<button class="daily-save-btn" id="mDailySave">📋 게시하기</button>';
 
-      function resetRetroForm() {
-        scoreSlider.value = 5; scoreSlider.dispatchEvent(new Event('input'));
-        wentWell.value = '';
-        toImprove.value = '';
-        tagInput.value = '';
-        selectedTags = [];
-        document.querySelectorAll('.retro-tag-chip').forEach(function(c) { c.classList.remove('selected'); });
-        aiBtn.disabled = true;
-      }
+        // Load today's existing daily goals
+        try { tasks = JSON.parse(localStorage.getItem('temporal-daily-' + todayStr())) || []; } catch(e) {}
+        var tl = formEl.querySelector('#mDailyTaskList');
+        var inp = formEl.querySelector('#mDailyInput');
+        var addB = formEl.querySelector('#mDailyAddBtn');
+        var comp = formEl.querySelector('#mDailyCompletion');
 
-      function loadRetroForDate() {
-        var ds = dateStr(retroDate);
-        var existing = localStorage.getItem('temporal-retro-' + ds);
-        resetRetroForm();
-        if (existing) {
-          var r = JSON.parse(existing);
-          scoreSlider.value = r.score; scoreSlider.dispatchEvent(new Event('input'));
-          wentWell.value = r.went_well || '';
-          toImprove.value = r.to_improve || '';
-          selectedTags = [];
-          (r.tags || []).forEach(function(t) {
-            var chip = document.querySelector('.retro-tag-chip[data-tag="'+t+'"]');
-            if (chip) { chip.classList.add('selected'); selectedTags.push(t); }
+        function renderT() {
+          tl.innerHTML = '';
+          tasks.forEach(function(task, i) {
+            var item = document.createElement('div');
+            item.className = 'task-item' + (task.completed ? ' completed' : '');
+            item.innerHTML = '<label class="panel-checkbox"><input type="checkbox"'+(task.completed?' checked':'')+'/><span class="check-box"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span></label><span class="task-text">'+escH(task.text)+'</span><button class="task-remove">&times;</button>';
+            item.querySelector('input').addEventListener('change', function() { tasks[i].completed = this.checked; renderT(); });
+            item.querySelector('.task-remove').addEventListener('click', function() { tasks.splice(i, 1); renderT(); });
+            tl.appendChild(item);
           });
-          aiBtn.disabled = false;
+          comp.innerHTML = '목표 <b>' + tasks.length + '</b> / ' + MAX;
+          inp.disabled = tasks.length >= MAX;
+          addB.disabled = tasks.length >= MAX;
         }
+        renderT();
+
+        addB.addEventListener('click', function() {
+          var v = inp.value.trim();
+          if (!v || tasks.length >= MAX) return;
+          tasks.push({ text: v, completed: false });
+          inp.value = ''; renderT();
+        });
+        inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') addB.click(); });
+
+        formEl.querySelector('.comm-form-back').addEventListener('click', function() {
+          formEl.style.display = 'none'; typeSelect.style.display = 'flex';
+        });
+
+        formEl.querySelector('#mDailySave').addEventListener('click', function() {
+          if (tasks.length === 0) return;
+          var ds = todayStr();
+          var note = formEl.querySelector('#mDailyNote').value.trim();
+          // Save to localStorage + Supabase
+          localStorage.setItem('temporal-daily-' + ds, JSON.stringify(tasks));
+          if (_currentUser && typeof SupaDB !== 'undefined' && SupaDB.saveDailyGoals) {
+            SupaDB.saveDailyGoals(ds, tasks);
+          }
+          // Post to feed
+          shareToFeed('daily', { date: ds, tasks: tasks, note: note });
+          modal.style.display = 'none';
+        });
       }
 
-      // Date navigation
-      document.getElementById('retroDatePrev').addEventListener('click', function() {
-        retroDate.setDate(retroDate.getDate() - 1);
-        updateRetroDateDisplay(); loadRetroForDate();
-      });
-      document.getElementById('retroDateNext').addEventListener('click', function() {
-        retroDate.setDate(retroDate.getDate() + 1);
-        updateRetroDateDisplay(); loadRetroForDate();
-      });
+      function buildRetroForm() {
+        var selectedTags = [];
+        formEl.innerHTML =
+          '<div class="comm-form-title"><button class="comm-form-back">&larr;</button>📝 오늘의 회고</div>' +
+          '<div class="retro-score-section">' +
+            '<div class="retro-score-label"><span>오늘의 점수</span><span class="retro-score-value" id="mRetroScoreVal" style="color:var(--warn)">5</span></div>' +
+            '<input type="range" class="retro-score-slider" id="mRetroSlider" min="1" max="10" value="5">' +
+            '<div class="retro-score-faces"><span>😞 1</span><span>😐 5</span><span>🔥 10</span></div>' +
+          '</div>' +
+          '<div class="retro-field"><label>✅ 오늘 잘한 점 (성과)</label><textarea id="mRetroWell" placeholder="오늘 잘한 일, 달성한 성과를 적어보세요..."></textarea></div>' +
+          '<div class="retro-field"><label>💡 아쉬운 점 (보완할 점)</label><textarea id="mRetroImprove" placeholder="아쉬웠던 점, 다음에 개선할 부분을 적어보세요..."></textarea></div>' +
+          '<div class="retro-tags-section">' +
+            '<label style="display:block;font-family:\'Noto Sans KR\',sans-serif;font-size:.75rem;font-weight:500;color:var(--text-dim);margin-bottom:.4rem;letter-spacing:.04em">🏷️ 태그</label>' +
+            '<div class="retro-tags-presets" id="mRetroTagPresets">' +
+              ['운동','공부','업무','습관','건강','관계','독서','창작'].map(function(t) { return '<span class="retro-tag-chip" data-tag="'+t+'">'+t+'</span>'; }).join('') +
+            '</div>' +
+            '<input type="text" class="retro-tag-input" id="mRetroTagInput" placeholder="직접 입력 (쉼표로 구분)">' +
+          '</div>' +
+          '<button class="daily-save-btn" id="mRetroSave">📝 게시하기</button>';
 
-      // Save retrospective
-      saveBtn.addEventListener('click', function() {
-        var ds = dateStr(retroDate);
-        var data = {
-          date: ds,
-          time: getTimeStr(),
-          score: parseInt(scoreSlider.value),
-          went_well: wentWell.value.trim(),
-          to_improve: toImprove.value.trim(),
-          tags: getAllTags(),
-          created_at: new Date().toISOString()
-        };
-        if (!data.went_well && !data.to_improve) {
-          saveBtn.textContent = '⚠️ 내용을 입력해주세요';
-          setTimeout(function() { saveBtn.textContent = '💾 회고 저장하기'; }, 1500);
+        var slider = formEl.querySelector('#mRetroSlider');
+        var scoreVal = formEl.querySelector('#mRetroScoreVal');
+        slider.addEventListener('input', function() {
+          var v = parseInt(slider.value); scoreVal.textContent = v;
+          scoreVal.style.color = v <= 3 ? 'var(--danger)' : v <= 6 ? 'var(--warn)' : 'var(--success)';
+        });
+
+        formEl.querySelectorAll('.retro-tag-chip').forEach(function(chip) {
+          chip.addEventListener('click', function() {
+            var tag = chip.getAttribute('data-tag');
+            if (chip.classList.contains('selected')) {
+              chip.classList.remove('selected');
+              selectedTags = selectedTags.filter(function(t) { return t !== tag; });
+            } else { chip.classList.add('selected'); selectedTags.push(tag); }
+          });
+        });
+
+        formEl.querySelector('.comm-form-back').addEventListener('click', function() {
+          formEl.style.display = 'none'; typeSelect.style.display = 'flex';
+        });
+
+        formEl.querySelector('#mRetroSave').addEventListener('click', function() {
+          var well = formEl.querySelector('#mRetroWell').value.trim();
+          var improve = formEl.querySelector('#mRetroImprove').value.trim();
+          if (!well && !improve) { this.textContent = '⚠️ 내용을 입력해주세요'; var self = this; setTimeout(function() { self.textContent = '📝 게시하기'; }, 1500); return; }
+          var ds = todayStr();
+          var custom = formEl.querySelector('#mRetroTagInput').value.split(',').map(function(t) { return t.trim(); }).filter(Boolean);
+          var allTags = selectedTags.concat(custom).filter(function(v,i,a) { return a.indexOf(v)===i; });
+          var data = {
+            date: ds, time: new Date().toTimeString().slice(0,5),
+            score: parseInt(slider.value), went_well: well, to_improve: improve,
+            tags: allTags, created_at: new Date().toISOString()
+          };
+          // Save to localStorage
+          localStorage.setItem('temporal-retro-' + ds, JSON.stringify(data));
+          var dates = JSON.parse(localStorage.getItem('temporal-retro-dates') || '[]');
+          if (dates.indexOf(ds) === -1) dates.push(ds);
+          localStorage.setItem('temporal-retro-dates', JSON.stringify(dates));
+          // Supabase sync
+          if (_currentUser && typeof SupaDB !== 'undefined' && SupaDB.saveRetro) {
+            SupaDB.saveRetro(ds, data);
+          }
+          // Post to feed
+          shareToFeed('retro', data);
+          modal.style.display = 'none';
+        });
+      }
+
+      function buildFreeForm() {
+        formEl.innerHTML =
+          '<div class="comm-form-title"><button class="comm-form-back">&larr;</button>💬 자유 게시물</div>' +
+          '<div class="retro-field"><label>제목</label><input type="text" id="mFreeTitle" placeholder="제목을 입력하세요..." maxlength="100"></div>' +
+          '<div class="retro-field"><label>본문</label><textarea id="mFreeBody" placeholder="자유롭게 생각을 적어보세요..." style="min-height:120px"></textarea></div>' +
+          '<button class="daily-save-btn" id="mFreeSave">💬 게시하기</button>';
+
+        formEl.querySelector('.comm-form-back').addEventListener('click', function() {
+          formEl.style.display = 'none'; typeSelect.style.display = 'flex';
+        });
+
+        formEl.querySelector('#mFreeSave').addEventListener('click', function() {
+          var title = formEl.querySelector('#mFreeTitle').value.trim();
+          var body = formEl.querySelector('#mFreeBody').value.trim();
+          if (!body) { this.textContent = '⚠️ 본문을 입력해주세요'; var self = this; setTimeout(function() { self.textContent = '💬 게시하기'; }, 1500); return; }
+          shareToFeed('free', { title: title, body: body, date: todayStr() });
+          modal.style.display = 'none';
+        });
+      }
+
+      /* ── Share to Feed (Supabase) ── */
+      function shareToFeed(type, content) {
+        if (!_currentUser) return;
+        _supabase.from('community_feed').insert({
+          user_id: _currentUser.id, feed_type: type, content: content,
+          display_name: getUserName(), avatar_url: getUserAvatar(),
+          shared_at: new Date().toISOString()
+        }).then(function() { loadFeed(); }).catch(function() {});
+      }
+      window.shareToFeed = shareToFeed;
+
+      /* ── Load Feed ── */
+      function loadFeed() {
+        _supabase.from('community_feed')
+          .select('*')
+          .order('shared_at', { ascending: false })
+          .limit(50)
+          .then(function(res) {
+            feedData = (res.data || []);
+            // Load likes and comment counts in parallel
+            if (feedData.length > 0) {
+              loadFeedMeta(feedData.map(function(f) { return f.id; }));
+            }
+            renderFeed();
+          });
+      }
+      window.loadFeed = loadFeed;
+
+      function loadFeedMeta(feedIds) {
+        // Load likes
+        _supabase.from('feed_likes').select('feed_id, user_id').in('feed_id', feedIds)
+          .then(function(res) {
+            feedLikes = {};
+            (res.data || []).forEach(function(l) {
+              if (!feedLikes[l.feed_id]) feedLikes[l.feed_id] = [];
+              feedLikes[l.feed_id].push(l.user_id);
+            });
+            renderFeed();
+          }).catch(function(){});
+        // Load comment counts
+        _supabase.from('feed_comments').select('feed_id').in('feed_id', feedIds)
+          .then(function(res) {
+            feedCommentCounts = {};
+            (res.data || []).forEach(function(c) {
+              feedCommentCounts[c.feed_id] = (feedCommentCounts[c.feed_id] || 0) + 1;
+            });
+            renderFeed();
+          }).catch(function(){});
+      }
+
+      /* ── Render Feed ── */
+      function renderFeed() {
+        var filtered = feedData;
+        if (currentFilter !== 'all') {
+          filtered = feedData.filter(function(item) {
+            if (currentFilter === 'daily') return item.feed_type === 'daily';
+            if (currentFilter === 'retro') return item.feed_type === 'retro' || item.feed_type === 'ai_analysis';
+            if (currentFilter === 'free') return item.feed_type === 'free';
+            return true;
+          });
+        }
+        if (filtered.length === 0) {
+          feedEl.innerHTML = '<div class="feed-empty"><span class="feed-empty-icon">🌌</span>아직 게시물이 없습니다.<br>첫 번째 게시물을 작성해보세요!</div>';
           return;
         }
-        // Save to localStorage
-        var key = 'temporal-retro-' + ds;
-        localStorage.setItem(key, JSON.stringify(data));
-        // Save list of retro dates
-        var dates = JSON.parse(localStorage.getItem('temporal-retro-dates') || '[]');
-        if (dates.indexOf(ds) === -1) dates.push(ds);
-        localStorage.setItem('temporal-retro-dates', JSON.stringify(dates));
-        // Supabase sync
-        if (_currentUser && typeof SupaDB !== 'undefined') {
-          SupaDB.saveRetro(ds, data);
-        }
-        // Share to feed if enabled
-        if (document.getElementById('shareRetro').checked && _currentUser) {
-          shareToFeed('retro', data);
-        }
-        saveBtn.textContent = '✅ 저장 완료!';
-        aiBtn.disabled = false;
-        setTimeout(function() { saveBtn.textContent = '💾 회고 저장하기'; }, 1500);
-        loadRetroHistory();
-      });
+        feedEl.innerHTML = '';
+        filtered.forEach(function(item) { feedEl.appendChild(buildFeedCard(item)); });
+      }
 
-      // AI analysis for selected date
-      aiBtn.addEventListener('click', function() {
-        var ds = dateStr(retroDate);
-        var retroData = localStorage.getItem('temporal-retro-' + ds);
-        if (!retroData) { aiBtn.disabled = true; return; }
-        var retro = JSON.parse(retroData);
+      function buildFeedCard(item) {
+        var card = document.createElement('div');
+        card.className = 'feed-card';
+        card.setAttribute('data-feed-id', item.id);
+
+        var badgeLabels = { weekly: '주간', daily: '오늘의 목표', retro: '오늘의 회고', ai_analysis: 'AI 분석', free: '자유' };
+        var badgeClass = 'badge-' + (item.feed_type === 'ai_analysis' ? 'ai' : item.feed_type);
+        var avatarHtml = item.avatar_url
+          ? '<img class="feed-avatar" src="' + item.avatar_url + '" alt="">'
+          : '<div class="feed-avatar" style="background:rgba(212,165,116,.15);display:flex;align-items:center;justify-content:center;font-size:.8rem">👤</div>';
+
+        var contentHtml = formatContent(item.feed_type, item.content);
+
+        // Like info
+        var likes = feedLikes[item.id] || [];
+        var likeCount = likes.length;
+        var isLiked = _currentUser && likes.indexOf(_currentUser.id) !== -1;
+        var commentCount = feedCommentCounts[item.id] || 0;
+
+        // Is author?
+        var isAuthor = _currentUser && item.user_id === _currentUser.id;
+        var aiBtnHtml = isAuthor && item.feed_type !== 'ai_analysis' && item.feed_type !== 'free'
+          ? '<button class="feed-ai-btn" data-feed-id="' + item.id + '">🤖 AI 분석</button>'
+          : '';
+
+        card.innerHTML =
+          '<div class="feed-card-header">' + avatarHtml +
+            '<span class="feed-name">' + escH(item.display_name || '익명') + '</span>' +
+            '<span class="feed-badge ' + badgeClass + '">' + (badgeLabels[item.feed_type] || '') + '</span>' +
+            '<span class="feed-time">' + getTimeAgo(item.shared_at) + '</span>' +
+          '</div>' +
+          '<div class="feed-content">' + contentHtml + '</div>' +
+          '<div class="feed-actions">' +
+            '<button class="feed-action-btn ' + (isLiked ? 'liked' : '') + '" data-action="like" data-feed-id="' + item.id + '">' +
+              '<span class="action-icon">' + (isLiked ? '❤️' : '🤍') + '</span> ' + likeCount +
+            '</button>' +
+            '<button class="feed-action-btn" data-action="comment" data-feed-id="' + item.id + '">' +
+              '<span class="action-icon">💬</span> ' + commentCount +
+            '</button>' +
+            aiBtnHtml +
+          '</div>' +
+          '<div class="feed-comments" data-feed-id="' + item.id + '" style="display:none"></div>';
+
+        // Event: Like
+        card.querySelector('[data-action="like"]').addEventListener('click', function() { toggleLike(item.id); });
+        // Event: Toggle comments
+        card.querySelector('[data-action="comment"]').addEventListener('click', function() { toggleComments(item.id, card); });
+        // Event: AI analysis
+        var aiB = card.querySelector('.feed-ai-btn');
+        if (aiB) aiB.addEventListener('click', function() { requestPostAI(item); });
+
+        return card;
+      }
+
+      function formatContent(type, content) {
+        if (!content) return '';
+        if (type === 'daily') {
+          var tasks = content.tasks || [];
+          var done = tasks.filter(function(t) { return t.completed; }).length;
+          var html = '<div style="margin-bottom:.4rem"><span class="feed-score">' + done + '/' + tasks.length + '</span> 완료</div>';
+          html += tasks.map(function(t) { return '<div style="font-size:.7rem;color:' + (t.completed ? 'var(--success)' : 'var(--text-dim)') + '">' + (t.completed ? '✅ ' : '☐ ') + escH(t.text) + '</div>'; }).join('');
+          if (content.note) html += '<div style="font-size:.7rem;color:var(--text-dim);margin-top:.4rem;font-style:italic">💬 ' + escH(content.note) + '</div>';
+          return html;
+        }
+        if (type === 'retro') {
+          var sc = content.score || 5;
+          var scColor = sc >= 7 ? 'var(--success)' : sc >= 4 ? 'var(--warn)' : 'var(--danger)';
+          return '<div style="margin-bottom:.3rem"><span class="feed-score" style="color:' + scColor + '">' + sc + '/10</span></div>' +
+            (content.went_well ? '<div style="font-size:.7rem;margin-bottom:.2rem">✅ ' + escH(content.went_well).substring(0,200) + '</div>' : '') +
+            (content.to_improve ? '<div style="font-size:.7rem;margin-bottom:.2rem">💡 ' + escH(content.to_improve).substring(0,200) + '</div>' : '') +
+            ((content.tags && content.tags.length) ? '<div style="display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.3rem">' + content.tags.map(function(t) { return '<span style="padding:.1rem .4rem;border-radius:10px;font-size:.55rem;background:rgba(212,165,116,.08);border:1px solid rgba(212,165,116,.15);color:var(--gold-dim)">' + escH(t) + '</span>'; }).join('') + '</div>' : '');
+        }
+        if (type === 'ai_analysis') {
+          return '<div style="white-space:pre-wrap;font-size:.73rem;line-height:1.7">' + escH(content.analysis || '').substring(0, 500) + '</div>';
+        }
+        if (type === 'free') {
+          return (content.title ? '<div style="font-weight:600;margin-bottom:.3rem;font-size:.8rem">' + escH(content.title) + '</div>' : '') +
+            '<div style="font-size:.73rem;white-space:pre-wrap;line-height:1.7">' + escH(content.body || '') + '</div>';
+        }
+        return '';
+      }
+
+      /* ── Like Toggle ── */
+      function toggleLike(feedId) {
+        if (!_currentUser) return;
+        var likes = feedLikes[feedId] || [];
+        var idx = likes.indexOf(_currentUser.id);
+        if (idx !== -1) {
+          // Remove like
+          _supabase.from('feed_likes').delete().eq('feed_id', feedId).eq('user_id', _currentUser.id)
+            .then(function() { likes.splice(idx, 1); feedLikes[feedId] = likes; renderFeed(); });
+        } else {
+          // Add like
+          _supabase.from('feed_likes').insert({ feed_id: feedId, user_id: _currentUser.id })
+            .then(function() { likes.push(_currentUser.id); feedLikes[feedId] = likes; renderFeed(); });
+        }
+      }
+
+      /* ── Comments ── */
+      function toggleComments(feedId, card) {
+        var commSection = card.querySelector('.feed-comments[data-feed-id="' + feedId + '"]');
+        if (commSection.style.display === 'none') {
+          commSection.style.display = 'block';
+          loadComments(feedId, commSection);
+        } else {
+          commSection.style.display = 'none';
+        }
+      }
+
+      function loadComments(feedId, container) {
+        container.innerHTML = '<div style="text-align:center;padding:.5rem;font-size:.6rem;color:var(--text-dim)">댓글 불러오는 중...</div>';
+        _supabase.from('feed_comments').select('*').eq('feed_id', feedId).order('created_at', { ascending: true })
+          .then(function(res) {
+            var comments = res.data || [];
+            var html = '<div class="feed-comments-list">';
+            if (comments.length === 0) {
+              html += '<div style="text-align:center;padding:.4rem;font-size:.65rem;color:var(--text-dim)">아직 댓글이 없습니다.</div>';
+            }
+            comments.forEach(function(c) {
+              var isAI = c.is_ai;
+              var avHtml = isAI ? '<div class="comment-avatar ai-avatar-sm">🤖</div>'
+                : (c.avatar_url ? '<img class="comment-avatar" src="' + c.avatar_url + '" alt="">'
+                : '<div class="comment-avatar" style="background:rgba(212,165,116,.12);display:flex;align-items:center;justify-content:center;font-size:.5rem">👤</div>');
+              html += '<div class="comment-item' + (isAI ? ' ai-comment' : '') + '">' +
+                avHtml +
+                '<div class="comment-body">' +
+                  '<div class="comment-name">' + (isAI ? '🤖 Claude AI' : escH(c.display_name || '익명')) + '</div>' +
+                  '<div class="comment-text">' + escH(c.content) + '</div>' +
+                  '<span class="comment-time">' + getTimeAgo(c.created_at) + '</span>' +
+                '</div></div>';
+            });
+            html += '</div>';
+            // Comment input
+            html += '<div class="comment-input-wrap">' +
+              '<input type="text" class="comment-input" placeholder="댓글을 입력하세요..." data-feed-id="' + feedId + '">' +
+              '<button class="comment-submit" data-feed-id="' + feedId + '">등록</button>' +
+            '</div>';
+            container.innerHTML = html;
+
+            // Submit event
+            var submitBtn = container.querySelector('.comment-submit');
+            var inp = container.querySelector('.comment-input');
+            submitBtn.addEventListener('click', function() { submitComment(feedId, inp, container); });
+            inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') submitComment(feedId, inp, container); });
+          });
+      }
+
+      function submitComment(feedId, inputEl, container) {
+        var text = inputEl.value.trim();
+        if (!text || !_currentUser) return;
+        _supabase.from('feed_comments').insert({
+          feed_id: feedId, user_id: _currentUser.id, content: text,
+          display_name: getUserName(), avatar_url: getUserAvatar(), is_ai: false
+        }).then(function() {
+          inputEl.value = '';
+          feedCommentCounts[feedId] = (feedCommentCounts[feedId] || 0) + 1;
+          loadComments(feedId, container);
+          renderFeed();
+        });
+      }
+
+      /* ── AI Analysis on Post ── */
+      function requestPostAI(item) {
+        var aiBtn = feedEl.querySelector('.feed-ai-btn[data-feed-id="' + item.id + '"]');
+        if (!aiBtn || aiBtn.classList.contains('loading')) return;
         aiBtn.classList.add('loading');
-        aiBtn.disabled = true;
+        aiBtn.textContent = '🤖 분석 중...';
 
-        callClaudeAnalysis([retro], 'day').then(function(result) {
+        var retros = [];
+        if (item.feed_type === 'retro') {
+          retros = [item.content];
+        } else if (item.feed_type === 'daily') {
+          // Create a pseudo-retro from daily goals
+          var tasks = item.content.tasks || [];
+          var done = tasks.filter(function(t) { return t.completed; }).length;
+          retros = [{ date: item.content.date, score: Math.round((done / Math.max(tasks.length, 1)) * 10), went_well: tasks.filter(function(t){return t.completed}).map(function(t){return t.text}).join(', '), to_improve: tasks.filter(function(t){return !t.completed}).map(function(t){return t.text}).join(', '), tags: [] }];
+        } else if (item.feed_type === 'free') {
+          // Create a pseudo-retro from free post content
+          retros = [{ date: new Date().toISOString().slice(0,10), score: 5, went_well: (item.content.title || '') + ' — ' + (item.content.body || ''), to_improve: '', tags: ['자유글'] }];
+        }
+        if (retros.length === 0) { aiBtn.classList.remove('loading'); aiBtn.textContent = '🤖 AI 분석'; return; }
+
+        callClaudeAnalysis(retros, 'day').then(function(result) {
           aiBtn.classList.remove('loading');
-          aiBtn.disabled = false;
-          aiBtn.textContent = '✅ 분석 완료!';
-          setTimeout(function() { aiBtn.innerHTML = '<span class="spinner"></span>🤖 AI 오늘 분석'; }, 2000);
-          // Post to feed as AI comment
-          if (_currentUser) {
-            shareToFeed('ai_analysis', { analysis: result, period: 'day', date: ds });
-          }
+          aiBtn.textContent = '✅ 완료!';
+          setTimeout(function() { aiBtn.textContent = '🤖 AI 분석'; }, 2000);
+          // Save AI comment
+          _supabase.from('feed_comments').insert({
+            feed_id: item.id, user_id: _currentUser.id, content: result,
+            display_name: 'Claude AI', avatar_url: '', is_ai: true
+          }).then(function() {
+            feedCommentCounts[item.id] = (feedCommentCounts[item.id] || 0) + 1;
+            renderFeed();
+            // Auto-open comments
+            var card = feedEl.querySelector('[data-feed-id="' + item.id + '"].feed-card');
+            if (card) {
+              var cs = card.querySelector('.feed-comments');
+              if (cs) { cs.style.display = 'block'; loadComments(item.id, cs); }
+            }
+          });
         }).catch(function() {
           aiBtn.classList.remove('loading');
-          aiBtn.disabled = false;
-          aiBtn.textContent = '⚠️ 분석 실패';
-          setTimeout(function() { aiBtn.innerHTML = '<span class="spinner"></span>🤖 AI 오늘 분석'; }, 2000);
+          aiBtn.textContent = '⚠️ 실패';
+          setTimeout(function() { aiBtn.textContent = '🤖 AI 분석'; }, 2000);
         });
-      });
-
-      // Load & render retro history
-      window.loadRetroHistory = function() {
-        var dates = JSON.parse(localStorage.getItem('temporal-retro-dates') || '[]');
-        dates.sort().reverse();
-        var html = '<div class="retro-history-title">📚 지난 회고</div>';
-        if (dates.length === 0) {
-          html += '<div style="text-align:center;padding:1.5rem;font-family:\'Noto Sans KR\',sans-serif;font-size:.75rem;color:var(--text-dim)">아직 작성한 회고가 없습니다.</div>';
-        }
-        dates.slice(0, 30).forEach(function(d) {
-          var r = JSON.parse(localStorage.getItem('temporal-retro-' + d) || 'null');
-          if (!r) return;
-          var scoreClass = r.score >= 7 ? 'score-high' : (r.score >= 4 ? 'score-mid' : 'score-low');
-          var tagsHtml = (r.tags || []).map(function(t) { return '<span class="retro-card-tag">' + escHtml(t) + '</span>'; }).join('');
-          html += '<div class="retro-card" data-date="' + d + '">' +
-            '<button class="retro-card-copy" data-date="' + d + '">📋 복사</button>' +
-            '<div class="retro-card-header"><span class="retro-card-date">' + d + (r.time ? ' ' + r.time : '') + '</span><span class="retro-card-score ' + scoreClass + '">' + r.score + '/10</span></div>' +
-            '<div class="retro-card-body">' +
-            (r.went_well ? '<div class="retro-card-section"><span class="retro-card-label">✅ 잘한 점</span>' + escHtml(r.went_well) + '</div>' : '') +
-            (r.to_improve ? '<div class="retro-card-section"><span class="retro-card-label">💡 아쉬운 점</span>' + escHtml(r.to_improve) + '</div>' : '') +
-            (tagsHtml ? '<div class="retro-card-tags">' + tagsHtml + '</div>' : '') +
-            '</div></div>';
-        });
-        historyEl.innerHTML = html;
-
-        // Copy buttons
-        historyEl.querySelectorAll('.retro-card-copy').forEach(function(btn) {
-          btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            var d = btn.getAttribute('data-date');
-            var r = JSON.parse(localStorage.getItem('temporal-retro-' + d) || '{}');
-            var text = '[' + d + (r.time ? ' ' + r.time : '') + '] 점수: ' + r.score + '/10\n' +
-              '잘한 점: ' + (r.went_well || '-') + '\n' +
-              '아쉬운 점: ' + (r.to_improve || '-') + '\n' +
-              '태그: ' + (r.tags || []).join(', ');
-            navigator.clipboard.writeText(text).then(function() {
-              btn.textContent = '✅ 복사됨';
-              btn.classList.add('copied');
-              setTimeout(function() { btn.textContent = '📋 복사'; btn.classList.remove('copied'); }, 1500);
-            });
-          });
-        });
-      };
-
-      function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-      // Initialize
-      updateRetroDateDisplay();
-      loadRetroForDate();
-    })();
-
-    /* ─── SHARE TO FEED ──────────────────────────────── */
-    function shareToFeed(type, content) {
-      if (!_currentUser) return;
-      var name = (_currentUser.user_metadata && _currentUser.user_metadata.full_name) || _currentUser.email || '';
-      var avatar = (_currentUser.user_metadata && _currentUser.user_metadata.avatar_url) || '';
-      // Save to Supabase community_feed
-      _supabase.from('community_feed').insert({
-        user_id: _currentUser.id,
-        feed_type: type,
-        content: content,
-        display_name: name,
-        avatar_url: avatar,
-        shared_at: new Date().toISOString()
-      }).then(function() {}).catch(function() {});
-    }
-
-    /* ─── COMMUNITY FEED ─────────────────────────────── */
-    function loadFeed() {
-      if (!_currentUser) return;
-      _supabase.from('community_feed')
-        .select('*')
-        .order('shared_at', { ascending: false })
-        .limit(50)
-        .then(function(res) {
-          if (!res.data || res.data.length === 0) return;
-          renderFeed(res.data);
-        });
-    }
-
-    function renderFeed(items) {
-      var el = document.getElementById('feedList');
-      if (!items || items.length === 0) {
-        el.innerHTML = '<div class="feed-empty"><span class="feed-empty-icon">🌌</span>아직 공유된 항목이 없습니다.<br>공유 설정을 켜고 목표를 저장해보세요.</div>';
-        return;
       }
-      el.innerHTML = '';
-      items.forEach(function(item) {
-        var card = document.createElement('div');
-        card.className = 'feed-card' + (item.feed_type === 'ai_analysis' ? ' ai-card' : '');
 
-        var badgeClass = 'badge-' + (item.feed_type === 'ai_analysis' ? 'ai' : item.feed_type);
-        var badgeText = { weekly: '주간', daily: '일일', retro: '회고', ai_analysis: 'AI 분석' }[item.feed_type] || '';
-        var timeAgo = getTimeAgo(item.shared_at);
-
-        var avatarHtml = '';
-        if (item.feed_type === 'ai_analysis') {
-          avatarHtml = '<div class="feed-avatar ai-avatar">🤖</div>';
-        } else if (item.avatar_url) {
-          avatarHtml = '<img class="feed-avatar" src="' + item.avatar_url + '" alt="">';
-        } else {
-          avatarHtml = '<div class="feed-avatar" style="background:rgba(212,165,116,.15);display:flex;align-items:center;justify-content:center;font-size:.7rem">👤</div>';
-        }
-
-        var contentHtml = formatFeedContent(item.feed_type, item.content);
-
-        card.innerHTML = '<div class="feed-card-header">' + avatarHtml +
-          '<span class="feed-name">' + (item.feed_type === 'ai_analysis' ? 'Claude AI' : escFeedHtml(item.display_name || '익명')) + '</span>' +
-          '<span class="feed-badge ' + badgeClass + '">' + badgeText + '</span>' +
-          '<span class="feed-time">' + timeAgo + '</span></div>' +
-          '<div class="feed-content">' + contentHtml + '</div>';
-        el.appendChild(card);
-      });
-    }
-
-    function formatFeedContent(type, content) {
-      if (!content) return '';
-      if (type === 'daily') {
-        var tasks = content.tasks || [];
-        var done = tasks.filter(function(t) { return t.completed; }).length;
-        return '<div><span class="feed-score">' + done + '/' + tasks.length + '</span> 완료 (' + (content.date || '') + ')</div>' +
-          tasks.map(function(t) { return '<div style="font-size:.7rem;color:' + (t.completed ? 'var(--success)' : 'var(--text-dim)') + '">' + (t.completed ? '✅ ' : '⬜ ') + escFeedHtml(t.text) + '</div>'; }).join('');
+      /* ── Realtime Subscriptions ── */
+      if (typeof _supabase !== 'undefined') {
+        try {
+          _supabase.channel('comm-feed-v2')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'community_feed' }, function() {
+              if (document.getElementById('tabCommunity').classList.contains('active')) loadFeed();
+            })
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'feed_comments' }, function() {
+              if (document.getElementById('tabCommunity').classList.contains('active')) loadFeed();
+            })
+            .subscribe();
+        } catch(e) {}
       }
-      if (type === 'retro') {
-        return '<div style="margin-bottom:.3rem"><span class="feed-score" style="color:' + (content.score >= 7 ? 'var(--success)' : content.score >= 4 ? 'var(--warn)' : 'var(--danger)') + '">' + content.score + '/10</span> (' + (content.date || '') + ')</div>' +
-          (content.went_well ? '<div style="font-size:.7rem;margin-bottom:.2rem">✅ ' + escFeedHtml(content.went_well).substring(0,100) + '</div>' : '') +
-          (content.to_improve ? '<div style="font-size:.7rem">💡 ' + escFeedHtml(content.to_improve).substring(0,100) + '</div>' : '');
-      }
-      if (type === 'ai_analysis') {
-        return '<div style="white-space:pre-wrap;font-size:.73rem;line-height:1.7">' + escFeedHtml(content.analysis || '').substring(0, 500) + '</div>';
-      }
-      if (type === 'weekly') {
-        return '<div style="font-size:.7rem">주간 목표 공유</div>';
-      }
-      return '';
-    }
 
-    function getTimeAgo(iso) {
-      var diff = (Date.now() - new Date(iso).getTime()) / 1000;
-      if (diff < 60) return '방금';
-      if (diff < 3600) return Math.floor(diff/60) + '분 전';
-      if (diff < 86400) return Math.floor(diff/3600) + '시간 전';
-      return Math.floor(diff/86400) + '일 전';
-    }
+      /* ── Expose for tab switch ── */
+      window.loadDailyTab = function() {}; // no longer needed as separate section
+      window.loadRetroHistory = function() {}; // no longer needed
+      window.loadCommunityFeed = loadFeed;
 
-    function escFeedHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+      /* ── Share settings: default ALL ON ── */
+      document.getElementById('shareWeekly').checked = true;
+      document.getElementById('shareDaily').checked = true;
+      document.getElementById('shareRetro').checked = true;
 
-    // Realtime subscription for community feed
-    if (typeof _supabase !== 'undefined') {
-      try {
-        _supabase.channel('community-feed')
-          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'community_feed' }, function(payload) {
-            // Reload feed if on community tab
-            if (document.getElementById('tabCommunity').classList.contains('active')) {
-              loadFeed();
-            }
-          })
-          .subscribe();
-      } catch(e) {}
-    }
-
-    /* ─── SHARE SETTINGS ─────────────────────────────── */
-    (function() {
-      var shareWeekly = document.getElementById('shareWeekly');
-      var shareDaily = document.getElementById('shareDaily');
-      var shareRetro = document.getElementById('shareRetro');
-      // Load from localStorage
-      shareWeekly.checked = localStorage.getItem('temporal-share-weekly') === 'true';
-      shareDaily.checked = localStorage.getItem('temporal-share-daily') === 'true';
-      shareRetro.checked = localStorage.getItem('temporal-share-retro') === 'true';
-      [shareWeekly, shareDaily, shareRetro].forEach(function(el) {
-        el.addEventListener('change', function() {
-          localStorage.setItem('temporal-share-' + el.id.replace('share','').toLowerCase(), el.checked);
-          // Sync to Supabase profile
-          if (_currentUser) {
-            _supabase.from('user_profiles').upsert({
-              user_id: _currentUser.id,
-              display_name: (_currentUser.user_metadata && _currentUser.user_metadata.full_name) || '',
-              avatar_url: (_currentUser.user_metadata && _currentUser.user_metadata.avatar_url) || '',
-              share_weekly: shareWeekly.checked,
-              share_daily: shareDaily.checked,
-              share_retro: shareRetro.checked
-            }, { onConflict: 'user_id' }).then(function(){});
-          }
-        });
-      });
+      // Initial load
+      if (typeof _currentUser !== 'undefined' && _currentUser) loadFeed();
     })();
 
     /* ─── ANALYSIS CHARTS ────────────────────────────── */
@@ -4745,6 +4951,10 @@
       renderScoreChart();
       renderDailyBars();
       renderTagFreq();
+      renderTagCorrelation();
+      renderRecoverySpeed();
+      renderRepeatedFailures();
+      renderUnconsciousConnections();
     };
 
     function renderScoreChart() {
@@ -4847,6 +5057,247 @@
       });
     }
 
+    /* ─── PATTERN INSIGHTS ────────────────────────────── */
+
+    // B-1: Tag↔Score Correlation
+    function renderTagCorrelation() {
+      var el = document.getElementById('tagCorrChart');
+      var dates = JSON.parse(localStorage.getItem('temporal-retro-dates') || '[]');
+      if (dates.length < 5) return; // Need at least 5 data points
+
+      var allRetros = [];
+      dates.forEach(function(d) {
+        var r = JSON.parse(localStorage.getItem('temporal-retro-' + d) || 'null');
+        if (r && r.score) allRetros.push(r);
+      });
+      if (allRetros.length < 5) return;
+
+      // Collect all tags
+      var tagSet = {};
+      allRetros.forEach(function(r) { (r.tags || []).forEach(function(t) { tagSet[t] = true; }); });
+      var tags = Object.keys(tagSet);
+      if (tags.length === 0) return;
+
+      // Calculate correlation for each tag
+      var correlations = [];
+      tags.forEach(function(tag) {
+        var withTag = [], withoutTag = [];
+        allRetros.forEach(function(r) {
+          if ((r.tags || []).indexOf(tag) !== -1) withTag.push(r.score);
+          else withoutTag.push(r.score);
+        });
+        if (withTag.length >= 2 && withoutTag.length >= 2) {
+          var avgWith = withTag.reduce(function(a,b) { return a+b; }, 0) / withTag.length;
+          var avgWithout = withoutTag.reduce(function(a,b) { return a+b; }, 0) / withoutTag.length;
+          var diff = Math.round((avgWith - avgWithout) * 10) / 10;
+          correlations.push({ tag: tag, diff: diff, count: withTag.length });
+        }
+      });
+
+      correlations.sort(function(a,b) { return Math.abs(b.diff) - Math.abs(a.diff); });
+      var top = correlations.slice(0, 5);
+      if (top.length === 0) return;
+
+      var maxDiff = Math.max.apply(null, top.map(function(c) { return Math.abs(c.diff); }));
+      if (maxDiff === 0) maxDiff = 1;
+
+      el.innerHTML = '';
+      top.forEach(function(c) {
+        var row = document.createElement('div');
+        row.className = 'tag-corr-row';
+        var pct = Math.round(Math.abs(c.diff) / maxDiff * 45);
+        var isPositive = c.diff >= 0;
+        row.innerHTML =
+          '<span class="tag-corr-label">' + c.tag + '</span>' +
+          '<div class="tag-corr-bar-wrap">' +
+            '<div class="tag-corr-center"></div>' +
+            '<div class="tag-corr-bar ' + (isPositive ? 'positive' : 'negative') + '" style="width:' + pct + '%"></div>' +
+          '</div>' +
+          '<span class="tag-corr-value ' + (isPositive ? 'positive' : 'negative') + '">' +
+            (isPositive ? '+' : '') + c.diff.toFixed(1) +
+          '</span>';
+        el.appendChild(row);
+      });
+    }
+
+    // B-3: Recovery Speed
+    function renderRecoverySpeed() {
+      var el = document.getElementById('recoverySpeed');
+      var dates = JSON.parse(localStorage.getItem('temporal-retro-dates') || '[]');
+      dates.sort();
+
+      var scores = [];
+      dates.forEach(function(d) {
+        var r = JSON.parse(localStorage.getItem('temporal-retro-' + d) || '{}');
+        if (r.score) scores.push({ date: d, score: r.score });
+      });
+      if (scores.length < 5) return;
+
+      // Find low points and recovery
+      var recoveries = [];
+      for (var i = 0; i < scores.length; i++) {
+        if (scores[i].score <= 4) {
+          // Find next recovery
+          for (var j = i + 1; j < scores.length; j++) {
+            if (scores[j].score >= 7) {
+              var d1 = new Date(scores[i].date);
+              var d2 = new Date(scores[j].date);
+              var days = Math.round((d2 - d1) / 86400000);
+              recoveries.push(days);
+              i = j; // Skip to recovery point
+              break;
+            }
+          }
+        }
+      }
+
+      if (recoveries.length === 0) {
+        el.innerHTML = '<div style="text-align:center;padding:.8rem;font-family:\'Noto Sans KR\',sans-serif;font-size:.73rem;color:var(--success)">저점 없이 꾸준한 상태입니다! 🎉</div>';
+        return;
+      }
+
+      var avg = Math.round(recoveries.reduce(function(a,b) { return a+b; }, 0) / recoveries.length * 10) / 10;
+      var recent = recoveries.slice(-3);
+      var trend = '';
+      if (recent.length >= 2) {
+        var lastAvg = recent[recent.length - 1];
+        var prevAvg = recent.slice(0, -1).reduce(function(a,b) { return a+b; }, 0) / (recent.length - 1);
+        trend = lastAvg < prevAvg ? '↑ 빨라지는 중' : lastAvg > prevAvg ? '↓ 느려지는 중' : '→ 유지 중';
+      }
+
+      el.innerHTML =
+        '<div class="recovery-speed-metric">' +
+          '<div><div class="recovery-big">' + avg + '</div><div class="recovery-unit">평균 회복 일수</div></div>' +
+          '<div style="flex:1;text-align:center"><span style="font-family:\'Noto Sans KR\',sans-serif;font-size:.65rem;color:var(--text-dim)">' +
+            recoveries.length + '회 회복 기록' +
+          '</span></div>' +
+          (trend ? '<div class="recovery-trend" title="' + trend + '">' +
+            (trend.indexOf('빨라') !== -1 ? '🟢' : trend.indexOf('느려') !== -1 ? '🔴' : '🟡') +
+          '</div>' : '') +
+        '</div>';
+    }
+
+    // B-2: Repeated Failures
+    function buildRepeatedFailures() {
+      var failCount = {};
+      // Scan weekly goals
+      for (var w = 1; w <= 52; w++) {
+        var g = goals[w];
+        if (g && g.tasks) {
+          g.tasks.forEach(function(t) {
+            if (!t.completed) {
+              var key = t.text.trim().toLowerCase();
+              if (key.length >= 2) {
+                if (!failCount[key]) failCount[key] = { text: t.text, count: 0, lastDate: '' };
+                failCount[key].count++;
+              }
+            }
+          });
+        }
+      }
+      // Scan daily goals (last 30 days)
+      var now = new Date();
+      for (var d = 0; d < 30; d++) {
+        var dt = new Date(now); dt.setDate(dt.getDate() - d);
+        var ds = dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0') + '-' + String(dt.getDate()).padStart(2,'0');
+        try {
+          var tasks = JSON.parse(localStorage.getItem('temporal-daily-' + ds)) || [];
+          tasks.forEach(function(t) {
+            if (!t.completed) {
+              var key = t.text.trim().toLowerCase();
+              if (key.length >= 2) {
+                if (!failCount[key]) failCount[key] = { text: t.text, count: 0, lastDate: '' };
+                failCount[key].count++;
+                if (!failCount[key].lastDate || ds > failCount[key].lastDate) failCount[key].lastDate = ds;
+              }
+            }
+          });
+        } catch(e) {}
+      }
+      // Filter: 2+ failures
+      var results = [];
+      for (var k in failCount) {
+        if (failCount[k].count >= 2) results.push(failCount[k]);
+      }
+      results.sort(function(a,b) { return b.count - a.count; });
+      return results;
+    }
+
+    function renderRepeatedFailures() {
+      var el = document.getElementById('repeatedFailures');
+      var failures = buildRepeatedFailures();
+      if (failures.length === 0) return;
+
+      el.innerHTML = '';
+      var list = document.createElement('div');
+      list.className = 'failure-list';
+      failures.slice(0, 8).forEach(function(f) {
+        var item = document.createElement('div');
+        item.className = 'failure-item' + (f.count >= 3 ? ' warning' : '');
+        item.innerHTML =
+          '<div class="failure-count">' + f.count + '</div>' +
+          '<div class="failure-text">' + String(f.text).replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</div>' +
+          (f.count >= 3 ? '<span class="failure-badge">⚠️ 주의</span>' : '');
+        list.appendChild(item);
+      });
+      el.appendChild(list);
+    }
+
+    // B-4: Unconscious↔Failure Connection
+    function renderUnconsciousConnections() {
+      var el = document.getElementById('unconsciousConnections');
+      var failures = buildRepeatedFailures();
+      if (failures.length === 0) return;
+
+      var mindEntries = [];
+      try { mindEntries = JSON.parse(localStorage.getItem('mindEntries') || localStorage.getItem('temporal-unconscious') || '[]'); } catch(e) {}
+      if (mindEntries.length === 0) return;
+
+      // Keyword matching
+      var connections = [];
+      failures.forEach(function(f) {
+        var fWords = f.text.toLowerCase().split(/[\s,.\-]+/).filter(function(w) { return w.length >= 2; });
+        mindEntries.forEach(function(m) {
+          var mText = ((m.from || '') + ' ' + (m.trigger || '')).toLowerCase();
+          var mWords = mText.split(/[\s,.\-]+/).filter(function(w) { return w.length >= 2; });
+          var matched = fWords.filter(function(fw) {
+            return mWords.some(function(mw) { return mw.indexOf(fw) !== -1 || fw.indexOf(mw) !== -1; });
+          });
+          if (matched.length > 0) {
+            connections.push({ failure: f, unconscious: m, keywords: matched });
+          }
+        });
+      });
+
+      if (connections.length === 0) return;
+
+      var stageCoaching = [
+        '이 패턴을 인식하셨군요. 실패할 때마다 이 생각이 떠오르는지 관찰해보세요.',
+        '패턴을 포착하기 시작했습니다. 포착 횟수를 늘려 자동 반응을 의식적으로 바꿔보세요.',
+        '전환 단계입니다. 새로운 사고 패턴으로 교체한 후 목표를 다시 시도해보세요.',
+        '패턴이 거의 정착되었습니다. 이제 실패 빈도가 줄어들 것입니다.'
+      ];
+
+      el.innerHTML = '';
+      connections.slice(0, 5).forEach(function(conn) {
+        var stage = conn.unconscious.stage || 0;
+        var catches = conn.unconscious.catches || 0;
+        var coaching = stageCoaching[Math.min(stage, 3)];
+        var card = document.createElement('div');
+        card.className = 'uc-card';
+        card.innerHTML =
+          '<div class="uc-failure">⚠️ 반복 실패: "' + String(conn.failure.text).replace(/&/g,'&amp;').replace(/</g,'&lt;') + '" (' + conn.failure.count + '회)</div>' +
+          '<div class="uc-pattern">🧠 연결된 무의식 패턴:<br>' +
+            '<span class="uc-pattern-from">"' + String(conn.unconscious.from || '').replace(/&/g,'&amp;').replace(/</g,'&lt;') + '"</span>' +
+            ' → <span class="uc-pattern-to">"' + String(conn.unconscious.to || '').replace(/&/g,'&amp;').replace(/</g,'&lt;') + '"</span></div>' +
+          '<div class="uc-stage">📊 포착 ' + catches + '회 | 단계 ' + stage + '/4</div>' +
+          '<div class="uc-coaching">💡 ' + coaching + '</div>';
+        el.appendChild(card);
+      });
+    }
+
+    function escFeedHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
     /* ─── AI ANALYSIS (Claude API) ───────────────────── */
     (function() {
       var periodBtns = document.querySelectorAll('.ai-period-btn');
@@ -4920,9 +5371,85 @@
       }).filter(Boolean);
     }
 
+    function collectFullAnalysisData(period) {
+      var retros = collectRetros(period);
+
+      // ── Daily goals for the same period ──
+      var dailyGoals = [];
+      try {
+        var now = new Date();
+        var todayStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+        // Scan last 90 days for daily goal entries
+        var scannedDates = {};
+        for (var dd = 0; dd < 90; dd++) {
+          var dt = new Date(now); dt.setDate(dt.getDate() - dd);
+          var dStr = dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0') + '-' + String(dt.getDate()).padStart(2,'0');
+          if (scannedDates[dStr]) continue;
+          scannedDates[dStr] = true;
+          var raw = localStorage.getItem('temporal-daily-' + dStr);
+          if (!raw) continue;
+          var tasks; try { tasks = JSON.parse(raw); } catch(e) { continue; }
+          if (!Array.isArray(tasks) || tasks.length === 0) continue;
+          var include = false;
+          if (period === 'day') include = dStr === todayStr;
+          else if (period === 'week') include = dd <= 7;
+          else if (period === 'month') include = dt.getFullYear() === now.getFullYear() && dt.getMonth() === now.getMonth();
+          else if (period === 'year') include = dt.getFullYear() === now.getFullYear();
+          else include = true;
+          if (include) dailyGoals.push({ date: dStr, tasks: tasks });
+        }
+      } catch(e) {}
+
+      // ── Weekly goals ──
+      var weeklyGoals = [];
+      try {
+        var yr = new Date().getFullYear();
+        var goalData = JSON.parse(localStorage.getItem('temporal-goals-' + yr) || '{}');
+        for (var wk in goalData) {
+          if (!goalData.hasOwnProperty(wk)) continue;
+          var g = goalData[wk];
+          if (g && g.tasks && g.tasks.length > 0) weeklyGoals.push({ week: wk, tasks: g.tasks });
+        }
+      } catch(e) {}
+
+      // ── Pomodoro ──
+      var pomodoro = null;
+      try {
+        var pomoRaw = JSON.parse(localStorage.getItem('temporal-pomo') || '{}');
+        if (pomoRaw && (pomoRaw.totalSessions || pomoRaw.sessions)) {
+          pomodoro = {
+            totalSessions: pomoRaw.totalSessions || pomoRaw.sessions || 0,
+            totalMinutes: pomoRaw.totalMinutes || (pomoRaw.totalSessions || 0) * 25,
+            avgPerDay: pomoRaw.avgPerDay || null
+          };
+        }
+      } catch(e) {}
+
+      // ── Unconscious patterns ──
+      var unconscious = [];
+      try {
+        unconscious = JSON.parse(localStorage.getItem('mindEntries') || localStorage.getItem('temporal-unconscious') || '[]');
+      } catch(e) {}
+
+      // ── Repeated failure patterns ──
+      var patterns = [];
+      try { patterns = buildRepeatedFailures(); } catch(e) {}
+
+      return {
+        retros: retros,
+        dailyGoals: dailyGoals,
+        weeklyGoals: weeklyGoals,
+        pomodoro: pomodoro,
+        unconscious: unconscious,
+        patterns: patterns,
+        period: period
+      };
+    }
+
     function callClaudeAnalysis(retros, period) {
-      // Try Supabase Edge Function first, fallback to direct call
-      var body = JSON.stringify({ retros: retros, period: period });
+      // Collect enriched data for comprehensive analysis
+      var payload = collectFullAnalysisData(period);
+      var body = JSON.stringify(payload);
       return fetch(SUPABASE_URL + '/functions/v1/claude-analysis', {
         method: 'POST',
         headers: {
