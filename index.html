@@ -5784,6 +5784,10 @@
     function callClaudeAnalysis(retros, period) {
       // Collect enriched data for comprehensive analysis
       var payload = collectFullAnalysisData(period);
+      // If retros were explicitly passed (e.g. from post-level AI), use them
+      if (retros && retros.length > 0) {
+        payload.retros = retros;
+      }
       var body = JSON.stringify(payload);
 
       // Get user's auth token (JWT) for Edge Function authorization
