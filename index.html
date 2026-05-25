@@ -1614,6 +1614,38 @@
     .feed-ai-btn:hover { border-color: rgba(138,92,246,.4); background: rgba(138,92,246,.1); }
     .feed-ai-btn.loading { opacity: .5; cursor: wait; }
 
+    /* Author Actions (Edit / Delete) */
+    .feed-author-actions {
+      display: flex; gap: .3rem; margin-left: auto;
+    }
+    .feed-edit-btn, .feed-delete-btn {
+      background: none; border: 1px solid rgba(255,255,255,.08);
+      border-radius: 6px; padding: .15rem .4rem; cursor: pointer;
+      font-size: .6rem; transition: all .2s; opacity: .5;
+    }
+    .feed-edit-btn:hover { opacity: 1; border-color: rgba(212,165,116,.4); background: rgba(212,165,116,.06); }
+    .feed-delete-btn:hover { opacity: 1; border-color: rgba(239,68,68,.4); background: rgba(239,68,68,.06); }
+    .feed-delete-confirm {
+      display: flex; align-items: center; gap: .6rem; padding: .5rem .7rem;
+      margin: .5rem 0; border-radius: 8px;
+      background: rgba(239,68,68,.06); border: 1px solid rgba(239,68,68,.2);
+      font-family: 'Noto Sans KR', sans-serif; font-size: .7rem; color: var(--text-dim);
+    }
+    .feed-confirm-yes {
+      padding: .2rem .6rem; border-radius: 6px; border: 1px solid rgba(239,68,68,.5);
+      background: rgba(239,68,68,.15); color: #f87171; cursor: pointer;
+      font-family: 'Noto Sans KR', sans-serif; font-size: .65rem; font-weight: 600;
+      transition: all .2s;
+    }
+    .feed-confirm-yes:hover { background: rgba(239,68,68,.3); }
+    .feed-confirm-no {
+      padding: .2rem .6rem; border-radius: 6px; border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.05); color: var(--text-dim); cursor: pointer;
+      font-family: 'Noto Sans KR', sans-serif; font-size: .65rem; font-weight: 500;
+      transition: all .2s;
+    }
+    .feed-confirm-no:hover { background: rgba(255,255,255,.1); }
+
     /* Comments Section */
     .feed-comments {
       margin-top: .6rem; padding-top: .4rem;
@@ -4436,6 +4468,7 @@
       var feedData = [];
       var feedLikes = {};
       var feedCommentCounts = {};
+      var editingFeedId = null; // null = new post, string = editing existing post
 
       function escH(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
       function todayStr() {
@@ -4464,6 +4497,7 @@
 
       /* ── Modal Open/Close ── */
       document.getElementById('commWriteBtn').addEventListener('click', function() {
+        editingFeedId = null;
         modal.style.display = 'flex';
         typeSelect.style.display = 'flex';
         formEl.style.display = 'none';
@@ -4493,19 +4527,25 @@
         else if (type === 'free') buildFreeForm();
       }
 
-      function buildDailyForm() {
+      function buildDailyForm(editData) {
         var tasks = [];
         var MAX = 5;
+        var isEdit = !!editData;
         formEl.innerHTML =
-          '<div class="comm-form-title"><button class="comm-form-back">&larr;</button>📋 오늘의 목표</div>' +
+          '<div class="comm-form-title"><button class="comm-form-back">&larr;</button>📋 오늘의 목표' + (isEdit ? ' <span style="font-size:.65rem;color:var(--gold-dim)">(수정)</span>' : '') + '</div>' +
           '<div id="mDailyTaskList" class="task-list"></div>' +
           '<div class="task-add" style="margin-bottom:.8rem"><input type="text" class="task-add-input" id="mDailyInput" placeholder="오늘의 실행 항목..." maxlength="80"><button class="task-add-btn" id="mDailyAddBtn">+</button></div>' +
           '<div class="daily-completion" id="mDailyCompletion">목표 <b>0</b> / 5</div>' +
           '<div class="retro-field"><label>💬 한마디 (선택)</label><textarea id="mDailyNote" placeholder="오늘의 다짐을 적어보세요..." style="min-height:50px"></textarea></div>' +
-          '<button class="daily-save-btn" id="mDailySave">📋 게시하기</button>';
+          '<button class="daily-save-btn" id="mDailySave">' + (isEdit ? '✏️ 수정하기' : '📋 게시하기') + '</button>';
 
-        // Load today's existing daily goals
-        try { tasks = JSON.parse(localStorage.getItem('temporal-daily-' + todayStr())) || []; } catch(e) {}
+        // Load from editData or from localStorage
+        if (isEdit && editData.tasks) {
+          tasks = editData.tasks.map(function(t) { return { text: t.text, completed: !!t.completed }; });
+          if (editData.note) formEl.querySelector('#mDailyNote').value = editData.note;
+        } else {
+          try { tasks = JSON.parse(localStorage.getItem('temporal-daily-' + todayStr())) || []; } catch(e) {}
+        }
         var tl = formEl.querySelector('#mDailyTaskList');
         var inp = formEl.querySelector('#mDailyInput');
         var addB = formEl.querySelector('#mDailyAddBtn');
@@ -4541,38 +4581,58 @@
 
         formEl.querySelector('#mDailySave').addEventListener('click', function() {
           if (tasks.length === 0) return;
-          var ds = todayStr();
+          var ds = isEdit && editData.date ? editData.date : todayStr();
           var note = formEl.querySelector('#mDailyNote').value.trim();
+          var content = { date: ds, tasks: tasks, note: note };
           // Save to localStorage + Supabase
           localStorage.setItem('temporal-daily-' + ds, JSON.stringify(tasks));
           if (_currentUser && typeof SupaDB !== 'undefined' && SupaDB.saveDailyGoals) {
             SupaDB.saveDailyGoals(ds, tasks);
           }
-          // Post to feed
-          shareToFeed('daily', { date: ds, tasks: tasks, note: note });
+          if (editingFeedId) {
+            updateFeedItem(editingFeedId, content);
+            editingFeedId = null;
+          } else {
+            shareToFeed('daily', content);
+          }
           modal.style.display = 'none';
         });
       }
 
-      function buildRetroForm() {
+      function buildRetroForm(editData) {
         var selectedTags = [];
+        var isEdit = !!editData;
+        var initScore = isEdit && editData.score ? editData.score : 5;
+        var initColor = initScore <= 3 ? 'var(--danger)' : initScore <= 6 ? 'var(--warn)' : 'var(--success)';
         formEl.innerHTML =
-          '<div class="comm-form-title"><button class="comm-form-back">&larr;</button>📝 오늘의 회고</div>' +
+          '<div class="comm-form-title"><button class="comm-form-back">&larr;</button>📝 오늘의 회고' + (isEdit ? ' <span style="font-size:.65rem;color:var(--gold-dim)">(수정)</span>' : '') + '</div>' +
           '<div class="retro-score-section">' +
-            '<div class="retro-score-label"><span>오늘의 점수</span><span class="retro-score-value" id="mRetroScoreVal" style="color:var(--warn)">5</span></div>' +
-            '<input type="range" class="retro-score-slider" id="mRetroSlider" min="1" max="10" value="5">' +
+            '<div class="retro-score-label"><span>오늘의 점수</span><span class="retro-score-value" id="mRetroScoreVal" style="color:' + initColor + '">' + initScore + '</span></div>' +
+            '<input type="range" class="retro-score-slider" id="mRetroSlider" min="1" max="10" value="' + initScore + '">' +
             '<div class="retro-score-faces"><span>😞 1</span><span>😐 5</span><span>🔥 10</span></div>' +
           '</div>' +
-          '<div class="retro-field"><label>✅ 오늘 잘한 점 (성과)</label><textarea id="mRetroWell" placeholder="오늘 잘한 일, 달성한 성과를 적어보세요..."></textarea></div>' +
-          '<div class="retro-field"><label>💡 아쉬운 점 (보완할 점)</label><textarea id="mRetroImprove" placeholder="아쉬웠던 점, 다음에 개선할 부분을 적어보세요..."></textarea></div>' +
+          '<div class="retro-field"><label>✅ 오늘 잘한 점 (성과)</label><textarea id="mRetroWell" placeholder="오늘 잘한 일, 달성한 성과를 적어보세요...">' + (isEdit ? escH(editData.went_well || '') : '') + '</textarea></div>' +
+          '<div class="retro-field"><label>💡 아쉬운 점 (보완할 점)</label><textarea id="mRetroImprove" placeholder="아쉬웠던 점, 다음에 개선할 부분을 적어보세요...">' + (isEdit ? escH(editData.to_improve || '') : '') + '</textarea></div>' +
           '<div class="retro-tags-section">' +
             '<label style="display:block;font-family:\'Noto Sans KR\',sans-serif;font-size:.75rem;font-weight:500;color:var(--text-dim);margin-bottom:.4rem;letter-spacing:.04em">🏷️ 태그</label>' +
             '<div class="retro-tags-presets" id="mRetroTagPresets">' +
-              ['운동','공부','업무','습관','건강','관계','독서','창작'].map(function(t) { return '<span class="retro-tag-chip" data-tag="'+t+'">'+t+'</span>'; }).join('') +
+              ['운동','공부','업무','습관','건강','관계','독서','창작'].map(function(t) { return '<span class="retro-tag-chip' + (isEdit && editData.tags && editData.tags.indexOf(t) !== -1 ? ' selected' : '') + '" data-tag="'+t+'">'+t+'</span>'; }).join('') +
             '</div>' +
             '<input type="text" class="retro-tag-input" id="mRetroTagInput" placeholder="직접 입력 (쉼표로 구분)">' +
           '</div>' +
-          '<button class="daily-save-btn" id="mRetroSave">📝 게시하기</button>';
+          '<button class="daily-save-btn" id="mRetroSave">' + (isEdit ? '✏️ 수정하기' : '📝 게시하기') + '</button>';
+
+        // Pre-fill selected tags from editData
+        if (isEdit && editData.tags) {
+          selectedTags = editData.tags.filter(function(t) {
+            return ['운동','공부','업무','습관','건강','관계','독서','창작'].indexOf(t) !== -1;
+          });
+          // Custom tags that aren't presets go into the input
+          var customTags = editData.tags.filter(function(t) {
+            return ['운동','공부','업무','습관','건강','관계','독서','창작'].indexOf(t) === -1;
+          });
+          if (customTags.length > 0) formEl.querySelector('#mRetroTagInput').value = customTags.join(', ');
+        }
 
         var slider = formEl.querySelector('#mRetroSlider');
         var scoreVal = formEl.querySelector('#mRetroScoreVal');
@@ -4598,14 +4658,15 @@
         formEl.querySelector('#mRetroSave').addEventListener('click', function() {
           var well = formEl.querySelector('#mRetroWell').value.trim();
           var improve = formEl.querySelector('#mRetroImprove').value.trim();
-          if (!well && !improve) { this.textContent = '⚠️ 내용을 입력해주세요'; var self = this; setTimeout(function() { self.textContent = '📝 게시하기'; }, 1500); return; }
-          var ds = todayStr();
+          var saveLabel = isEdit ? '✏️ 수정하기' : '📝 게시하기';
+          if (!well && !improve) { this.textContent = '⚠️ 내용을 입력해주세요'; var self = this; setTimeout(function() { self.textContent = saveLabel; }, 1500); return; }
+          var ds = isEdit && editData.date ? editData.date : todayStr();
           var custom = formEl.querySelector('#mRetroTagInput').value.split(',').map(function(t) { return t.trim(); }).filter(Boolean);
           var allTags = selectedTags.concat(custom).filter(function(v,i,a) { return a.indexOf(v)===i; });
           var data = {
             date: ds, time: new Date().toTimeString().slice(0,5),
             score: parseInt(slider.value), went_well: well, to_improve: improve,
-            tags: allTags, created_at: new Date().toISOString()
+            tags: allTags, created_at: isEdit && editData.created_at ? editData.created_at : new Date().toISOString()
           };
           // Save to localStorage
           localStorage.setItem('temporal-retro-' + ds, JSON.stringify(data));
@@ -4616,18 +4677,23 @@
           if (_currentUser && typeof SupaDB !== 'undefined' && SupaDB.saveRetro) {
             SupaDB.saveRetro(ds, data);
           }
-          // Post to feed
-          shareToFeed('retro', data);
+          if (editingFeedId) {
+            updateFeedItem(editingFeedId, data);
+            editingFeedId = null;
+          } else {
+            shareToFeed('retro', data);
+          }
           modal.style.display = 'none';
         });
       }
 
-      function buildFreeForm() {
+      function buildFreeForm(editData) {
+        var isEdit = !!editData;
         formEl.innerHTML =
-          '<div class="comm-form-title"><button class="comm-form-back">&larr;</button>💬 자유 게시물</div>' +
-          '<div class="retro-field"><label>제목</label><input type="text" id="mFreeTitle" placeholder="제목을 입력하세요..." maxlength="100"></div>' +
-          '<div class="retro-field"><label>본문</label><textarea id="mFreeBody" placeholder="자유롭게 생각을 적어보세요..." style="min-height:120px"></textarea></div>' +
-          '<button class="daily-save-btn" id="mFreeSave">💬 게시하기</button>';
+          '<div class="comm-form-title"><button class="comm-form-back">&larr;</button>💬 자유 게시물' + (isEdit ? ' <span style="font-size:.65rem;color:var(--gold-dim)">(수정)</span>' : '') + '</div>' +
+          '<div class="retro-field"><label>제목</label><input type="text" id="mFreeTitle" placeholder="제목을 입력하세요..." maxlength="100" value="' + (isEdit ? escH(editData.title || '') : '') + '"></div>' +
+          '<div class="retro-field"><label>본문</label><textarea id="mFreeBody" placeholder="자유롭게 생각을 적어보세요..." style="min-height:120px">' + (isEdit ? escH(editData.body || '') : '') + '</textarea></div>' +
+          '<button class="daily-save-btn" id="mFreeSave">' + (isEdit ? '✏️ 수정하기' : '💬 게시하기') + '</button>';
 
         formEl.querySelector('.comm-form-back').addEventListener('click', function() {
           formEl.style.display = 'none'; typeSelect.style.display = 'flex';
@@ -4636,8 +4702,15 @@
         formEl.querySelector('#mFreeSave').addEventListener('click', function() {
           var title = formEl.querySelector('#mFreeTitle').value.trim();
           var body = formEl.querySelector('#mFreeBody').value.trim();
-          if (!body) { this.textContent = '⚠️ 본문을 입력해주세요'; var self = this; setTimeout(function() { self.textContent = '💬 게시하기'; }, 1500); return; }
-          shareToFeed('free', { title: title, body: body, date: todayStr() });
+          var saveLabel = isEdit ? '✏️ 수정하기' : '💬 게시하기';
+          if (!body) { this.textContent = '⚠️ 본문을 입력해주세요'; var self = this; setTimeout(function() { self.textContent = saveLabel; }, 1500); return; }
+          var content = { title: title, body: body, date: isEdit && editData.date ? editData.date : todayStr() };
+          if (editingFeedId) {
+            updateFeedItem(editingFeedId, content);
+            editingFeedId = null;
+          } else {
+            shareToFeed('free', content);
+          }
           modal.style.display = 'none';
         });
       }
@@ -4735,12 +4808,19 @@
         var aiBtnHtml = isAuthor && item.feed_type !== 'ai_analysis' && item.feed_type !== 'free'
           ? '<button class="feed-ai-btn" data-feed-id="' + item.id + '">🤖 AI 분석</button>'
           : '';
+        var authorBtns = isAuthor && item.feed_type !== 'ai_analysis'
+          ? '<div class="feed-author-actions">' +
+              '<button class="feed-edit-btn" data-feed-id="' + item.id + '" title="수정">✏️</button>' +
+              '<button class="feed-delete-btn" data-feed-id="' + item.id + '" title="삭제">🗑️</button>' +
+            '</div>'
+          : '';
 
         card.innerHTML =
           '<div class="feed-card-header">' + avatarHtml +
             '<span class="feed-name">' + escH(item.display_name || '익명') + '</span>' +
             '<span class="feed-badge ' + badgeClass + '">' + (badgeLabels[item.feed_type] || '') + '</span>' +
             '<span class="feed-time">' + getTimeAgo(item.shared_at) + '</span>' +
+            authorBtns +
           '</div>' +
           '<div class="feed-content">' + contentHtml + '</div>' +
           '<div class="feed-actions">' +
@@ -4761,8 +4841,56 @@
         // Event: AI analysis
         var aiB = card.querySelector('.feed-ai-btn');
         if (aiB) aiB.addEventListener('click', function() { requestPostAI(item); });
+        // Event: Edit
+        var editB = card.querySelector('.feed-edit-btn');
+        if (editB) editB.addEventListener('click', function() { editPost(item); });
+        // Event: Delete
+        var delB = card.querySelector('.feed-delete-btn');
+        if (delB) delB.addEventListener('click', function() { deletePost(item); });
 
         return card;
+      }
+
+      /* ── Edit Post ── */
+      function editPost(item) {
+        editingFeedId = item.id;
+        modal.style.display = 'flex';
+        typeSelect.style.display = 'none';
+        formEl.style.display = 'block';
+        formEl.innerHTML = '';
+        if (item.feed_type === 'daily') buildDailyForm(item.content);
+        else if (item.feed_type === 'retro') buildRetroForm(item.content);
+        else if (item.feed_type === 'free') buildFreeForm(item.content);
+      }
+
+      /* ── Delete Post ── */
+      function deletePost(item) {
+        if (!_currentUser || item.user_id !== _currentUser.id) return;
+        // Create inline confirm
+        var card = feedEl.querySelector('.feed-card[data-feed-id="' + item.id + '"]');
+        if (!card) return;
+        var existing = card.querySelector('.feed-delete-confirm');
+        if (existing) { existing.remove(); return; }
+        var bar = document.createElement('div');
+        bar.className = 'feed-delete-confirm';
+        bar.innerHTML = '<span>정말 삭제하시겠습니까?</span>' +
+          '<button class="feed-confirm-yes">삭제</button>' +
+          '<button class="feed-confirm-no">취소</button>';
+        bar.querySelector('.feed-confirm-yes').addEventListener('click', function() {
+          _supabase.from('community_feed').delete().eq('id', item.id).then(function() { loadFeed(); });
+        });
+        bar.querySelector('.feed-confirm-no').addEventListener('click', function() { bar.remove(); });
+        card.querySelector('.feed-content').after(bar);
+      }
+
+      /* ── Update Feed Item (Supabase) ── */
+      function updateFeedItem(feedId, content) {
+        if (!_currentUser) return;
+        _supabase.from('community_feed')
+          .update({ content: content })
+          .eq('id', feedId)
+          .eq('user_id', _currentUser.id)
+          .then(function() { loadFeed(); }).catch(function() {});
       }
 
       function formatContent(type, content) {
@@ -5450,15 +5578,25 @@
       // Collect enriched data for comprehensive analysis
       var payload = collectFullAnalysisData(period);
       var body = JSON.stringify(payload);
-      return fetch(SUPABASE_URL + '/functions/v1/claude-analysis', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + SUPABASE_ANON
-        },
-        body: body
+
+      // Get user's auth token (JWT) for Edge Function authorization
+      var getToken = _supabase.auth.getSession().then(function(res) {
+        var session = res && res.data && res.data.session;
+        return (session && session.access_token) ? session.access_token : SUPABASE_ANON;
+      }).catch(function() { return SUPABASE_ANON; });
+
+      return getToken.then(function(token) {
+        return fetch(SUPABASE_URL + '/functions/v1/claude-analysis', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token,
+            'apikey': SUPABASE_ANON
+          },
+          body: body
+        });
       }).then(function(res) {
-        if (!res.ok) throw new Error('Edge function error');
+        if (!res.ok) return res.text().then(function(t) { throw new Error('Edge function error: ' + t); });
         return res.json();
       }).then(function(data) {
         return data.analysis || '분석 결과가 없습니다.';
