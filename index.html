@@ -2228,13 +2228,93 @@
     <!-- ===== TAB: ANALYSIS ===== -->
     <div class="tab-content" id="tabAnalysis">
 
-      <!-- 주간 목표 통계 (홈에서 이동) -->
+      <!-- ① 일간 분석 -->
       <div class="analysis-section">
-        <div class="analysis-title">📈 주간 목표 통계</div>
+        <div class="analysis-title">📅 일간 분석</div>
+
+        <div class="chart-card">
+          <div class="chart-card-title">회고 점수 추이 (최근 14일)</div>
+          <svg class="score-chart-svg" id="scoreChartSvg" viewBox="0 0 560 120">
+            <defs>
+              <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#d4a574"/>
+                <stop offset="50%" stop-color="#f0c888"/>
+                <stop offset="100%" stop-color="#ff8c5a"/>
+              </linearGradient>
+              <linearGradient id="scoreAreaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#f0c888" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#f0c888" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <g id="scoreChartContent">
+              <text x="280" y="65" text-anchor="middle" fill="var(--text-dim)" font-family="Noto Sans KR" font-size="11">회고 데이터가 쌓이면 차트가 표시됩니다</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card-title">일일 목표 달성률 (최근 7일)</div>
+          <div class="daily-bars-wrap" id="dailyBarsChart">
+            <div style="text-align:center;width:100%;padding:1.5rem;font-family:'Noto Sans KR',sans-serif;font-size:.75rem;color:var(--text-dim)">일일 목표 데이터가 쌓이면 차트가 표시됩니다</div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card-title">태그 빈도 (상위 5개)</div>
+          <div class="tag-freq-list" id="tagFreqChart">
+            <div style="text-align:center;padding:1rem;font-family:'Noto Sans KR',sans-serif;font-size:.75rem;color:var(--text-dim)">태그 데이터가 쌓이면 표시됩니다</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="comm-divider"></div>
+
+      <!-- ② 주간 분석 -->
+      <div class="analysis-section">
+        <div class="analysis-title">📆 주간 분석</div>
 
         <section class="streak-section" id="streakSection">
           <div class="streak-item"><div class="streak-value" id="streakCurrent"><span class="fire">🔥</span> 0</div><div class="streak-label">연속 달성</div></div>
           <div class="streak-item"><div class="streak-value" id="streakBest">0</div><div class="streak-label">최장 연속 기록</div></div>
+        </section>
+
+        <section class="insights-section" id="insightsSection">
+          <div class="insight-card"><div class="insight-label">📊 주당 평균 항목</div><div class="insight-value" id="insightAvg">-</div></div>
+          <div class="insight-card"><div class="insight-label">📈 최근 추세</div><div class="insight-value" id="insightTrend">-</div></div>
+          <div class="insight-card"><div class="insight-label">✅ 완전 달성 주</div><div class="insight-value" id="insightPerfect">-</div></div>
+          <div class="insight-card"><div class="insight-label">🏆 최고의 달</div><div class="insight-value" id="insightBestMonth">-</div></div>
+        </section>
+
+        <section class="mini-chart-section">
+          <div class="mini-chart-title">주간 달성 현황</div>
+          <div class="mini-chart" id="miniChart"></div>
+        </section>
+      </div>
+
+      <div class="comm-divider"></div>
+
+      <!-- ③ 월간 분석 -->
+      <div class="analysis-section">
+        <div class="analysis-title">📊 월간 분석</div>
+
+        <section class="monthly-chart-section" id="monthlyChartSection">
+          <div class="monthly-chart-title">월별 달성률</div>
+          <div class="monthly-bars" id="monthlyBars"></div>
+        </section>
+      </div>
+
+      <div class="comm-divider"></div>
+
+      <!-- ④ 연간 분석 -->
+      <div class="analysis-section">
+        <div class="analysis-title">📈 연간 분석</div>
+
+        <section class="progress-section">
+          <div class="progress-label-row">
+            <span class="progress-title">올해의 진행률</span>
+            <span class="progress-percentage" id="progressPercent">0.0%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
         </section>
 
         <section class="achievement-section" id="achievementSection">
@@ -2273,80 +2353,11 @@
             <div class="ach-message" id="achMessage">목표를 설정하고 시간을 의미있게 만드세요.</div>
           </div>
         </section>
-
-        <section class="progress-section">
-          <div class="progress-label-row">
-            <span class="progress-title">올해의 진행률</span>
-            <span class="progress-percentage" id="progressPercent">0.0%</span>
-          </div>
-          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-        </section>
-
-        <section class="monthly-chart-section" id="monthlyChartSection">
-          <div class="monthly-chart-title">월별 달성률</div>
-          <div class="monthly-bars" id="monthlyBars"></div>
-        </section>
-
-        <section class="insights-section" id="insightsSection">
-          <div class="insight-card"><div class="insight-label">📊 주당 평균 항목</div><div class="insight-value" id="insightAvg">-</div></div>
-          <div class="insight-card"><div class="insight-label">🏆 최고의 달</div><div class="insight-value" id="insightBestMonth">-</div></div>
-          <div class="insight-card"><div class="insight-label">📈 최근 추세</div><div class="insight-value" id="insightTrend">-</div></div>
-          <div class="insight-card"><div class="insight-label">✅ 완전 달성 주</div><div class="insight-value" id="insightPerfect">-</div></div>
-        </section>
-
-        <section class="mini-chart-section">
-          <div class="mini-chart-title">주간 달성 현황</div>
-          <div class="mini-chart" id="miniChart"></div>
-        </section>
       </div>
 
       <div class="comm-divider"></div>
 
-      <!-- 일일 데이터 시각화 -->
-      <div class="analysis-section">
-        <div class="analysis-title">📊 일일 데이터</div>
-
-        <!-- 점수 추이 -->
-        <div class="chart-card">
-          <div class="chart-card-title">회고 점수 추이 (최근 14일)</div>
-          <svg class="score-chart-svg" id="scoreChartSvg" viewBox="0 0 560 120">
-            <defs>
-              <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#d4a574"/>
-                <stop offset="50%" stop-color="#f0c888"/>
-                <stop offset="100%" stop-color="#ff8c5a"/>
-              </linearGradient>
-              <linearGradient id="scoreAreaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stop-color="#f0c888" stop-opacity="0.3"/>
-                <stop offset="100%" stop-color="#f0c888" stop-opacity="0"/>
-              </linearGradient>
-            </defs>
-            <g id="scoreChartContent">
-              <text x="280" y="65" text-anchor="middle" fill="var(--text-dim)" font-family="Noto Sans KR" font-size="11">회고 데이터가 쌓이면 차트가 표시됩니다</text>
-            </g>
-          </svg>
-        </div>
-
-        <!-- 일일 달성률 -->
-        <div class="chart-card">
-          <div class="chart-card-title">일일 목표 달성률 (최근 7일)</div>
-          <div class="daily-bars-wrap" id="dailyBarsChart">
-            <div style="text-align:center;width:100%;padding:1.5rem;font-family:'Noto Sans KR',sans-serif;font-size:.75rem;color:var(--text-dim)">일일 목표 데이터가 쌓이면 차트가 표시됩니다</div>
-          </div>
-        </div>
-
-        <!-- 태그 빈도 -->
-        <div class="chart-card">
-          <div class="chart-card-title">태그 빈도 (상위 5개)</div>
-          <div class="tag-freq-list" id="tagFreqChart">
-            <div style="text-align:center;padding:1rem;font-family:'Noto Sans KR',sans-serif;font-size:.75rem;color:var(--text-dim)">태그 데이터가 쌓이면 표시됩니다</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="comm-divider"></div>
-
-      <!-- AI 분석 -->
+      <!-- ⑤ AI 성장 분석 -->
       <div class="analysis-section">
         <div class="analysis-title">🤖 AI 성장 분석</div>
 
