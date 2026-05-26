@@ -3076,10 +3076,6 @@
             myProfile = { display_name: profile.display_name || '', avatar_url: profile.avatar_url || '' };
             localStorage.setItem('temporal-profile', JSON.stringify(myProfile));
             renderUserBar();
-            // 사용자 정의 태그 캐시 (컬럼이 없으면 undefined → 무시)
-            if (profile.custom_tags && Array.isArray(profile.custom_tags)) {
-              localStorage.setItem('temporal-custom-tags', JSON.stringify(profile.custom_tags));
-            }
           }
         } catch(e) {}
       } catch(e) { /* fallback to localStorage which is already loaded */ }
@@ -5121,8 +5117,8 @@
         catch(e) { return []; }
       }
       function setCustomTags(arr) {
+        // 로컬(기기별) 저장 — 기기 간 동기화는 사용하지 않음
         try { localStorage.setItem('temporal-custom-tags', JSON.stringify(arr)); } catch(e) {}
-        if (typeof SupaDB !== 'undefined' && SupaDB.saveCustomTags) SupaDB.saveCustomTags(arr);
       }
       function addCustomTag(tag) {
         tag = (tag || '').replace(/[",<>]/g, '').trim();
@@ -6567,16 +6563,6 @@
             .order('retro_date', { ascending: false }).limit(limit || 30);
           return data || [];
         } catch(e) { return []; }
-      };
-      // 사용자 정의 재사용 태그 저장 (user_profiles.custom_tags 컬럼)
-      SupaDB.saveCustomTags = async function(tags) {
-        if (!_currentUser) return false;
-        try {
-          var { error } = await _supabase.from('user_profiles').upsert({
-            user_id: _currentUser.id, custom_tags: tags || []
-          }, { onConflict: 'user_id' });
-          return !error;
-        } catch(e) { return false; }
       };
       // 프로필(닉네임/아바타) 저장 — display_name/avatar_url 컬럼은 기존 스키마에 존재
       SupaDB.saveProfile = async function(prof) {
