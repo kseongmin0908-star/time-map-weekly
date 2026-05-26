@@ -1142,6 +1142,12 @@
       font-family: 'Noto Sans KR', sans-serif; cursor: pointer; transition: all .2s;
     }
     .lt-toggle:hover { background: rgba(212,165,116,.2); border-color: var(--gold); }
+    /* AI 분석 기간 배지 */
+    .ai-period-tag {
+      display: inline-block; margin-bottom: .55rem; padding: .25rem .65rem; border-radius: 9px;
+      font-family: 'Noto Sans KR', sans-serif; font-size: .64rem; font-weight: 700;
+      background: rgba(138,92,246,.14); border: 1px solid rgba(138,92,246,.3); color: #c4b5fd;
+    }
 
     /* ── 안내(가이드) 탭 ── */
     .guide-wrap { max-width: 680px; margin: 0 auto; }
@@ -1590,12 +1596,14 @@
       font-family: 'Noto Sans KR', sans-serif; white-space: nowrap;
     }
     .mp-edit-btn:hover { background: rgba(212,165,116,.2); }
+    .mp-self-actions { margin-left: auto; display: flex; flex-direction: column; gap: .4rem; flex-shrink: 0; }
+    .mp-self-actions .mp-edit-btn { margin-left: 0; }
     .mp-logout-btn {
-      width: 100%; margin-top: 1.2rem; padding: .8rem; border-radius: 12px;
-      background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.3); color: #ff8a8a;
-      font-family: 'Noto Sans KR', sans-serif; font-size: .82rem; font-weight: 600; cursor: pointer; transition: all .2s;
+      padding: .45rem .8rem; border-radius: 9px; font-size: .72rem; cursor: pointer; white-space: nowrap;
+      background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.3); color: #ff8a8a;
+      font-family: 'Noto Sans KR', sans-serif; transition: all .2s;
     }
-    .mp-logout-btn:hover { background: rgba(239,68,68,.18); border-color: var(--danger); color: #ffb4b4; }
+    .mp-logout-btn:hover { background: rgba(239,68,68,.2); border-color: var(--danger); color: #ffb4b4; }
     .mp-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-bottom: 1.1rem; }
     .mp-stat {
       background: rgba(255,255,255,.03); border: 1px solid rgba(212,165,116,.1);
@@ -5844,7 +5852,11 @@
             ((content.tags && content.tags.length) ? '<div style="display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.3rem">' + content.tags.map(function(t) { return '<span style="padding:.1rem .4rem;border-radius:10px;font-size:.55rem;background:rgba(212,165,116,.08);border:1px solid rgba(212,165,116,.15);color:var(--gold-dim)">' + escH(t) + '</span>'; }).join('') + '</div>' : '');
         }
         if (type === 'ai_analysis') {
-          return longText(content.analysis || '');
+          var PL = { day: '오늘 하루', week: '이번 주', month: '이번 달', year: '올해', all: '전체 기간', custom: '특정 날짜' };
+          var pl = PL[content.period] || '';
+          if (content.period === 'custom' && content.periodDate) pl = (formatPostDate(content.periodDate) || content.periodDate);
+          var phead = pl ? '<div class="ai-period-tag">📊 분석 기간 · ' + escH(pl) + '</div>' : '';
+          return phead + longText(content.analysis || '');
         }
         if (type === 'free') {
           return (content.title ? '<div style="font-weight:600;margin-bottom:.3rem;font-size:.8rem">' + escH(content.title) + '</div>' : '') +
@@ -6168,7 +6180,7 @@
             '<div><div class="mp-name">' + escH(name) + '</div>' +
             (stats.since ? '<div class="mp-since">since ' + (formatPostDate(stats.since) || stats.since) + '</div>' : '') +
             '</div>' +
-            (isMe ? '<button class="mp-edit-btn" id="mpEditBtn">✏️ 프로필 편집</button>' : '') +
+            (isMe ? '<div class="mp-self-actions"><button class="mp-edit-btn" id="mpEditBtn">✏️ 프로필 편집</button><button class="mp-logout-btn" id="mpLogoutBtn">🚪 로그아웃</button></div>' : '') +
           '</div>';
 
           html += '<div class="mp-stats">' +
@@ -6195,11 +6207,6 @@
                   dateChip + '<span class="feed-time">' + getTimeAgo(p.shared_at) + '</span>' +
                 '</div><div class="feed-content">' + formatContent(p.feed_type, p.content) + '</div></div>';
             }).join('');
-          }
-
-          // 본인 프로필이면 하단에 로그아웃 버튼
-          if (isMe) {
-            html += '<button class="mp-logout-btn" id="mpLogoutBtn">🚪 로그아웃</button>';
           }
 
           body.innerHTML = html;
@@ -6670,9 +6677,11 @@
           requestBtn.disabled = false;
           resultCard.classList.add('visible');
           resultBody.textContent = result;
-          // Also post to feed
+          // Also post to feed (분석 기간 함께 저장)
           if (_currentUser) {
-            shareToFeed('ai_analysis', { analysis: result, period: selectedPeriod });
+            var aiContent = { analysis: result, period: selectedPeriod };
+            if (selectedPeriod === 'custom') aiContent.periodDate = dateInput.value;
+            shareToFeed('ai_analysis', aiContent);
           }
         }).catch(function(err) {
           requestBtn.classList.remove('loading');
