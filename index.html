@@ -1105,6 +1105,25 @@
       .comm-modal { padding: 1.1rem; }
     }
 
+    /* ── Toast (저장/네트워크 피드백) ── */
+    #toastWrap {
+      position: fixed; left: 50%; bottom: 1.5rem; transform: translateX(-50%);
+      z-index: 11000; display: flex; flex-direction: column; gap: .5rem; align-items: center;
+      pointer-events: none; width: max-content; max-width: 90vw;
+    }
+    .toast {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .78rem; font-weight: 500;
+      padding: .7rem 1.1rem; border-radius: 12px; color: var(--text);
+      background: rgba(20,18,28,.96); border: 1px solid rgba(212,165,116,.25);
+      box-shadow: 0 8px 30px rgba(0,0,0,.5); backdrop-filter: blur(6px);
+      animation: toastIn .25s ease-out; max-width: 90vw;
+    }
+    .toast.toast-error { border-color: rgba(239,68,68,.5); color: #ffb4b4; }
+    .toast.toast-success { border-color: rgba(74,222,128,.4); color: #b6f3c8; }
+    .toast.toast-out { animation: toastOut .3s ease-in forwards; }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes toastOut { to { opacity: 0; transform: translateY(12px); } }
+
     .mind-pattern-row {
       display: flex; align-items: flex-start; gap: .5rem; margin-bottom: .6rem;
     }
@@ -2893,12 +2912,39 @@
       return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
 
+    // 이메일이 그대로 공개 노출되지 않도록 마스킹: "user@gmail.com" → "user"
+    // (공개 피드/프로필은 anon 키로 누구나 조회 가능하므로 전체 이메일을 절대 표시하지 않음)
+    function maskName(n) {
+      n = String(n || '');
+      var at = n.indexOf('@');
+      return at > 0 ? n.slice(0, at) : n;
+    }
+
+    // 가벼운 토스트 알림 (저장 실패/성공 등 피드백). type: '', 'error', 'success'
+    function showToast(msg, type) {
+      var wrap = document.getElementById('toastWrap');
+      if (!wrap) {
+        wrap = document.createElement('div'); wrap.id = 'toastWrap';
+        document.body.appendChild(wrap);
+      }
+      var t = document.createElement('div');
+      t.className = 'toast' + (type ? ' toast-' + type : '');
+      t.setAttribute('role', 'status');
+      t.textContent = msg;
+      wrap.appendChild(t);
+      setTimeout(function() {
+        t.classList.add('toast-out');
+        setTimeout(function() { if (t.parentNode) t.parentNode.removeChild(t); }, 320);
+      }, type === 'error' ? 3500 : 2200);
+    }
+
     /* ── 내 프로필 (닉네임/아바타) — 프로필 우선, OAuth 폴백 ── */
     var myProfile = null; // { display_name, avatar_url }
     try { myProfile = JSON.parse(localStorage.getItem('temporal-profile') || 'null'); } catch(e) { myProfile = null; }
     function myDisplayName() {
       if (myProfile && myProfile.display_name) return myProfile.display_name;
-      return (_currentUser && _currentUser.user_metadata && _currentUser.user_metadata.full_name) || (_currentUser && _currentUser.email) || '익명';
+      // 공개 표기에 이메일을 쓰지 않음(프라이버시). 구글 이름 없으면 '익명'.
+      return (_currentUser && _currentUser.user_metadata && _currentUser.user_metadata.full_name) || '익명';
     }
     function myAvatar() {
       if (myProfile && myProfile.avatar_url) return myProfile.avatar_url;
@@ -4812,6 +4858,7 @@
             delBtn.className = "mind-entry-delete"; delBtn.textContent = "×";
             delBtn.setAttribute("aria-label", "패턴 삭제"); delBtn.setAttribute("title", "삭제");
             delBtn.addEventListener("click", function() {
+              if (!window.confirm("이 무의식 패턴을 삭제할까요?\n기록한 인지 횟수와 진행 단계도 함께 사라지며 되돌릴 수 없습니다.")) return;
               var removed = entries.splice(idx, 1)[0]; mindSyncDelete(removed); saveData(entries); renderEntries();
             });
             entry.appendChild(delBtn);
@@ -4982,8 +5029,9 @@
       var profilesCache = {}; // user_id -> { display_name, avatar_url }
       function resolveName(userId, fallback) {
         var p = profilesCache[userId];
-        if (p && p.display_name) return p.display_name;
-        return fallback || '익명';
+        if (p && p.display_name) return maskName(p.display_name);
+        // 과거 글에 이메일이 display_name으로 저장됐을 수 있어 마스킹
+        return maskName(fallback) || '익명';
       }
       function resolveAvatar(userId, fallback) {
         var p = profilesCache[userId];
@@ -5338,7 +5386,11 @@
           user_id: _currentUser.id, feed_type: type, content: content,
           display_name: getUserName(), avatar_url: getUserAvatar(),
           shared_at: new Date().toISOString()
-        }).then(function() { loadFeed(); }).catch(function() {});
+        }).then(function(res) {
+          if (res && res.error) { showToast('게시에 실패했습니다 — 다시 시도해주세요', 'error'); return; }
+          showToast('게시되었습니다', 'success');
+          loadFeed();
+        }).catch(function() { showToast('게시 실패 — 네트워크를 확인해주세요', 'error'); });
       }
       window.shareToFeed = shareToFeed;
 
@@ -5606,7 +5658,11 @@
           .update({ content: content })
           .eq('id', feedId)
           .eq('user_id', _currentUser.id)
-          .then(function() { loadFeed(); }).catch(function() {});
+          .then(function(res) {
+            if (res && res.error) { showToast('수정 저장에 실패했습니다', 'error'); return; }
+            showToast('수정되었습니다', 'success');
+            loadFeed();
+          }).catch(function() { showToast('수정 실패 — 네트워크를 확인해주세요', 'error'); });
       }
 
       function scoreEmoji(sc) {
@@ -5653,11 +5709,17 @@
         if (idx !== -1) {
           // Remove like
           _supabase.from('feed_likes').delete().eq('feed_id', feedId).eq('user_id', _currentUser.id)
-            .then(function() { likes.splice(idx, 1); feedLikes[feedId] = likes; renderFeed(); });
+            .then(function(res) {
+              if (res && res.error) { showToast('좋아요 취소 실패', 'error'); return; }
+              likes.splice(idx, 1); feedLikes[feedId] = likes; renderFeed();
+            }).catch(function() { showToast('네트워크 오류 — 다시 시도해주세요', 'error'); });
         } else {
           // Add like
           _supabase.from('feed_likes').insert({ feed_id: feedId, user_id: _currentUser.id })
-            .then(function() { likes.push(_currentUser.id); feedLikes[feedId] = likes; renderFeed(); });
+            .then(function(res) {
+              if (res && res.error) { showToast('좋아요 실패', 'error'); return; }
+              likes.push(_currentUser.id); feedLikes[feedId] = likes; renderFeed();
+            }).catch(function() { showToast('네트워크 오류 — 다시 시도해주세요', 'error'); });
         }
       }
 
@@ -5744,10 +5806,15 @@
       }
 
       function deleteComment(commentId, feedId, container) {
-        _supabase.from('feed_comments').delete().eq('id', commentId).then(function() {
+        if (!window.confirm('이 댓글을 삭제할까요?')) return;
+        _supabase.from('feed_comments').delete().eq('id', commentId).then(function(res) {
+          if (res && res.error) { showToast('댓글 삭제에 실패했습니다', 'error'); return; }
           feedCommentCounts[feedId] = Math.max((feedCommentCounts[feedId] || 1) - 1, 0);
           loadComments(feedId, container);
           updateCommentCountBadge(feedId);
+        }).catch(function() {
+          showToast('댓글 삭제 실패 — 네트워크를 확인해주세요', 'error');
+          loadComments(feedId, container); // 실제 상태로 복원
         });
       }
 
@@ -5757,13 +5824,14 @@
         _supabase.from('feed_comments').insert({
           feed_id: feedId, user_id: _currentUser.id, content: text,
           display_name: getUserName(), avatar_url: getUserAvatar(), is_ai: false
-        }).then(function() {
+        }).then(function(res) {
+          if (res && res.error) { showToast('댓글 등록에 실패했습니다 — 다시 시도해주세요', 'error'); return; }
           inputEl.value = '';
           feedCommentCounts[feedId] = (feedCommentCounts[feedId] || 0) + 1;
           // 댓글창을 닫지 않고 그 자리에서 새 댓글만 다시 그림 + 카운트 배지 갱신
           loadComments(feedId, container);
           updateCommentCountBadge(feedId);
-        });
+        }).catch(function() { showToast('댓글 등록 실패 — 네트워크를 확인해주세요', 'error'); });
       }
 
       /* ── AI Analysis on Post ── */
@@ -5862,8 +5930,10 @@
             renderUserBar();
             renderFeed();
             if (profileEditModal) profileEditModal.style.display = 'none';
+            showToast('프로필이 저장되었습니다', 'success');
           } else {
             btn.textContent = '저장 실패 — 재시도';
+            showToast('프로필 저장 실패 — 네트워크를 확인해주세요', 'error');
           }
         });
       }
@@ -5916,7 +5986,7 @@
           var prof = arr[0] || profilesCache[userId] || {};
           var posts = arr[1] || [];
           var visible = posts.filter(function(p){ return p.feed_type !== 'ai_analysis'; });
-          var name = prof.display_name || resolveName(userId, '익명');
+          var name = maskName(prof.display_name) || resolveName(userId, '익명');
           var avatar = prof.avatar_url || resolveAvatar(userId, '');
           var stats = computeMemberStats(visible);
           var isMe = _currentUser && userId === _currentUser.id;
