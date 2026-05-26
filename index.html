@@ -1143,6 +1143,42 @@
     }
     .lt-toggle:hover { background: rgba(212,165,116,.2); border-color: var(--gold); }
 
+    /* ── 안내(가이드) 탭 ── */
+    .guide-wrap { max-width: 680px; margin: 0 auto; }
+    .guide-hero {
+      padding: 1.4rem 1.3rem; border-radius: 16px; margin-bottom: 1.4rem;
+      background: linear-gradient(135deg, rgba(212,165,116,.12), rgba(138,92,246,.06));
+      border: 1px solid rgba(212,165,116,.18);
+    }
+    .guide-hero-title { font-family: 'Cormorant Garamond', serif; font-size: 1.7rem; font-weight: 700; color: var(--gold-bright); margin-bottom: .4rem; }
+    .guide-hero-sub { font-family: 'Noto Sans KR', sans-serif; font-size: .8rem; line-height: 1.7; color: var(--text-dim); }
+    .guide-section { margin-bottom: 1.5rem; }
+    .guide-section-title {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .92rem; font-weight: 700;
+      color: var(--gold); margin-bottom: .7rem; padding-bottom: .4rem;
+      border-bottom: 1px solid rgba(212,165,116,.12);
+    }
+    .guide-card {
+      display: flex; gap: .8rem; align-items: flex-start;
+      padding: .8rem .9rem; margin-bottom: .55rem; border-radius: 12px;
+      background: rgba(255,255,255,.025); border: 1px solid rgba(106,102,96,.12);
+      transition: border-color .2s, background .2s;
+    }
+    .guide-card:hover { border-color: rgba(212,165,116,.25); background: rgba(212,165,116,.04); }
+    .guide-ic { font-size: 1.3rem; line-height: 1.4; flex-shrink: 0; width: 1.8rem; text-align: center; }
+    .guide-body { flex: 1; min-width: 0; }
+    .guide-body b { font-family: 'Noto Sans KR', sans-serif; font-size: .82rem; font-weight: 700; color: var(--text); }
+    .guide-body p { font-family: 'Noto Sans KR', sans-serif; font-size: .74rem; line-height: 1.65; color: var(--text-dim); margin: .25rem 0 0; }
+    .guide-body p b { font-size: .74rem; color: var(--gold-dim); }
+    .guide-tips ul { margin: 0; padding-left: 0; list-style: none; }
+    .guide-tips li {
+      position: relative; padding: .5rem .8rem .5rem 2rem; margin-bottom: .4rem;
+      font-family: 'Noto Sans KR', sans-serif; font-size: .76rem; line-height: 1.6; color: var(--text);
+      background: rgba(255,255,255,.025); border: 1px solid rgba(106,102,96,.12); border-radius: 10px;
+    }
+    .guide-tips li::before { content: "💡"; position: absolute; left: .7rem; top: .5rem; font-size: .8rem; }
+    .guide-tips li b { color: var(--gold); }
+
     .mind-pattern-row {
       display: flex; align-items: flex-start; gap: .5rem; margin-bottom: .6rem;
     }
@@ -2459,6 +2495,7 @@
       <button class="tab-btn active" data-tab="home">🏠 홈</button>
       <button class="tab-btn" data-tab="community">🌐 커뮤니티</button>
       <button class="tab-btn" data-tab="analysis">📊 분석</button>
+      <button class="tab-btn" data-tab="guide">📖 안내</button>
     </nav>
 
     <!-- ===== TAB: HOME ===== -->
@@ -2782,6 +2819,50 @@
         </div>
       </div>
     </div><!-- /tabAnalysis -->
+
+    <!-- ===== TAB: GUIDE (안내) ===== -->
+    <div class="tab-content" id="tabGuide">
+      <div class="guide-wrap">
+        <div class="guide-hero">
+          <div class="guide-hero-title">🗺️ 시간의 지도</div>
+          <div class="guide-hero-sub">한 해를 주 단위로 설계하고, 매일 돌아보고, 커뮤니티에서 함께 실행하는 자기관리 도구예요. 모든 기록은 자동 저장·동기화됩니다.</div>
+        </div>
+
+        <div class="guide-section">
+          <div class="guide-section-title">🏠 홈 · 시간 설계</div>
+          <div class="guide-card"><span class="guide-ic">🗓️</span><div class="guide-body"><b>52주 그리드</b><p>한 해를 52칸으로 봅니다. 주 칸을 누르면 <b>실행목록(주간 목표)</b>과 <b>주간 회고</b>를 적을 수 있고, 칸 색으로 달성도가 한눈에 보여요.</p></div></div>
+          <div class="guide-card"><span class="guide-ic">✅</span><div class="guide-body"><b>실행목록</b><p>항목을 체크해 완료 표시하고, <b>텍스트를 클릭하면 바로 수정</b>됩니다. 한 주에 3개 이내로 좁히면 달성률이 올라가요.</p></div></div>
+          <div class="guide-card"><span class="guide-ic">🎯</span><div class="guide-body"><b>인생 목표 · 연간 목표</b><p>우상단 배지에 장기 목표와 <b>D-day</b>를, 올해의 큰 방향은 연간 목표에 적어 매일 떠올립니다.</p></div></div>
+          <div class="guide-card"><span class="guide-ic">🍅</span><div class="guide-body"><b>뽀모도로 타이머</b><p>화면 왼쪽 탭. 25분 집중 + 휴식 사이클로 몰입 시간을 쌓고 기록합니다.</p></div></div>
+          <div class="guide-card"><span class="guide-ic">🧠</span><div class="guide-body"><b>무의식 리프레이밍</b><p>화면 오른쪽 탭. 고치고 싶은 습관·패턴을 적고, 알아챌 때마다 "또 그랬다"를 눌러 인지 횟수를 쌓으며 단계적으로 바꿔갑니다.</p></div></div>
+        </div>
+
+        <div class="guide-section">
+          <div class="guide-section-title">🌐 커뮤니티 · 함께 실행</div>
+          <div class="guide-card"><span class="guide-ic">✍️</span><div class="guide-body"><b>게시물 작성</b><p>‘+ 게시물 작성’으로 <b>오늘의 목표 · 오늘의 회고 · 자유</b> 글을 공유합니다. 날짜를 골라 과거 기록도 올릴 수 있어요.</p></div></div>
+          <div class="guide-card"><span class="guide-ic">❤️</span><div class="guide-body"><b>좋아요 · 댓글</b><p>서로의 글에 응원을 남기며 함께 동기를 얻습니다. 긴 글은 ‘더보기’로 펼쳐 볼 수 있어요.</p></div></div>
+          <div class="guide-card"><span class="guide-ic">🤖</span><div class="guide-body"><b>AI 분석</b><p>내 게시물의 <b>🤖 AI 분석</b> 버튼을 누르면 AI가 코칭 댓글로 잘한 점·개선점을 짚어줍니다.</p></div></div>
+          <div class="guide-card"><span class="guide-ic">👤</span><div class="guide-body"><b>멤버 프로필</b><p>아바타·이름을 누르면 그 멤버의 현황과 게시물 기록을 봅니다. 내 <b>닉네임·아바타</b>는 우상단 ‘내 프로필’에서 설정하세요.</p></div></div>
+        </div>
+
+        <div class="guide-section">
+          <div class="guide-section-title">📊 분석 · 돌아보기</div>
+          <div class="guide-card"><span class="guide-ic">📈</span><div class="guide-body"><b>추이 · 달성률</b><p>회고 점수 추이, 일일·주간 목표 달성률, 자주 쓰는 태그를 그래프로 확인합니다.</p></div></div>
+          <div class="guide-card"><span class="guide-ic">🔁</span><div class="guide-body"><b>패턴 인사이트</b><p>반복해서 실패하는 목표와 무의식 패턴의 연결고리를 찾아 보여줍니다.</p></div></div>
+          <div class="guide-card"><span class="guide-ic">✨</span><div class="guide-body"><b>AI 종합 분석</b><p>기간(일·주·월·연)을 골라 전체 데이터를 AI가 종합적으로 코칭해줍니다.</p></div></div>
+        </div>
+
+        <div class="guide-section guide-tips">
+          <div class="guide-section-title">💡 활용 팁</div>
+          <ul>
+            <li>매일 회고 한 줄이라도 꾸준히 — 기록이 쌓일수록 분석이 정확해져요.</li>
+            <li>주간 목표는 <b>3개 이내</b>로 좁히면 실행력이 올라갑니다.</li>
+            <li>무의식 패턴은 "또 그랬다"로 <b>알아채는 것</b>만으로도 바뀌기 시작해요.</li>
+            <li>커뮤니티에 공유하면 서로 보며 자연스럽게 실행하게 됩니다.</li>
+          </ul>
+        </div>
+      </div>
+    </div><!-- /tabGuide -->
 
     <!-- 프로필 모달 (탭 바깥 — 홈/분석 탭에서도 열리도록 #app 직속) -->
     <div class="comm-modal-overlay" id="profileEditModal" style="display:none;">
