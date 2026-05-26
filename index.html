@@ -1625,6 +1625,7 @@
     .feed-name {
       font-family: 'Noto Sans KR', sans-serif; font-size: .75rem; font-weight: 600;
       color: var(--text); flex: 1;
+      min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
     .feed-badge {
       padding: .15rem .5rem; border-radius: 10px;
@@ -1638,6 +1639,11 @@
     .feed-badge.badge-free { background: rgba(251,191,36,.08); color: #fbbf24; }
     .feed-time {
       font-family: 'JetBrains Mono', monospace; font-size: .55rem; color: var(--text-dim);
+    }
+    .feed-date {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .58rem; font-weight: 600;
+      color: var(--gold); background: rgba(212,165,116,.1);
+      padding: .12rem .45rem; border-radius: 8px; white-space: nowrap; flex-shrink: 0;
     }
     .feed-content {
       font-family: 'Noto Sans KR', sans-serif; font-size: .75rem; color: var(--text);
@@ -4765,6 +4771,16 @@
       }
       function getUserName() { return (_currentUser && _currentUser.user_metadata && _currentUser.user_metadata.full_name) || (_currentUser && _currentUser.email) || '익명'; }
       function getUserAvatar() { return (_currentUser && _currentUser.user_metadata && _currentUser.user_metadata.avatar_url) || ''; }
+      // 게시물에 설정된 날짜를 "M월 D일" (다른 해면 "YYYY년 M월 D일")로 표시
+      function formatPostDate(dateStr) {
+        if (!dateStr) return '';
+        var parts = String(dateStr).split('-');
+        if (parts.length !== 3) return '';
+        var y = parseInt(parts[0], 10), m = parseInt(parts[1], 10), d = parseInt(parts[2], 10);
+        if (!y || !m || !d) return '';
+        var curY = new Date().getFullYear();
+        return (y !== curY ? y + '년 ' : '') + m + '월 ' + d + '일';
+      }
 
       /* ── Filter Tabs ── */
       document.querySelectorAll('.comm-filter').forEach(function(btn) {
@@ -5114,6 +5130,7 @@
           '<div class="feed-card-header">' + avatarHtml +
             '<span class="feed-name">' + escH(item.display_name || '익명') + '</span>' +
             '<span class="feed-badge ' + badgeClass + '">' + (badgeLabels[item.feed_type] || '') + '</span>' +
+            ((item.content && item.content.date && formatPostDate(item.content.date)) ? '<span class="feed-date">📅 ' + formatPostDate(item.content.date) + '</span>' : '') +
             '<span class="feed-time">' + getTimeAgo(item.shared_at) + '</span>' +
             authorBtns +
           '</div>' +
