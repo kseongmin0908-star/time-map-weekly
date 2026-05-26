@@ -1668,6 +1668,23 @@
     }
     .retro-tag-input:focus { outline: none; border-color: var(--gold-dim); }
     .retro-tag-input::placeholder { color: rgba(106,102,96,.4); }
+    /* 사용자 정의(커스텀) 태그 칩 + 추가/삭제 */
+    .retro-tag-chip.custom { display: inline-flex; align-items: center; gap: .3rem; padding-right: .45rem; }
+    .retro-tag-chip .tag-del {
+      font-size: .55rem; line-height: 1; opacity: .5; padding: .05rem .15rem; border-radius: 50%;
+    }
+    .retro-tag-chip .tag-del:hover { opacity: 1; color: var(--danger); background: rgba(239,68,68,.12); }
+    .retro-tag-add {
+      padding: .3rem .65rem; border-radius: 20px; border: 1px dashed rgba(212,165,116,.45);
+      background: transparent; color: var(--gold-dim); font-family: 'Noto Sans KR', sans-serif;
+      font-size: .65rem; cursor: pointer; transition: all .2s; user-select: none;
+    }
+    .retro-tag-add:hover { border-color: var(--gold); color: var(--gold); background: rgba(212,165,116,.08); }
+    .retro-tag-newinput {
+      padding: .3rem .55rem; border-radius: 20px; border: 1px solid var(--gold-dim);
+      background: rgba(212,165,116,.06); color: var(--text); font-family: 'Noto Sans KR', sans-serif;
+      font-size: .65rem; width: 92px; outline: none;
+    }
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -3059,6 +3076,10 @@
             myProfile = { display_name: profile.display_name || '', avatar_url: profile.avatar_url || '' };
             localStorage.setItem('temporal-profile', JSON.stringify(myProfile));
             renderUserBar();
+            // 사용자 정의 태그 캐시 (컬럼이 없으면 undefined → 무시)
+            if (profile.custom_tags && Array.isArray(profile.custom_tags)) {
+              localStorage.setItem('temporal-custom-tags', JSON.stringify(profile.custom_tags));
+            }
           }
         } catch(e) {}
       } catch(e) { /* fallback to localStorage which is already loaded */ }
@@ -5093,6 +5114,27 @@
         });
       }
 
+      /* ── 회고 태그: 기본 + 사용자 정의(재사용) 태그 ── */
+      var DEFAULT_TAGS = ['운동','공부','업무','습관','건강','관계','독서','창작'];
+      function getCustomTags() {
+        try { var a = JSON.parse(localStorage.getItem('temporal-custom-tags') || '[]'); return Array.isArray(a) ? a : []; }
+        catch(e) { return []; }
+      }
+      function setCustomTags(arr) {
+        try { localStorage.setItem('temporal-custom-tags', JSON.stringify(arr)); } catch(e) {}
+        if (typeof SupaDB !== 'undefined' && SupaDB.saveCustomTags) SupaDB.saveCustomTags(arr);
+      }
+      function addCustomTag(tag) {
+        tag = (tag || '').replace(/[",<>]/g, '').trim();
+        if (!tag || tag.length > 12) return false;
+        var all = getCustomTags();
+        if (DEFAULT_TAGS.indexOf(tag) !== -1 || all.indexOf(tag) !== -1) return false; // 중복 방지
+        all.push(tag); setCustomTags(all); return true;
+      }
+      function removeCustomTag(tag) {
+        setCustomTags(getCustomTags().filter(function(t) { return t !== tag; }));
+      }
+
       function buildRetroForm(editData) {
         var selectedTags = [];
         var isEdit = !!editData;
@@ -5111,23 +5153,56 @@
           '<div class="retro-field"><label>💡 아쉬운 점 (보완할 점)</label><textarea id="mRetroImprove" placeholder="아쉬웠던 점, 다음에 개선할 부분을 적어보세요...">' + (isEdit ? escH(editData.to_improve || '') : '') + '</textarea></div>' +
           '<div class="retro-tags-section">' +
             '<label style="display:block;font-family:\'Noto Sans KR\',sans-serif;font-size:.75rem;font-weight:500;color:var(--text-dim);margin-bottom:.4rem;letter-spacing:.04em">🏷️ 태그</label>' +
-            '<div class="retro-tags-presets" id="mRetroTagPresets">' +
-              ['운동','공부','업무','습관','건강','관계','독서','창작'].map(function(t) { return '<span class="retro-tag-chip' + (isEdit && editData.tags && editData.tags.indexOf(t) !== -1 ? ' selected' : '') + '" data-tag="'+t+'">'+t+'</span>'; }).join('') +
-            '</div>' +
-            '<input type="text" class="retro-tag-input" id="mRetroTagInput" placeholder="직접 입력 (쉼표로 구분)">' +
+            '<div class="retro-tags-presets" id="mRetroTagPresets"></div>' +
+            '<input type="text" class="retro-tag-input" id="mRetroTagInput" placeholder="이번 글에만 쓸 태그 (쉼표로 구분)">' +
           '</div>' +
           '<button class="daily-save-btn" id="mRetroSave">' + (isEdit ? '✏️ 수정하기' : '📝 게시하기') + '</button>';
 
-        // Pre-fill selected tags from editData
+        var presetsEl = formEl.querySelector('#mRetroTagPresets');
+        var tagInput = formEl.querySelector('#mRetroTagInput');
+
+        // editData.tags 중 칩(기본+커스텀)으로 알려진 것은 selected, 모르는 것만 직접입력란으로
         if (isEdit && editData.tags) {
-          selectedTags = editData.tags.filter(function(t) {
-            return ['운동','공부','업무','습관','건강','관계','독서','창작'].indexOf(t) !== -1;
+          var known = DEFAULT_TAGS.concat(getCustomTags());
+          selectedTags = editData.tags.filter(function(t) { return known.indexOf(t) !== -1; });
+          var unknown = editData.tags.filter(function(t) { return known.indexOf(t) === -1; });
+          if (unknown.length > 0) tagInput.value = unknown.join(', ');
+        }
+
+        // 칩 렌더(기본 태그 + 내 커스텀 태그 + "추가" 버튼)
+        function renderTagChips() {
+          var html = '';
+          DEFAULT_TAGS.forEach(function(t) {
+            html += '<span class="retro-tag-chip' + (selectedTags.indexOf(t) !== -1 ? ' selected' : '') + '" data-tag="' + escH(t) + '">' + escH(t) + '</span>';
           });
-          // Custom tags that aren't presets go into the input
-          var customTags = editData.tags.filter(function(t) {
-            return ['운동','공부','업무','습관','건강','관계','독서','창작'].indexOf(t) === -1;
+          getCustomTags().forEach(function(t) {
+            html += '<span class="retro-tag-chip custom' + (selectedTags.indexOf(t) !== -1 ? ' selected' : '') + '" data-tag="' + escH(t) + '">' + escH(t) + '<span class="tag-del" title="이 태그 버튼 삭제">✕</span></span>';
           });
-          if (customTags.length > 0) formEl.querySelector('#mRetroTagInput').value = customTags.join(', ');
+          html += '<span class="retro-tag-add" id="mRetroTagAdd">＋ 태그</span>';
+          presetsEl.innerHTML = html;
+        }
+        renderTagChips();
+
+        // "추가" 클릭 시 인라인 입력 → Enter로 재사용 태그 버튼 생성
+        function showAddInput() {
+          if (presetsEl.querySelector('.retro-tag-newinput')) return;
+          var addBtn = presetsEl.querySelector('.retro-tag-add');
+          var inp = document.createElement('input');
+          inp.type = 'text'; inp.className = 'retro-tag-newinput'; inp.placeholder = '태그명 + Enter'; inp.maxLength = 12;
+          presetsEl.insertBefore(inp, addBtn);
+          inp.focus();
+          var done = false;
+          function commit() {
+            if (done) return; done = true;
+            var v = (inp.value || '').replace(/[",<>]/g, '').trim();
+            if (v && addCustomTag(v) && selectedTags.indexOf(v) === -1) selectedTags.push(v);
+            renderTagChips();
+          }
+          inp.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); commit(); }
+            else if (e.key === 'Escape') { done = true; renderTagChips(); }
+          });
+          inp.addEventListener('blur', commit);
         }
 
         var slider = formEl.querySelector('#mRetroSlider');
@@ -5137,14 +5212,26 @@
           scoreVal.style.color = v <= 3 ? 'var(--danger)' : v <= 6 ? 'var(--warn)' : 'var(--success)';
         });
 
-        formEl.querySelectorAll('.retro-tag-chip').forEach(function(chip) {
-          chip.addEventListener('click', function() {
+        // 이벤트 위임: 칩 토글 / 커스텀 삭제 / 추가
+        presetsEl.addEventListener('click', function(e) {
+          var del = e.target.closest('.tag-del');
+          if (del) {
+            var dchip = del.closest('.retro-tag-chip');
+            var dtag = dchip.getAttribute('data-tag');
+            removeCustomTag(dtag);
+            selectedTags = selectedTags.filter(function(t) { return t !== dtag; });
+            renderTagChips();
+            return;
+          }
+          if (e.target.closest('.retro-tag-add')) { showAddInput(); return; }
+          var chip = e.target.closest('.retro-tag-chip');
+          if (chip) {
             var tag = chip.getAttribute('data-tag');
             if (chip.classList.contains('selected')) {
               chip.classList.remove('selected');
               selectedTags = selectedTags.filter(function(t) { return t !== tag; });
             } else { chip.classList.add('selected'); selectedTags.push(tag); }
-          });
+          }
         });
 
         formEl.querySelector('.comm-form-back').addEventListener('click', function() {
@@ -6480,6 +6567,16 @@
             .order('retro_date', { ascending: false }).limit(limit || 30);
           return data || [];
         } catch(e) { return []; }
+      };
+      // 사용자 정의 재사용 태그 저장 (user_profiles.custom_tags 컬럼)
+      SupaDB.saveCustomTags = async function(tags) {
+        if (!_currentUser) return false;
+        try {
+          var { error } = await _supabase.from('user_profiles').upsert({
+            user_id: _currentUser.id, custom_tags: tags || []
+          }, { onConflict: 'user_id' });
+          return !error;
+        } catch(e) { return false; }
       };
       // 프로필(닉네임/아바타) 저장 — display_name/avatar_url 컬럼은 기존 스키마에 존재
       SupaDB.saveProfile = async function(prof) {
