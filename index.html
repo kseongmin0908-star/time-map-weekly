@@ -1085,6 +1085,26 @@
     .mind-entry:hover .mind-entry-delete { opacity: .5; }
     .mind-entry-delete:hover { opacity: 1 !important; background: rgba(239,68,68,.15); color: var(--danger); }
 
+    /* ── 접근성: 키보드 포커스 표시 (클릭 가능한 span들) ── */
+    .feed-id-link:focus-visible, .comment-id-link:focus-visible,
+    .retro-tag-add:focus-visible, .tag-del:focus-visible {
+      outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 6px;
+    }
+
+    /* ── 모바일/터치: hover 전용 컨트롤 노출 + 탭 타깃 확대 ── */
+    @media (hover: none) {
+      /* 무의식 삭제 ×: 터치 기기엔 hover가 없어 안 보였음 → 항상 노출 + 큰 탭영역 */
+      .mind-entry .mind-entry-delete { opacity: .6; width: 34px; height: 34px; font-size: 1.05rem; }
+      .feed-action-btn { padding: .5rem .7rem; }
+      .comment-delete-btn { padding: .35rem .5rem; font-size: .7rem; }
+      .retro-tag-chip { padding: .45rem .8rem; }
+      .retro-tag-chip .tag-del { padding: .2rem .35rem; font-size: .72rem; }
+      .retro-tag-add { padding: .45rem .8rem; }
+    }
+    @media (max-width: 480px) {
+      .comm-modal { padding: 1.1rem; }
+    }
+
     .mind-pattern-row {
       display: flex; align-items: flex-start; gap: .5rem; margin-bottom: .6rem;
     }
@@ -2494,7 +2514,7 @@
         <div class="comm-modal">
           <div class="comm-modal-header">
             <h3>게시물 작성</h3>
-            <button class="comm-modal-close" id="commModalClose">&times;</button>
+            <button class="comm-modal-close" id="commModalClose" aria-label="닫기">&times;</button>
           </div>
 
           <!-- 타입 선택 -->
@@ -2531,7 +2551,7 @@
         <div class="comm-modal" style="max-width:420px;">
           <div class="comm-modal-header">
             <h3>프로필 편집</h3>
-            <button class="comm-modal-close" id="profileEditClose">&times;</button>
+            <button class="comm-modal-close" id="profileEditClose" aria-label="닫기">&times;</button>
           </div>
           <div class="profile-field">
             <label>닉네임</label>
@@ -2550,7 +2570,7 @@
         <div class="comm-modal">
           <div class="comm-modal-header">
             <h3>멤버 프로필</h3>
-            <button class="comm-modal-close" id="memberProfileClose">&times;</button>
+            <button class="comm-modal-close" id="memberProfileClose" aria-label="닫기">&times;</button>
           </div>
           <div id="memberProfileBody"></div>
         </div>
@@ -2867,6 +2887,12 @@
       return '<div class="' + cls + ' avatar-default">👤</div>';
     }
 
+    // 로컬(사용자 기기) 기준 'YYYY-MM-DD' — UTC(toISOString)와 달리 새벽 시간대에 하루 어긋나지 않음
+    function localDateStr(d) {
+      d = d || new Date();
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
     /* ── 내 프로필 (닉네임/아바타) — 프로필 우선, OAuth 폴백 ── */
     var myProfile = null; // { display_name, avatar_url }
     try { myProfile = JSON.parse(localStorage.getItem('temporal-profile') || 'null'); } catch(e) { myProfile = null; }
@@ -3016,7 +3042,7 @@
             try { localPomo = JSON.parse(localStorage.getItem("temporal-pomo") || "{}"); } catch(e) {}
             // Merge: keep settings from local, update session data from Supabase if newer
             var supaDate = supaPomo.today_date || '';
-            var isToday = supaDate === new Date().toISOString().slice(0, 10);
+            var isToday = supaDate === localDateStr();
             localPomo.totalFocusMin = Math.max(localPomo.totalFocusMin || 0, supaPomo.total_sessions ? supaPomo.total_sessions * 25 : 0);
             if (isToday) {
               localPomo.sessionsToday = Math.max(localPomo.sessionsToday || 0, supaPomo.sessions_today || 0);
@@ -3277,7 +3303,7 @@
       async loadPomoData() {
         if (!_currentUser) return null;
         try {
-          var today = new Date().toISOString().slice(0, 10);
+          var today = localDateStr();
           var { data } = await _supabase.from('pomodoro_sessions').select('sessions_today, total_sessions, today_date').eq('user_id', _currentUser.id).maybeSingle();
           return data || null;
         } catch(e) { return null; }
@@ -3285,7 +3311,7 @@
       async savePomoData(sessionsToday, totalSessions) {
         if (!_currentUser) return;
         try {
-          var today = new Date().toISOString().slice(0, 10);
+          var today = localDateStr();
           await _supabase.from('pomodoro_sessions').upsert({
             user_id: _currentUser.id, today_date: today, sessions_today: sessionsToday, total_sessions: totalSessions
           }, { onConflict: 'user_id' });
@@ -3854,7 +3880,7 @@
       var pomo; try { pomo = JSON.parse(localStorage.getItem("temporal-pomo")); } catch(e) { pomo = null; }
       var mind; try { mind = JSON.parse(localStorage.getItem("temporal-unconscious")) || []; } catch(e) { mind = []; }
 
-      var today = new Date().toISOString().slice(0, 10);
+      var today = localDateStr();
       var mn = ["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"];
       var STAGES = ["🔴 인지 단계", "🟡 의식적 실행", "🟢 무의식화"];
       var vcw = getVCW();
@@ -4784,6 +4810,7 @@
             // Delete button
             var delBtn = document.createElement("button");
             delBtn.className = "mind-entry-delete"; delBtn.textContent = "×";
+            delBtn.setAttribute("aria-label", "패턴 삭제"); delBtn.setAttribute("title", "삭제");
             delBtn.addEventListener("click", function() {
               var removed = entries.splice(idx, 1)[0]; mindSyncDelete(removed); saveData(entries); renderEntries();
             });
@@ -5172,9 +5199,9 @@
             html += '<span class="retro-tag-chip' + (selectedTags.indexOf(t) !== -1 ? ' selected' : '') + '" data-tag="' + escH(t) + '">' + escH(t) + '</span>';
           });
           getCustomTags().forEach(function(t) {
-            html += '<span class="retro-tag-chip custom' + (selectedTags.indexOf(t) !== -1 ? ' selected' : '') + '" data-tag="' + escH(t) + '">' + escH(t) + '<span class="tag-del" title="이 태그 버튼 삭제">✕</span></span>';
+            html += '<span class="retro-tag-chip custom' + (selectedTags.indexOf(t) !== -1 ? ' selected' : '') + '" data-tag="' + escH(t) + '">' + escH(t) + '<span class="tag-del" role="button" tabindex="0" title="이 태그 버튼 삭제" aria-label="태그 삭제">✕</span></span>';
           });
-          html += '<span class="retro-tag-add" id="mRetroTagAdd">＋ 태그</span>';
+          html += '<span class="retro-tag-add" id="mRetroTagAdd" role="button" tabindex="0" aria-label="태그 추가">＋ 태그</span>';
           presetsEl.innerHTML = html;
         }
         renderTagChips();
@@ -5227,6 +5254,14 @@
               chip.classList.remove('selected');
               selectedTags = selectedTags.filter(function(t) { return t !== tag; });
             } else { chip.classList.add('selected'); selectedTags.push(tag); }
+          }
+        });
+        // 키보드(Enter/Space)로 태그 삭제 ✕ / 추가 버튼 조작
+        presetsEl.addEventListener('keydown', function(e) {
+          if (e.key !== 'Enter' && e.key !== ' ') return;
+          var t = e.target;
+          if (t.classList && (t.classList.contains('tag-del') || t.classList.contains('retro-tag-add'))) {
+            e.preventDefault(); t.click();
           }
         });
 
@@ -5309,6 +5344,10 @@
 
       /* ── Load Feed ── */
       function loadFeed() {
+        // 로딩 플레이스홀더 (데이터가 아직 없을 때만 — 빈 화면 방지)
+        if (feedEl && feedData.length === 0) {
+          feedEl.innerHTML = '<div class="feed-empty"><span class="feed-empty-icon">⏳</span>피드를 불러오는 중...</div>';
+        }
         _supabase.from('community_feed')
           .select('*')
           .order('shared_at', { ascending: false })
@@ -5322,6 +5361,8 @@
               loadProfilesFor(feedData.map(function(f) { return f.user_id; }), function() { renderFeed(); });
             }
             renderFeed();
+          }).catch(function() {
+            if (feedEl) feedEl.innerHTML = '<div class="feed-empty"><span class="feed-empty-icon">⚠️</span>피드를 불러오지 못했습니다.<br>네트워크를 확인하고 다시 시도해주세요.</div>';
           });
       }
       window.loadFeed = loadFeed;
@@ -5401,14 +5442,14 @@
           : '';
         var authorBtns = isAuthor && item.feed_type !== 'ai_analysis'
           ? '<div class="feed-author-actions">' +
-              '<button class="feed-edit-btn" data-feed-id="' + item.id + '" title="수정">✏️</button>' +
-              '<button class="feed-delete-btn" data-feed-id="' + item.id + '" title="삭제">🗑️</button>' +
+              '<button class="feed-edit-btn" data-feed-id="' + item.id + '" title="수정" aria-label="게시물 수정">✏️</button>' +
+              '<button class="feed-delete-btn" data-feed-id="' + item.id + '" title="삭제" aria-label="게시물 삭제">🗑️</button>' +
             '</div>'
           : '';
 
         card.innerHTML =
           '<div class="feed-card-header">' +
-            '<span class="feed-id-link" data-user-id="' + item.user_id + '">' + avatarHtml +
+            '<span class="feed-id-link" role="button" tabindex="0" aria-label="' + escH(dispName) + ' 프로필 보기" data-user-id="' + item.user_id + '">' + avatarHtml +
               '<span class="feed-name">' + escH(dispName) + '</span>' +
             '</span>' +
             '<span class="feed-badge ' + badgeClass + '">' + (badgeLabels[item.feed_type] || '') + '</span>' +
@@ -5418,13 +5459,13 @@
           '</div>' +
           '<div class="feed-content">' + contentHtml + '</div>' +
           '<div class="feed-actions">' +
-            '<button class="feed-action-btn ' + (isLiked ? 'liked' : '') + '" data-action="like" data-feed-id="' + item.id + '">' +
+            '<button class="feed-action-btn ' + (isLiked ? 'liked' : '') + '" data-action="like" data-feed-id="' + item.id + '" aria-label="좋아요">' +
               '<span class="action-icon">' + (isLiked ? '❤️' : '🤍') + '</span> ' + likeCount +
             '</button>' +
-            '<button class="feed-action-btn" data-action="comment" data-feed-id="' + item.id + '">' +
+            '<button class="feed-action-btn" data-action="comment" data-feed-id="' + item.id + '" aria-label="댓글">' +
               '<span class="action-icon">💬</span> ' + commentCount +
             '</button>' +
-            '<button class="feed-action-btn feed-copy-btn" data-action="copy" data-feed-id="' + item.id + '" title="텍스트 복사">' +
+            '<button class="feed-action-btn feed-copy-btn" data-action="copy" data-feed-id="' + item.id + '" title="텍스트 복사" aria-label="텍스트 복사">' +
               '<span class="action-icon">📋</span>' +
             '</button>' +
             aiBtnHtml +
@@ -5446,9 +5487,14 @@
         if (delB) delB.addEventListener('click', function() { deletePost(item); });
         // Event: Copy
         card.querySelector('[data-action="copy"]').addEventListener('click', function() { copyPostText(item, this); });
-        // Event: 프로필 열기 (아바타/이름 클릭)
+        // Event: 프로필 열기 (아바타/이름 클릭 + 키보드 Enter/Space)
         var idLink = card.querySelector('.feed-id-link');
-        if (idLink) idLink.addEventListener('click', function() { openMemberProfile(item.user_id); });
+        if (idLink) {
+          idLink.addEventListener('click', function() { openMemberProfile(item.user_id); });
+          idLink.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openMemberProfile(item.user_id); }
+          });
+        }
 
         return card;
       }
@@ -5650,9 +5696,9 @@
               var cName = isAI ? '🤖 Claude AI' : escH(resolveName(c.user_id, c.display_name));
               var avHtml = isAI ? '<div class="comment-avatar ai-avatar-sm">🤖</div>'
                 : avatarHTML(resolveAvatar(c.user_id, c.avatar_url), 'comment-avatar');
-              if (!isAI) avHtml = '<span class="comment-id-link" data-user-id="' + c.user_id + '">' + avHtml + '</span>';
+              if (!isAI) avHtml = '<span class="comment-id-link" role="button" tabindex="0" aria-label="프로필 보기" data-user-id="' + c.user_id + '">' + avHtml + '</span>';
               var delBtnHtml = canDelete
-                ? '<button class="comment-delete-btn" data-comment-id="' + c.id + '" title="삭제">✕</button>'
+                ? '<button class="comment-delete-btn" data-comment-id="' + c.id + '" title="삭제" aria-label="댓글 삭제">✕</button>'
                 : '';
               var nameHtml = isAI ? cName : '<span class="comment-id-link" data-user-id="' + c.user_id + '">' + cName + '</span>';
               var row = document.createElement('div');
@@ -5672,6 +5718,9 @@
                 row.querySelectorAll('.comment-id-link').forEach(function(el) {
                   el.style.cursor = 'pointer';
                   el.addEventListener('click', function() { openMemberProfile(c.user_id); });
+                  el.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openMemberProfile(c.user_id); }
+                  });
                 });
               }
               listEl.appendChild(row);
@@ -5734,7 +5783,7 @@
           retros = [{ date: item.content.date, score: Math.round((done / Math.max(tasks.length, 1)) * 10), went_well: tasks.filter(function(t){return t.completed}).map(function(t){return t.text}).join(', '), to_improve: tasks.filter(function(t){return !t.completed}).map(function(t){return t.text}).join(', '), tags: [] }];
         } else if (item.feed_type === 'free') {
           // Create a pseudo-retro from free post content
-          retros = [{ date: new Date().toISOString().slice(0,10), score: 5, went_well: (item.content.title || '') + ' — ' + (item.content.body || ''), to_improve: '', tags: ['자유글'] }];
+          retros = [{ date: localDateStr(), score: 5, went_well: (item.content.title || '') + ' — ' + (item.content.body || ''), to_improve: '', tags: ['자유글'] }];
         }
         if (retros.length === 0) { aiBtn.classList.remove('loading'); aiBtn.textContent = '🤖 AI 분석'; return; }
 
@@ -5759,8 +5808,9 @@
           });
         }).catch(function() {
           aiBtn.classList.remove('loading');
-          aiBtn.textContent = '⚠️ 실패';
-          setTimeout(function() { aiBtn.textContent = '🤖 AI 분석'; }, 2000);
+          aiBtn.textContent = '⚠️ 분석 실패 — 다시 시도';
+          aiBtn.title = '네트워크 또는 서버 오류. 잠시 후 다시 시도해주세요.';
+          setTimeout(function() { aiBtn.textContent = '🤖 AI 분석'; aiBtn.title = ''; }, 3000);
         });
       }
 
@@ -5852,7 +5902,7 @@
           stats.streak = streak;
         }
         stats.tags = Object.keys(tagCount).sort(function(a,b){return tagCount[b]-tagCount[a];}).slice(0,5);
-        if (minTs) stats.since = new Date(minTs).toISOString().slice(0,10);
+        if (minTs) stats.since = localDateStr(new Date(minTs));
         return stats;
       }
 
@@ -6534,7 +6584,7 @@
         try {
           var since = new Date();
           since.setDate(since.getDate() - (days || 30));
-          var sinceStr = since.toISOString().slice(0, 10);
+          var sinceStr = localDateStr(since);
           var { data } = await _supabase.from('daily_goals')
             .select('goal_date, tasks')
             .eq('user_id', _currentUser.id)
