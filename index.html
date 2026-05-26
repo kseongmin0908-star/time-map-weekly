@@ -2715,14 +2715,97 @@
       document.getElementById("userName").textContent = (user.user_metadata && user.user_metadata.full_name) || user.email;
     }
 
+    // Merge mind entries from local + Supabase without losing data.
+    // - Union by content key (from||to||trigger)
+    // - Supabase id is authoritative; catches/stage take the MAX (never lose progress)
+    // - Local-only entries are pushed to Supabase to get an id
+    function mergeMindEntries(localArr, supaArr) {
+      function key(e) { return (e.from || '') + '||' + (e.to || '') + '||' + (e.trigger || ''); }
+      var map = {}; // contentKey -> merged entry
+      var order = []; // preserve insertion order
+      // 1) Seed with Supabase entries (authoritative ids, creation order)
+      (supaArr || []).forEach(function(e) {
+        var k = key(e);
+        if (!map[k]) { order.push(k); }
+        map[k] = {
+          id: e.id,
+          from: e.from, to: e.to, trigger: e.trigger,
+          catches: e.catches || 0, stage: e.stage || 0,
+          created: e.created || null
+        };
+      });
+      // 2) Merge in local entries
+      (localArr || []).forEach(function(e) {
+        var k = key(e);
+        if (!e.from && !e.to) return; // skip junk
+        if (map[k]) {
+          // exists in both: keep id, take max progress so we never lose catches/stage
+          var m = map[k];
+          var maxCatches = Math.max(m.catches || 0, e.catches || 0);
+          var maxStage = Math.max(m.stage || 0, e.stage || 0);
+          // if local had higher progress than Supabase, push update
+          if (m.id && (maxCatches !== (m.catches || 0) || maxStage !== (m.stage || 0))) {
+            if (typeof SupaDB !== 'undefined' && SupaDB.updateMindEntry) {
+              SupaDB.updateMindEntry(m.id, { catches: maxCatches, stage: maxStage });
+            }
+          }
+          m.catches = maxCatches; m.stage = maxStage;
+          if (!m.created && e.created) m.created = e.created;
+        } else {
+          // local-only entry (never synced) → keep it AND push to Supabase
+          var entry = {
+            id: e.id || null,
+            from: e.from, to: e.to, trigger: e.trigger,
+            catches: e.catches || 0, stage: e.stage || 0,
+            created: e.created || null
+          };
+          map[k] = entry; order.push(k);
+          if (!entry.id && typeof SupaDB !== 'undefined' && SupaDB.saveMindEntry) {
+            (function(en) {
+              SupaDB.saveMindEntry(en).then(function(id) {
+                if (id) {
+                  en.id = id;
+                  // persist the new id back to localStorage
+                  try {
+                    var cur = JSON.parse(localStorage.getItem("temporal-unconscious") || "[]");
+                    for (var i = 0; i < cur.length; i++) {
+                      if (!cur[i].id && cur[i].from === en.from && cur[i].to === en.to && (cur[i].trigger || '') === (en.trigger || '')) {
+                        cur[i].id = id; break;
+                      }
+                    }
+                    localStorage.setItem("temporal-unconscious", JSON.stringify(cur));
+                  } catch(e2) {}
+                }
+              });
+            })(entry);
+          }
+        }
+      });
+      return order.map(function(k) { return map[k]; });
+    }
+
     // Async function that loads Supabase data, caches it, then re-renders
     async function initAppData() {
       if (!_currentUser) return;
       try {
-        // Load weekly goals from Supabase and cache
+        // Load weekly goals from Supabase and MERGE with local (덮어쓰기 금지 — 로컬 전용 주차 보존)
         var supaGoals = await SupaDB.loadGoals(viewYear);
-        if (supaGoals && Object.keys(supaGoals).length > 0) {
-          goals = supaGoals;
+        var localGoals = loadGoalsLocal(viewYear);
+        var mergedGoals = {};
+        // 1) seed with local
+        for (var lwk in localGoals) { if (localGoals.hasOwnProperty(lwk)) mergedGoals[lwk] = localGoals[lwk]; }
+        // 2) overlay Supabase (authoritative for synced weeks)
+        if (supaGoals) { for (var swk in supaGoals) { if (supaGoals.hasOwnProperty(swk)) mergedGoals[swk] = supaGoals[swk]; } }
+        // 3) push local-only weeks (in local but not Supabase) to Supabase
+        if (supaGoals) {
+          for (var pwk in localGoals) {
+            if (localGoals.hasOwnProperty(pwk) && !supaGoals.hasOwnProperty(pwk) && localGoals[pwk] && typeof SupaDB.saveGoals === 'function') {
+              SupaDB.saveGoals(pwk, localGoals[pwk], viewYear);
+            }
+          }
+        }
+        if (Object.keys(mergedGoals).length > 0) {
+          goals = mergedGoals;
           saveGoalsLocal(goals);
         }
         // Load yearly goal from Supabase and cache
@@ -2735,10 +2818,14 @@
         if (supaLG) {
           localStorage.setItem("temporal-life-goal", JSON.stringify(supaLG));
         }
-        // Load mind entries from Supabase and cache
-        var supaMind = await SupaDB.loadMindEntries();
-        if (supaMind) {
-          localStorage.setItem("temporal-unconscious", JSON.stringify(supaMind));
+        // Load mind entries from Supabase and MERGE with local (절대 덮어쓰지 않음 — 데이터 손실 방지)
+        var supaMind = await SupaDB.loadMindEntries(); // ids 포함 배열 or null
+        var localMind = [];
+        try { localMind = JSON.parse(localStorage.getItem("temporal-unconscious") || "[]"); } catch(e) {}
+        if (!Array.isArray(localMind)) localMind = [];
+        if (typeof mergeMindEntries === 'function') {
+          var mergedMind = mergeMindEntries(localMind, supaMind || []);
+          localStorage.setItem("temporal-unconscious", JSON.stringify(mergedMind));
         }
         // Load pomodoro data from Supabase and cache
         if (typeof SupaDB.loadPomoData === 'function') {
