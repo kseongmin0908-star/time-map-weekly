@@ -5163,7 +5163,7 @@
           lines.push('달성률: ' + done + '/' + tasks.length);
           if (content.note) lines.push('💬 ' + content.note);
         } else if (type === 'retro') {
-          lines.push(dateStr + '📝 오늘의 회고 — ' + (content.score || 5) + '/10점');
+          lines.push(dateStr + '📝 오늘의 회고 — ' + (content.score || 5) + '점 ' + scoreEmoji(content.score || 5));
           if (content.went_well) lines.push('✅ 잘한 점: ' + content.went_well);
           if (content.to_improve) lines.push('💡 아쉬운 점: ' + content.to_improve);
           if (content.tags && content.tags.length) lines.push('🏷️ ' + content.tags.join(', '));
@@ -5237,6 +5237,14 @@
           .then(function() { loadFeed(); }).catch(function() {});
       }
 
+      function scoreEmoji(sc) {
+        if (sc >= 10) return '🔥';
+        if (sc >= 9) return '😄';
+        if (sc >= 7) return '🙂';
+        if (sc >= 5) return '😐';
+        if (sc >= 3) return '😟';
+        return '😞';
+      }
       function formatContent(type, content) {
         if (!content) return '';
         if (type === 'daily') {
@@ -5250,7 +5258,7 @@
         if (type === 'retro') {
           var sc = content.score || 5;
           var scColor = sc >= 7 ? 'var(--success)' : sc >= 4 ? 'var(--warn)' : 'var(--danger)';
-          return '<div style="margin-bottom:.3rem"><span class="feed-score" style="color:' + scColor + '">' + sc + '/10</span></div>' +
+          return '<div style="margin-bottom:.3rem"><span class="feed-score" style="color:' + scColor + '">' + sc + '점 ' + scoreEmoji(sc) + '</span></div>' +
             (content.went_well ? '<div style="font-size:.7rem;margin-bottom:.2rem">✅ ' + escH(content.went_well).substring(0,200) + '</div>' : '') +
             (content.to_improve ? '<div style="font-size:.7rem;margin-bottom:.2rem">💡 ' + escH(content.to_improve).substring(0,200) + '</div>' : '') +
             ((content.tags && content.tags.length) ? '<div style="display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.3rem">' + content.tags.map(function(t) { return '<span style="padding:.1rem .4rem;border-radius:10px;font-size:.55rem;background:rgba(212,165,116,.08);border:1px solid rgba(212,165,116,.15);color:var(--gold-dim)">' + escH(t) + '</span>'; }).join('') + '</div>' : '');
