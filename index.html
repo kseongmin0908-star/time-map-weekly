@@ -569,7 +569,11 @@
     .task-item:hover { background: rgba(255,255,255,.06); border-color: rgba(106,102,96,.3); }
     .task-item.completed { opacity: .55; }
     .task-item.completed .task-text { text-decoration: line-through; color: var(--text-dim); }
-    .task-text { flex: 1; font-family: 'Noto Sans KR', sans-serif; font-size: .8rem; color: var(--text); line-height: 1.5; word-break: break-word; }
+    .task-text { flex: 1; font-family: 'Noto Sans KR', sans-serif; font-size: .8rem; color: var(--text); line-height: 1.5; word-break: break-word; cursor: text; }
+    .task-text.editing {
+      outline: 1px solid var(--gold-dim); background: rgba(212,165,116,.07);
+      border-radius: 5px; padding: .1rem .35rem; text-decoration: none !important; color: var(--text) !important;
+    }
     .task-remove {
       width: 24px; height: 24px; border: none; background: transparent;
       color: var(--text-dim); font-size: 1.1rem; cursor: pointer; border-radius: 50%;
@@ -3773,6 +3777,27 @@
         box.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
         label.appendChild(cb); label.appendChild(box);
         var textSpan = document.createElement("span"); textSpan.className = "task-text"; textSpan.textContent = task.text;
+        textSpan.title = "클릭하여 수정";
+        // 인라인 수정: 클릭 → 편집, Enter/포커스아웃 → 저장, Esc → 취소
+        textSpan.addEventListener("click", function() {
+          if (textSpan.getAttribute("contenteditable") === "true") return;
+          textSpan.setAttribute("contenteditable", "true");
+          textSpan.classList.add("editing");
+          textSpan.focus();
+          var range = document.createRange(); range.selectNodeContents(textSpan);
+          var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+        });
+        textSpan.addEventListener("keydown", function(e) {
+          if (e.key === "Enter") { e.preventDefault(); textSpan.blur(); }
+          else if (e.key === "Escape") { e.preventDefault(); textSpan.textContent = panelTasks[idx].text; textSpan.blur(); }
+        });
+        textSpan.addEventListener("blur", function() {
+          textSpan.setAttribute("contenteditable", "false");
+          textSpan.classList.remove("editing");
+          var v = textSpan.textContent.replace(/\s+/g, " ").trim();
+          if (v) panelTasks[idx].text = v;       // 비우면 원래 내용 유지
+          textSpan.textContent = panelTasks[idx].text;
+        });
         var removeBtn = document.createElement("button"); removeBtn.className = "task-remove"; removeBtn.textContent = "×";
         removeBtn.addEventListener("click", function() { panelTasks.splice(idx, 1); renderTaskList(); });
         item.appendChild(label); item.appendChild(textSpan); item.appendChild(removeBtn);
