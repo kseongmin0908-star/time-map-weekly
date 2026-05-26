@@ -1124,6 +1124,21 @@
     @keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes toastOut { to { opacity: 0; transform: translateY(12px); } }
 
+    /* ── 긴 글 접기/펼치기 (AI 분석·회고 등) ── */
+    .feed-longtext { position: relative; }
+    .feed-longtext.clamped .lt-content {
+      max-height: 7.6em; overflow: hidden; cursor: pointer;
+      -webkit-mask-image: linear-gradient(180deg, #000 62%, transparent);
+      mask-image: linear-gradient(180deg, #000 62%, transparent);
+    }
+    .lt-toggle {
+      display: inline-block; margin-top: .35rem; padding: .2rem .65rem;
+      background: rgba(212,165,116,.1); border: 1px solid rgba(212,165,116,.28);
+      border-radius: 10px; color: var(--gold); font-size: .62rem; font-weight: 600;
+      font-family: 'Noto Sans KR', sans-serif; cursor: pointer; transition: all .2s;
+    }
+    .lt-toggle:hover { background: rgba(212,165,116,.2); border-color: var(--gold); }
+
     .mind-pattern-row {
       display: flex; align-items: flex-start; gap: .5rem; margin-bottom: .6rem;
     }
@@ -5673,6 +5688,20 @@
         if (sc >= 3) return '😟';
         return '😞';
       }
+      // 긴 텍스트: 길면 접고 '더보기'(클릭 시 펼침). 짧으면 그대로.
+      function longText(text, fs) {
+        fs = fs || '.73rem';
+        var safe = escH(text || '');
+        var style = 'white-space:pre-wrap;font-size:' + fs + ';line-height:1.7';
+        if ((text || '').length <= 280) {
+          return '<div style="' + style + '">' + safe + '</div>';
+        }
+        return '<div class="feed-longtext clamped">' +
+          '<div class="lt-content" style="' + style + '">' + safe + '</div>' +
+          '<button class="lt-toggle" type="button">더보기</button>' +
+        '</div>';
+      }
+
       function formatContent(type, content) {
         if (!content) return '';
         if (type === 'daily') {
@@ -5687,19 +5716,39 @@
           var sc = content.score || 5;
           var scColor = sc >= 7 ? 'var(--success)' : sc >= 4 ? 'var(--warn)' : 'var(--danger)';
           return '<div style="margin-bottom:.3rem"><span class="feed-score" style="color:' + scColor + '">' + sc + '점 ' + scoreEmoji(sc) + '</span></div>' +
-            (content.went_well ? '<div style="font-size:.7rem;margin-bottom:.2rem">✅ ' + escH(content.went_well).substring(0,200) + '</div>' : '') +
-            (content.to_improve ? '<div style="font-size:.7rem;margin-bottom:.2rem">💡 ' + escH(content.to_improve).substring(0,200) + '</div>' : '') +
+            (content.went_well ? '<div style="margin-bottom:.2rem">' + longText('✅ ' + content.went_well, '.7rem') + '</div>' : '') +
+            (content.to_improve ? '<div style="margin-bottom:.2rem">' + longText('💡 ' + content.to_improve, '.7rem') + '</div>' : '') +
             ((content.tags && content.tags.length) ? '<div style="display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.3rem">' + content.tags.map(function(t) { return '<span style="padding:.1rem .4rem;border-radius:10px;font-size:.55rem;background:rgba(212,165,116,.08);border:1px solid rgba(212,165,116,.15);color:var(--gold-dim)">' + escH(t) + '</span>'; }).join('') + '</div>' : '');
         }
         if (type === 'ai_analysis') {
-          return '<div style="white-space:pre-wrap;font-size:.73rem;line-height:1.7">' + escH(content.analysis || '').substring(0, 500) + '</div>';
+          return longText(content.analysis || '');
         }
         if (type === 'free') {
           return (content.title ? '<div style="font-weight:600;margin-bottom:.3rem;font-size:.8rem">' + escH(content.title) + '</div>' : '') +
-            '<div style="font-size:.73rem;white-space:pre-wrap;line-height:1.7">' + escH(content.body || '') + '</div>';
+            longText(content.body || '');
         }
         return '';
       }
+
+      // 긴 글 더보기/접기 — 모든 렌더 컨텍스트(피드·프로필·댓글) 커버하도록 document에 위임 1회 등록
+      document.addEventListener('click', function(e) {
+        var toggle = e.target.closest('.lt-toggle');
+        if (toggle) {
+          var box = toggle.closest('.feed-longtext'); if (!box) return;
+          var clamped = box.classList.toggle('clamped');
+          toggle.textContent = clamped ? '더보기' : '접기';
+          return;
+        }
+        // 접힌 상태에서 본문을 직접 눌러도 펼쳐지도록 (펼친 뒤엔 클릭으로 안 접힘 → 텍스트 선택 가능)
+        var content = e.target.closest('.lt-content');
+        if (content) {
+          var box2 = content.closest('.feed-longtext');
+          if (box2 && box2.classList.contains('clamped')) {
+            box2.classList.remove('clamped');
+            var b = box2.querySelector('.lt-toggle'); if (b) b.textContent = '접기';
+          }
+        }
+      });
 
       /* ── Like Toggle ── */
       function toggleLike(feedId) {
