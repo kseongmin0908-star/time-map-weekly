@@ -5178,29 +5178,50 @@
 
       /* ── Copy Post to Clipboard ── */
       function contentToText(type, content, displayName) {
-        var lines = [];
-        var dateStr = content.date ? '[' + content.date + '] ' : '';
+        var out = [];
+        var SEP = '────────────────';
+        var dateLine = content.date ? '📅 ' + (formatPostDate(content.date) || content.date) : '';
+
         if (type === 'daily') {
-          lines.push(dateStr + '📋 오늘의 목표');
           var tasks = content.tasks || [];
           var done = tasks.filter(function(t) { return t.completed; }).length;
-          tasks.forEach(function(t) { lines.push((t.completed ? '✅ ' : '☐ ') + t.text); });
-          lines.push('달성률: ' + done + '/' + tasks.length);
-          if (content.note) lines.push('💬 ' + content.note);
+          var total = tasks.length;
+          var pct = total > 0 ? Math.round(done / total * 100) : 0;
+          out.push('📋 오늘의 목표');
+          if (dateLine) out.push(dateLine);
+          out.push('📊 달성률  ' + done + ' / ' + total + (total > 0 ? '  (' + pct + '%)' : ''));
+          out.push(SEP);
+          tasks.forEach(function(t) { out.push((t.completed ? '✅ ' : '⬜ ') + t.text); });
+          if (content.note) { out.push(''); out.push('💬 ' + content.note); }
         } else if (type === 'retro') {
-          lines.push(dateStr + '📝 오늘의 회고 — ' + (content.score || 5) + '점 ' + scoreEmoji(content.score || 5));
-          if (content.went_well) lines.push('✅ 잘한 점: ' + content.went_well);
-          if (content.to_improve) lines.push('💡 아쉬운 점: ' + content.to_improve);
-          if (content.tags && content.tags.length) lines.push('🏷️ ' + content.tags.join(', '));
+          var sc = content.score || 5;
+          out.push('📝 오늘의 회고');
+          if (dateLine) out.push(dateLine);
+          out.push('⭐ 점수  ' + sc + '점 ' + scoreEmoji(sc));
+          if (content.went_well) {
+            out.push(SEP);
+            out.push('✅ 잘한 점');
+            out.push(content.went_well);
+          }
+          if (content.to_improve) {
+            out.push('');
+            out.push('💡 아쉬운 점');
+            out.push(content.to_improve);
+          }
+          if (content.tags && content.tags.length) {
+            out.push('');
+            out.push('🏷️ ' + content.tags.join(' · '));
+          }
         } else if (type === 'free') {
-          if (content.title) lines.push(dateStr + content.title);
-          if (content.body) lines.push(content.body);
+          if (content.title) out.push('💬 ' + content.title);
+          if (dateLine) out.push(dateLine);
+          if (content.body) { out.push(SEP); out.push(content.body); }
         } else if (type === 'ai_analysis') {
-          lines.push('🤖 AI 분석 결과');
-          if (content.analysis) lines.push(content.analysis);
+          out.push('🤖 AI 분석 결과');
+          if (content.analysis) { out.push(SEP); out.push(content.analysis); }
         }
-        if (displayName) lines.push('— ' + displayName);
-        return lines.join('\n');
+        if (displayName) { out.push(''); out.push('— ' + displayName); }
+        return out.join('\n');
       }
 
       function copyPostText(item, btnEl) {
