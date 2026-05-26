@@ -2740,8 +2740,36 @@
         if (supaMind) {
           localStorage.setItem("temporal-unconscious", JSON.stringify(supaMind));
         }
-        // Load today's daily goals from Supabase and cache
-        if (typeof SupaDB.loadDailyGoals === 'function') {
+        // Load pomodoro data from Supabase and cache
+        if (typeof SupaDB.loadPomoData === 'function') {
+          var supaPomo = await SupaDB.loadPomoData();
+          if (supaPomo) {
+            var today = new Date().toDateString();
+            var localPomo = {};
+            try { localPomo = JSON.parse(localStorage.getItem("temporal-pomo") || "{}"); } catch(e) {}
+            // Merge: keep settings from local, update session data from Supabase if newer
+            var supaDate = supaPomo.today_date || '';
+            var isToday = supaDate === new Date().toISOString().slice(0, 10);
+            localPomo.totalFocusMin = Math.max(localPomo.totalFocusMin || 0, supaPomo.total_sessions ? supaPomo.total_sessions * 25 : 0);
+            if (isToday) {
+              localPomo.sessionsToday = Math.max(localPomo.sessionsToday || 0, supaPomo.sessions_today || 0);
+            }
+            localPomo.todayDate = today;
+            localStorage.setItem("temporal-pomo", JSON.stringify(localPomo));
+          }
+        }
+        // Load recent daily goals from Supabase and cache (last 30 days)
+        if (typeof SupaDB.loadRecentDailyGoals === 'function') {
+          var recentDG = await SupaDB.loadRecentDailyGoals(30);
+          if (recentDG && recentDG.length > 0) {
+            recentDG.forEach(function(dg) {
+              if (dg.goal_date && dg.tasks) {
+                localStorage.setItem('temporal-daily-' + dg.goal_date, JSON.stringify(dg.tasks));
+              }
+            });
+          }
+        } else if (typeof SupaDB.loadDailyGoals === 'function') {
+          // Fallback: load today only
           var todayD = new Date();
           var todayStr = todayD.getFullYear() + '-' + String(todayD.getMonth()+1).padStart(2,'0') + '-' + String(todayD.getDate()).padStart(2,'0');
           var supaDG = await SupaDB.loadDailyGoals(todayStr);
@@ -2749,9 +2777,9 @@
             localStorage.setItem('temporal-daily-' + todayStr, JSON.stringify(supaDG));
           }
         }
-        // Load recent retros from Supabase and cache
+        // Load recent retros from Supabase and cache (365 days for full analysis)
         if (typeof SupaDB.loadRetros === 'function') {
-          var supaRetros = await SupaDB.loadRetros(30);
+          var supaRetros = await SupaDB.loadRetros(365);
           if (supaRetros && supaRetros.length > 0) {
             var retroDatesSet = JSON.parse(localStorage.getItem('temporal-retro-dates') || '[]');
             supaRetros.forEach(function(sr) {
@@ -2784,6 +2812,12 @@
       if (typeof refreshAll === "function") refreshAll();
       if (typeof renderYearlyGoal === "function") renderYearlyGoal();
       if (typeof loadCommunityFeed === "function") loadCommunityFeed();
+      // Re-render mind entries (IIFE captured stale data at load time)
+      if (typeof window._reloadMindEntries === "function") window._reloadMindEntries();
+      // Re-render pomodoro display
+      if (typeof window._reloadPomoDisplay === "function") window._reloadPomoDisplay();
+      // Re-render life goal badge
+      if (typeof window._reloadLifeGoal === "function") window._reloadLifeGoal();
     }
 
     // Dev mode: skip auth on localhost
@@ -2944,6 +2978,19 @@
         try {
           var { data } = await _supabase.from('life_goals').select('amount, label, target_date').eq('user_id', _currentUser.id).maybeSingle();
           if (data && data.amount) return { amount: data.amount, label: data.label, date: data.target_date };
+          // Fallback: migrate from localStorage
+          var localRaw = localStorage.getItem("temporal-life-goal");
+          if (localRaw) {
+            try {
+              var local = JSON.parse(localRaw);
+              if (local && local.amount) {
+                _supabase.from('life_goals').upsert({
+                  user_id: _currentUser.id, amount: local.amount, label: local.label || '', target_date: local.date || ''
+                }, { onConflict: 'user_id' }).then(function(){});
+                return local;
+              }
+            } catch(e2) {}
+          }
           return null;
         } catch(e) { return null; }
       },
@@ -2983,12 +3030,13 @@
         } catch(e) { return null; }
       },
       async saveMindEntry(entry) {
-        if (!_currentUser) return;
+        if (!_currentUser) return null;
         try {
-          await _supabase.from('unconscious_entries').insert({
+          var { data } = await _supabase.from('unconscious_entries').insert({
             user_id: _currentUser.id, from_pattern: entry.from, to_pattern: entry.to, trigger_text: entry.trigger, catches: entry.catches || 0, stage: entry.stage || 0
-          });
-        } catch(e) {}
+          }).select('id').single();
+          return data ? data.id : null;
+        } catch(e) { return null; }
       },
       async updateMindEntry(id, updates) {
         if (!_currentUser) return;
@@ -3781,6 +3829,9 @@
         updateDday();
       }
 
+      // Expose reload function so initAppData can refresh after Supabase fetch
+      window._reloadLifeGoal = function() { renderBadge(); };
+
       function updateDday() {
         var parts = goal.date.split("-");
         var target = new Date(parseInt(parts[0],10), parseInt(parts[1],10) - 1, parseInt(parts[2],10));
@@ -4153,6 +4204,13 @@
       }
       loadPomoData();
 
+      // Expose reload function so initAppData can refresh after Supabase fetch
+      window._reloadPomoDisplay = function() {
+        loadPomoData();
+        todayCountEl.textContent = pomoState.sessionsToday;
+        totalMinEl.textContent = pomoState.totalFocusMin;
+      };
+
       // Apply settings from inputs
       document.getElementById("pomoWorkMin").value = pomoState.workMin;
       document.getElementById("pomoShortMin").value = pomoState.shortMin;
@@ -4409,10 +4467,24 @@
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
       }
       // Supabase sync helpers for mind entries
-      function mindSyncAdd(entry) { SupaDB.saveMindEntry(entry); }
-      function mindSyncDelete(entry) { if (entry && entry.id) SupaDB.deleteMindEntry(entry.id); }
-      function mindSyncUpdate(entry) { if (entry && entry.id) SupaDB.updateMindEntry(entry.id, { catches: entry.catches, stage: entry.stage }); }
+      function mindSyncAdd(entry, idx) {
+        if (typeof SupaDB === 'undefined' || !SupaDB.saveMindEntry) return;
+        SupaDB.saveMindEntry(entry).then(function(id) {
+          if (id && entries[idx]) {
+            entries[idx].id = id;
+            saveData(entries); // persist ID back to localStorage
+          }
+        });
+      }
+      function mindSyncDelete(entry) { if (typeof SupaDB !== 'undefined' && entry && entry.id) SupaDB.deleteMindEntry(entry.id); }
+      function mindSyncUpdate(entry) { if (typeof SupaDB !== 'undefined' && entry && entry.id) SupaDB.updateMindEntry(entry.id, { catches: entry.catches, stage: entry.stage }); }
       var entries = loadData();
+
+      // Expose reload function so initAppData can refresh after Supabase fetch
+      window._reloadMindEntries = function() {
+        entries = loadData();
+        renderEntries();
+      };
 
       function updateStats() {
         document.getElementById("mindTotalEntries").textContent = entries.length;
@@ -4539,7 +4611,7 @@
           created: new Date().toISOString()
         };
         entries.push(newEntry);
-        mindSyncAdd(newEntry);
+        mindSyncAdd(newEntry, entries.length - 1);
         saveData(entries);
         fromInput.value = ""; toInput.value = ""; triggerInput.value = "";
         renderEntries();
@@ -5751,10 +5823,13 @@
       var pomodoro = null;
       try {
         var pomoRaw = JSON.parse(localStorage.getItem('temporal-pomo') || '{}');
-        if (pomoRaw && (pomoRaw.totalSessions || pomoRaw.sessions)) {
+        // localStorage keys: sessionsToday, totalFocusMin
+        var pomoTotal = pomoRaw.totalFocusMin || pomoRaw.totalMinutes || 0;
+        var pomoSessions = pomoRaw.sessionsToday || pomoRaw.totalSessions || pomoRaw.sessions || 0;
+        if (pomoTotal > 0 || pomoSessions > 0) {
           pomodoro = {
-            totalSessions: pomoRaw.totalSessions || pomoRaw.sessions || 0,
-            totalMinutes: pomoRaw.totalMinutes || (pomoRaw.totalSessions || 0) * 25,
+            totalSessions: pomoSessions,
+            totalMinutes: pomoTotal,
             avgPerDay: pomoRaw.avgPerDay || null
           };
         }
@@ -5830,6 +5905,20 @@
           var { data } = await _supabase.from('daily_goals').select('tasks').eq('user_id', _currentUser.id).eq('goal_date', date).maybeSingle();
           return data ? data.tasks : null;
         } catch(e) { return null; }
+      };
+      SupaDB.loadRecentDailyGoals = async function(days) {
+        if (!_currentUser) return [];
+        try {
+          var since = new Date();
+          since.setDate(since.getDate() - (days || 30));
+          var sinceStr = since.toISOString().slice(0, 10);
+          var { data } = await _supabase.from('daily_goals')
+            .select('goal_date, tasks')
+            .eq('user_id', _currentUser.id)
+            .gte('goal_date', sinceStr)
+            .order('goal_date', { ascending: false });
+          return data || [];
+        } catch(e) { return []; }
       };
       SupaDB.saveRetro = async function(date, retroData) {
         if (!_currentUser) return;
