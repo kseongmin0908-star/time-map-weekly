@@ -1410,6 +1410,12 @@
     }
     .user-avatar { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--gold-dim); }
     .user-name { flex: 1; font-size: .85rem; color: var(--text-dim); font-family: 'Noto Sans KR', sans-serif; }
+    .user-bar-hint {
+      font-family: 'Noto Sans KR', sans-serif; font-size: .72rem; color: var(--gold-dim);
+      padding: .35rem .75rem; border-radius: 8px; border: 1px solid rgba(212,165,116,.2);
+      background: rgba(212,165,116,.05); cursor: pointer; transition: all .2s; white-space: nowrap; flex-shrink: 0;
+    }
+    .user-bar-hint:hover { background: rgba(212,165,116,.12); color: var(--gold); border-color: var(--gold-dim); }
     .user-export-md {
       padding: .5rem 1.2rem; border-radius: 8px; border: 1px solid rgba(138,92,246,.25);
       background: rgba(138,92,246,.05); color: #a78bfa; font-size: .8rem;
@@ -1584,6 +1590,12 @@
       font-family: 'Noto Sans KR', sans-serif; white-space: nowrap;
     }
     .mp-edit-btn:hover { background: rgba(212,165,116,.2); }
+    .mp-logout-btn {
+      width: 100%; margin-top: 1.2rem; padding: .8rem; border-radius: 12px;
+      background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.3); color: #ff8a8a;
+      font-family: 'Noto Sans KR', sans-serif; font-size: .82rem; font-weight: 600; cursor: pointer; transition: all .2s;
+    }
+    .mp-logout-btn:hover { background: rgba(239,68,68,.18); border-color: var(--danger); color: #ffb4b4; }
     .mp-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-bottom: 1.1rem; }
     .mp-stat {
       background: rgba(255,255,255,.03); border: 1px solid rgba(212,165,116,.1);
@@ -2485,9 +2497,9 @@
 
   <div id="app" style="display:none">
     <div class="user-bar" id="userBar" style="display:none">
-      <span class="user-avatar-wrap" id="userAvatarWrap" title="내 프로필" style="cursor:pointer"></span>
-      <span class="user-name" id="userName" title="내 프로필" style="cursor:pointer"></span>
-      <button class="user-logout" id="userLogout">로그아웃</button>
+      <span class="user-avatar-wrap" id="userAvatarWrap" title="내 프로필 보기" style="cursor:pointer"></span>
+      <span class="user-name" id="userName" title="내 프로필 보기" style="cursor:pointer"></span>
+      <span class="user-bar-hint" title="내 프로필 보기">내 프로필 ›</span>
     </div>
 
     <!-- ===== TAB NAVIGATION ===== -->
@@ -2966,7 +2978,9 @@
       });
     });
 
-    document.getElementById("userLogout").addEventListener("click", function() {
+    // 로그아웃 (확인 후 실행) — 프로필 모달 안의 버튼에서 호출
+    function doLogout() {
+      if (!window.confirm("로그아웃 하시겠습니까?")) return;
       _supabase.auth.signOut().then(function() {
         _currentUser = null;
         authScreen.style.display = "flex";
@@ -2974,7 +2988,7 @@
         googleBtn.style.display = "flex";
         appEl.style.display = "none";
       });
-    });
+    }
 
     /* ── Preset avatars (이모지 + 배경 그라데이션) ── */
     var PRESET_AVATARS = [
@@ -6183,11 +6197,20 @@
             }).join('');
           }
 
+          // 본인 프로필이면 하단에 로그아웃 버튼
+          if (isMe) {
+            html += '<button class="mp-logout-btn" id="mpLogoutBtn">🚪 로그아웃</button>';
+          }
+
           body.innerHTML = html;
           var mpEdit = document.getElementById('mpEditBtn');
           if (mpEdit) mpEdit.addEventListener('click', function() {
             if (memberProfileModal) memberProfileModal.style.display = 'none';
             openProfileEdit();
+          });
+          var mpLogout = document.getElementById('mpLogoutBtn');
+          if (mpLogout) mpLogout.addEventListener('click', function() {
+            if (typeof doLogout === 'function') doLogout();
           });
         });
       }
@@ -6204,9 +6227,11 @@
         if (mc) mc.addEventListener('click', function() { memberProfileModal.style.display = 'none'; });
         var uaw = document.getElementById('userAvatarWrap');
         var unm = document.getElementById('userName');
+        var uhint = document.querySelector('.user-bar-hint');
         function openMine() { if (_currentUser) openMemberProfile(_currentUser.id); }
         if (uaw) uaw.addEventListener('click', openMine);
         if (unm) unm.addEventListener('click', openMine);
+        if (uhint) uhint.addEventListener('click', openMine);
       })();
 
       /* ── Realtime Subscriptions ── */
