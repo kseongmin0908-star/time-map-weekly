@@ -2826,12 +2826,14 @@
           localStorage.setItem("temporal-life-goal", JSON.stringify(supaLG));
         }
         // Load mind entries from Supabase and MERGE with local (절대 덮어쓰지 않음 — 데이터 손실 방지)
-        var supaMind = await SupaDB.loadMindEntries(); // ids 포함 배열 or null
-        var localMind = [];
-        try { localMind = JSON.parse(localStorage.getItem("temporal-unconscious") || "[]"); } catch(e) {}
-        if (!Array.isArray(localMind)) localMind = [];
-        if (typeof mergeMindEntries === 'function') {
-          var mergedMind = mergeMindEntries(localMind, supaMind || []);
+        // loadMindEntries 반환: 배열(빈 배열 포함) = 로드 성공 / null = 오류
+        var supaMind = await SupaDB.loadMindEntries();
+        // 로드 실패(null)면 localStorage를 건드리지 않고 merge/push도 건너뜀 → 잘못된 재INSERT(중복) 방지
+        if (supaMind !== null && typeof mergeMindEntries === 'function') {
+          var localMind = [];
+          try { localMind = JSON.parse(localStorage.getItem("temporal-unconscious") || "[]"); } catch(e) {}
+          if (!Array.isArray(localMind)) localMind = [];
+          var mergedMind = mergeMindEntries(localMind, supaMind);
           localStorage.setItem("temporal-unconscious", JSON.stringify(mergedMind));
         }
         // Load pomodoro data from Supabase and cache
@@ -3116,11 +3118,10 @@
       async loadMindEntries() {
         if (!_currentUser) return null;
         try {
-          var { data } = await _supabase.from('unconscious_entries').select('id, from_pattern, to_pattern, trigger_text, catches, stage').eq('user_id', _currentUser.id).order('id', { ascending: true });
-          if (data && data.length > 0) {
-            return data.map(function(r) { return { id: r.id, from: r.from_pattern, to: r.to_pattern, trigger: r.trigger_text, catches: r.catches || 0, stage: r.stage || 0 }; });
-          }
-          return null;
+          var { data, error } = await _supabase.from('unconscious_entries').select('id, from_pattern, to_pattern, trigger_text, catches, stage').eq('user_id', _currentUser.id).order('id', { ascending: true });
+          if (error) return null; // 로드 실패 → null (호출부에서 merge/push 건너뜀)
+          // 성공: 데이터가 없어도 [] 반환 (빈 DB와 오류를 구분)
+          return (data || []).map(function(r) { return { id: r.id, from: r.from_pattern, to: r.to_pattern, trigger: r.trigger_text, catches: r.catches || 0, stage: r.stage || 0 }; });
         } catch(e) { return null; }
       },
       async saveMindEntry(entry) {
@@ -5267,7 +5268,10 @@
           '<button class="feed-confirm-yes">삭제</button>' +
           '<button class="feed-confirm-no">취소</button>';
         bar.querySelector('.feed-confirm-yes').addEventListener('click', function() {
-          _supabase.from('community_feed').delete().eq('id', item.id).then(function() { loadFeed(); });
+          _supabase.from('community_feed').delete().eq('id', item.id).then(function() {
+            delete openComments[item.id]; // 삭제된 게시물의 열림 상태 정리 (누적 방지)
+            loadFeed();
+          });
         });
         bar.querySelector('.feed-confirm-no').addEventListener('click', function() { bar.remove(); });
         card.querySelector('.feed-content').after(bar);
@@ -5489,7 +5493,7 @@
               if (!feedId) return;
               // 전체 피드를 다시 그리지 않음 (열린 댓글창이 닫히는 것 방지)
               // 카운트만 권위있게 재조회 + 배지 제자리 갱신
-              _supabase.from('feed_comments').select('id', { count: 'exact', head: true }).eq('feed_id', feedId)
+              _supabase.from('feed_comments').select('*', { count: 'exact', head: true }).eq('feed_id', feedId)
                 .then(function(res) {
                   if (typeof res.count === 'number') feedCommentCounts[feedId] = res.count;
                   updateCommentCountBadge(feedId);
