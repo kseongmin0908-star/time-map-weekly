@@ -1423,12 +1423,13 @@
       color: var(--gold-bright); margin: 0;
     }
     .comm-modal-close {
-      width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(106,102,96,.2);
-      background: transparent; color: var(--text-dim); font-size: 1.2rem;
+      width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid rgba(239,68,68,.45);
+      background: rgba(239,68,68,.12); color: #ff6b6b; font-size: 1.7rem; font-weight: 600; line-height: 1;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: all .2s;
+      transition: all .2s; flex-shrink: 0;
     }
-    .comm-modal-close:hover { border-color: var(--danger); color: var(--danger); background: rgba(239,68,68,.06); }
+    .comm-modal-close:hover { border-color: var(--danger); color: #fff; background: var(--danger); transform: scale(1.08); }
+    .comm-modal-close:active { transform: scale(0.96); }
 
     /* Type Select */
     .comm-type-select { display: flex; flex-direction: column; gap: .6rem; }
@@ -4786,9 +4787,8 @@
       document.getElementById('commModalClose').addEventListener('click', function() {
         modal.style.display = 'none';
       });
-      modal.addEventListener('click', function(e) {
-        if (e.target === modal) modal.style.display = 'none';
-      });
+      // 바깥 영역 클릭으로는 닫히지 않음 (작성 중 실수로 닫혀 내용이 사라지는 것 방지)
+      // 닫기는 오직 X 버튼으로만 가능
 
       /* ── Type Selection → Show Form ── */
       document.querySelectorAll('.comm-type-btn').forEach(function(btn) {
