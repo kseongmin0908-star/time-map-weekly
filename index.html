@@ -4755,6 +4755,7 @@
       var feedData = [];
       var feedLikes = {};
       var feedCommentCounts = {};
+      var openComments = {}; // feedId -> true 면 댓글창이 열린 상태 (재렌더 시 유지)
       var editingFeedId = null; // null = new post, string = editing existing post
 
       function escH(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -5093,6 +5094,13 @@
         }
         feedEl.innerHTML = '';
         filtered.forEach(function(item) { feedEl.appendChild(buildFeedCard(item)); });
+        // 재렌더로 카드가 새로 그려져도, 열려있던 댓글창은 다시 펼쳐서 유지
+        Object.keys(openComments).forEach(function(fid) {
+          var card = feedEl.querySelector('.feed-card[data-feed-id="' + fid + '"]');
+          if (!card) return;
+          var cs = card.querySelector('.feed-comments[data-feed-id="' + fid + '"]');
+          if (cs) { cs.style.display = 'block'; loadComments(fid, cs); }
+        });
       }
 
       function buildFeedCard(item) {
@@ -5311,10 +5319,18 @@
         var commSection = card.querySelector('.feed-comments[data-feed-id="' + feedId + '"]');
         if (commSection.style.display === 'none') {
           commSection.style.display = 'block';
+          openComments[feedId] = true;
           loadComments(feedId, commSection);
         } else {
           commSection.style.display = 'none';
+          delete openComments[feedId];
         }
+      }
+
+      // 💬 댓글 수 배지를 전체 재렌더 없이 제자리에서 갱신
+      function updateCommentCountBadge(feedId) {
+        var btn = feedEl.querySelector('.feed-action-btn[data-action="comment"][data-feed-id="' + feedId + '"]');
+        if (btn) btn.innerHTML = '<span class="action-icon">💬</span> ' + (feedCommentCounts[feedId] || 0);
       }
 
       function loadComments(feedId, container) {
@@ -5373,7 +5389,7 @@
         _supabase.from('feed_comments').delete().eq('id', commentId).then(function() {
           feedCommentCounts[feedId] = Math.max((feedCommentCounts[feedId] || 1) - 1, 0);
           loadComments(feedId, container);
-          renderFeed();
+          updateCommentCountBadge(feedId);
         });
       }
 
@@ -5386,8 +5402,9 @@
         }).then(function() {
           inputEl.value = '';
           feedCommentCounts[feedId] = (feedCommentCounts[feedId] || 0) + 1;
+          // 댓글창을 닫지 않고 그 자리에서 새 댓글만 다시 그림 + 카운트 배지 갱신
           loadComments(feedId, container);
-          renderFeed();
+          updateCommentCountBadge(feedId);
         });
       }
 
@@ -5422,8 +5439,9 @@
             display_name: 'Claude AI', avatar_url: '', is_ai: true
           }).then(function() {
             feedCommentCounts[item.id] = (feedCommentCounts[item.id] || 0) + 1;
-            renderFeed();
-            // Auto-open comments
+            updateCommentCountBadge(item.id);
+            // 댓글창을 닫지 않고 AI 분석 댓글이 바로 보이도록 펼침
+            openComments[item.id] = true;
             var card = feedEl.querySelector('[data-feed-id="' + item.id + '"].feed-card');
             if (card) {
               var cs = card.querySelector('.feed-comments');
@@ -5444,8 +5462,25 @@
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'community_feed' }, function() {
               if (document.getElementById('tabCommunity').classList.contains('active')) loadFeed();
             })
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'feed_comments' }, function() {
-              if (document.getElementById('tabCommunity').classList.contains('active')) loadFeed();
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'feed_comments' }, function(payload) {
+              if (!document.getElementById('tabCommunity').classList.contains('active')) return;
+              var feedId = payload && payload.new && payload.new.feed_id;
+              if (!feedId) return;
+              // 전체 피드를 다시 그리지 않음 (열린 댓글창이 닫히는 것 방지)
+              // 카운트만 권위있게 재조회 + 배지 제자리 갱신
+              _supabase.from('feed_comments').select('id', { count: 'exact', head: true }).eq('feed_id', feedId)
+                .then(function(res) {
+                  if (typeof res.count === 'number') feedCommentCounts[feedId] = res.count;
+                  updateCommentCountBadge(feedId);
+                }).catch(function(){});
+              // 댓글창이 열려있으면 새 댓글이 바로 나타나도록 그 카드만 다시 로드
+              if (openComments[feedId]) {
+                var card = feedEl.querySelector('.feed-card[data-feed-id="' + feedId + '"]');
+                if (card) {
+                  var cs = card.querySelector('.feed-comments[data-feed-id="' + feedId + '"]');
+                  if (cs) loadComments(feedId, cs);
+                }
+              }
             })
             .subscribe();
         } catch(e) {}
