@@ -45,6 +45,58 @@ serve(async (req) => {
       );
     }
 
+    const body = await req.json();
+
+    // ── 대화(답글) 모드: AI 분석 댓글에 사용자가 의견을 달면 코치로서 이어서 답변 ──
+    if (body && body.reply) {
+      const { analysis, messages } = body.reply;
+      const chatSystem = `당신은 개인 성장 코치입니다. 이전에 사용자에게 다음과 같은 분석/조언을 제공했습니다:
+
+"""
+${String(analysis || "").slice(0, 4000)}
+"""
+
+이제 사용자가 그 분석에 대해 의견이나 질문을 남겼습니다. 코치로서 대화를 이어가세요.
+원칙:
+1. 사용자의 의견에서 공감·동의할 부분은 진심으로 인정하세요.
+2. 잘못된 인식, 합리화, 회피가 보이면 날카롭게 짚되 건설적으로.
+3. 추상적 위로 대신, 바로 실천할 수 있는 구체적 제안으로 이어가세요.
+4. 대화체로 너무 길지 않게(2~4문단). 마크다운 없이 순수 텍스트, 한국어.`;
+
+      // 메시지 정리 + 연속 동일 role 병합 (Claude는 user로 시작/끝나는 교차 구조 선호)
+      const raw = (messages || [])
+        .filter((m: any) => m && m.content)
+        .map((m: any) => ({ role: m.role === "assistant" ? "assistant" : "user", content: String(m.content) }));
+      const chatMessages: any[] = [];
+      for (const m of raw) {
+        const last = chatMessages[chatMessages.length - 1];
+        if (last && last.role === m.role) last.content += "\n\n" + m.content;
+        else chatMessages.push({ role: m.role, content: m.content });
+      }
+      if (chatMessages.length === 0 || chatMessages[0].role !== "user" || chatMessages[chatMessages.length - 1].role !== "user") {
+        return new Response(
+          JSON.stringify({ error: "대화 메시지 구조가 올바르지 않습니다." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const chatRes = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": CLAUDE_API_KEY, "anthropic-version": "2023-06-01" },
+        body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1024, system: chatSystem, messages: chatMessages }),
+      });
+      if (!chatRes.ok) {
+        const t = await chatRes.text();
+        throw new Error(`Claude API error: ${chatRes.status} - ${t}`);
+      }
+      const chatJson = await chatRes.json();
+      const reply = chatJson.content?.[0]?.text || "응답을 생성할 수 없습니다.";
+      return new Response(
+        JSON.stringify({ reply }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const {
       retros,
       dailyGoals,
@@ -53,7 +105,7 @@ serve(async (req) => {
       unconscious,
       patterns,
       period,
-    } = await req.json();
+    } = body;
 
     if ((!retros || retros.length === 0) && (!dailyGoals || dailyGoals.length === 0)) {
       return new Response(

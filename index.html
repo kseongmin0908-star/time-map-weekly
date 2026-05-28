@@ -1985,6 +1985,30 @@
       cursor: pointer; transition: all .2s; white-space: nowrap;
     }
     .comment-submit:hover { background: var(--gold-bright); }
+    .feed-comments-list { display: flex; flex-direction: column; gap: .35rem; }
+    /* 답글(스레드) */
+    .comment-item.comment-reply {
+      margin-left: 1.6rem; background: rgba(255,255,255,.01);
+      border-left: 2px solid rgba(212,165,116,.14);
+    }
+    .comment-item.comment-reply.ai-comment { border-left-color: rgba(138,92,246,.35); }
+    .comment-reply-btn {
+      background: none; border: none; color: var(--gold-dim); font-size: .55rem; cursor: pointer;
+      font-family: 'Noto Sans KR', sans-serif; padding: .15rem 0 0; margin-top: .1rem;
+    }
+    .comment-reply-btn:hover { color: var(--gold); text-decoration: underline; }
+    .comment-reply-box { display: flex; gap: .4rem; margin: .3rem 0 .3rem 1.6rem; }
+    .comment-reply-box input {
+      flex: 1; padding: .4rem .6rem; background: rgba(255,255,255,.03);
+      border: 1px solid rgba(106,102,96,.15); border-radius: 8px; color: var(--text);
+      font-family: 'Noto Sans KR', sans-serif; font-size: .68rem;
+    }
+    .comment-reply-box input:focus { outline: none; border-color: var(--gold-dim); }
+    .comment-reply-box button {
+      padding: .4rem .65rem; border-radius: 8px; border: none; background: var(--gold-dim); color: #0a0a0f;
+      font-family: 'Noto Sans KR', sans-serif; font-size: .62rem; font-weight: 600; cursor: pointer; white-space: nowrap;
+    }
+    .comment-reply-box button:hover { background: var(--gold); }
 
     /* ===== ANALYSIS TAB ===== */
     .analysis-section {
@@ -5941,62 +5965,136 @@
         _supabase.from('feed_comments').select('*').eq('feed_id', feedId).order('created_at', { ascending: true })
           .then(function(res) {
             var comments = res.data || [];
+            // 트리 구성: parent_id 없으면 최상위, 있으면 답글
+            var childrenByParent = {}, topLevel = [];
+            comments.forEach(function(c) {
+              if (c.parent_id) { (childrenByParent[c.parent_id] = childrenByParent[c.parent_id] || []).push(c); }
+              else { topLevel.push(c); }
+            });
             var listEl = document.createElement('div');
             listEl.className = 'feed-comments-list';
             if (comments.length === 0) {
               listEl.innerHTML = '<div style="text-align:center;padding:.4rem;font-size:.65rem;color:var(--text-dim)">아직 댓글이 없습니다.</div>';
             }
-            comments.forEach(function(c) {
-              var isAI = c.is_ai;
-              var canDelete = _currentUser && (c.user_id === _currentUser.id);
-              var cName = isAI ? '🤖 Claude AI' : escH(resolveName(c.user_id, c.display_name));
-              var avHtml = isAI ? '<div class="comment-avatar ai-avatar-sm">🤖</div>'
-                : avatarHTML(resolveAvatar(c.user_id, c.avatar_url), 'comment-avatar');
-              if (!isAI) avHtml = '<span class="comment-id-link" role="button" tabindex="0" aria-label="프로필 보기" data-user-id="' + c.user_id + '">' + avHtml + '</span>';
-              var delBtnHtml = canDelete
-                ? '<button class="comment-delete-btn" data-comment-id="' + c.id + '" title="삭제" aria-label="댓글 삭제">✕</button>'
-                : '';
-              var nameHtml = isAI ? cName : '<span class="comment-id-link" data-user-id="' + c.user_id + '">' + cName + '</span>';
-              var row = document.createElement('div');
-              row.className = 'comment-item' + (isAI ? ' ai-comment' : '');
-              row.innerHTML = avHtml +
-                '<div class="comment-body">' +
-                  '<div class="comment-name">' + nameHtml + delBtnHtml + '</div>' +
-                  '<div class="comment-text">' + escH(c.content) + '</div>' +
-                  '<span class="comment-time">' + getTimeAgo(c.created_at) + '</span>' +
-                '</div>';
-              if (canDelete) {
-                row.querySelector('.comment-delete-btn').addEventListener('click', function() {
-                  deleteComment(c.id, feedId, container);
-                });
-              }
-              if (!isAI) {
-                row.querySelectorAll('.comment-id-link').forEach(function(el) {
-                  el.style.cursor = 'pointer';
-                  el.addEventListener('click', function() { openMemberProfile(c.user_id); });
-                  el.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openMemberProfile(c.user_id); }
-                  });
-                });
-              }
-              listEl.appendChild(row);
+            topLevel.forEach(function(c) {
+              listEl.appendChild(buildCommentRow(c, feedId, container, false, c));
+              (childrenByParent[c.id] || []).forEach(function(k) {
+                listEl.appendChild(buildCommentRow(k, feedId, container, true, c));
+              });
             });
 
             container.innerHTML = '';
             container.appendChild(listEl);
-            // Comment input
+            // 최상위 댓글 입력
             var inputWrap = document.createElement('div');
             inputWrap.className = 'comment-input-wrap';
             inputWrap.innerHTML = '<input type="text" class="comment-input" placeholder="댓글을 입력하세요..." data-feed-id="' + feedId + '">' +
               '<button class="comment-submit" data-feed-id="' + feedId + '">등록</button>';
             container.appendChild(inputWrap);
-
-            // Submit event
             var submitBtn = container.querySelector('.comment-submit');
             var inp = container.querySelector('.comment-input');
             submitBtn.addEventListener('click', function() { submitComment(feedId, inp, container); });
             inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') submitComment(feedId, inp, container); });
           });
+      }
+
+      // 댓글/답글 한 줄 DOM 생성 (ancestor = 이 스레드의 최상위 댓글)
+      function buildCommentRow(c, feedId, container, isReply, ancestor) {
+        var isAI = c.is_ai;
+        var canDelete = _currentUser && (c.user_id === _currentUser.id);
+        var cName = isAI ? '🤖 Claude AI' : escH(resolveName(c.user_id, c.display_name));
+        var avHtml = isAI ? '<div class="comment-avatar ai-avatar-sm">🤖</div>'
+          : avatarHTML(resolveAvatar(c.user_id, c.avatar_url), 'comment-avatar');
+        if (!isAI) avHtml = '<span class="comment-id-link" role="button" tabindex="0" aria-label="프로필 보기" data-user-id="' + c.user_id + '">' + avHtml + '</span>';
+        var delBtnHtml = canDelete ? '<button class="comment-delete-btn" data-comment-id="' + c.id + '" title="삭제" aria-label="댓글 삭제">✕</button>' : '';
+        var nameHtml = isAI ? cName : '<span class="comment-id-link" data-user-id="' + c.user_id + '">' + cName + '</span>';
+        var replyLabel = ancestor.is_ai ? '🤖 AI에게 답하기' : '↩ 답글';
+        var row = document.createElement('div');
+        row.className = 'comment-item' + (isAI ? ' ai-comment' : '') + (isReply ? ' comment-reply' : '');
+        row.innerHTML = avHtml +
+          '<div class="comment-body">' +
+            '<div class="comment-name">' + nameHtml + delBtnHtml + '</div>' +
+            '<div class="comment-text">' + escH(c.content) + '</div>' +
+            '<span class="comment-time">' + getTimeAgo(c.created_at) + '</span>' +
+            (_currentUser ? '<button class="comment-reply-btn">' + replyLabel + '</button>' : '') +
+          '</div>';
+        if (canDelete) {
+          row.querySelector('.comment-delete-btn').addEventListener('click', function() { deleteComment(c.id, feedId, container); });
+        }
+        if (!isAI) {
+          row.querySelectorAll('.comment-id-link').forEach(function(el) {
+            el.style.cursor = 'pointer';
+            el.addEventListener('click', function() { openMemberProfile(c.user_id); });
+            el.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openMemberProfile(c.user_id); } });
+          });
+        }
+        var rb = row.querySelector('.comment-reply-btn');
+        if (rb) rb.addEventListener('click', function() { toggleReplyBox(row, feedId, ancestor, container); });
+        return row;
+      }
+
+      // 답글 입력창 토글
+      function toggleReplyBox(row, feedId, ancestor, container) {
+        var next = row.nextSibling;
+        if (next && next.classList && next.classList.contains('comment-reply-box')) { next.remove(); return; }
+        var box = document.createElement('div');
+        box.className = 'comment-reply-box';
+        box.innerHTML = '<input type="text" placeholder="' + (ancestor.is_ai ? 'AI에게 의견·질문을 남겨보세요...' : '답글을 입력하세요...') + '"><button>등록</button>';
+        var inp = box.querySelector('input'), btn = box.querySelector('button');
+        function submit() {
+          var text = inp.value.trim();
+          if (!text || !_currentUser) return;
+          btn.disabled = true; btn.textContent = '...';
+          submitReply(feedId, ancestor, text, container);
+        }
+        btn.addEventListener('click', submit);
+        inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') submit(); });
+        row.after(box);
+        inp.focus();
+      }
+
+      // 답글 등록 (parent_id = 스레드 최상위). AI 스레드면 AI 답변 트리거.
+      function submitReply(feedId, ancestor, text, container) {
+        _supabase.from('feed_comments').insert({
+          feed_id: feedId, parent_id: ancestor.id, user_id: _currentUser.id, content: text,
+          display_name: getUserName(), avatar_url: getUserAvatar(), is_ai: false
+        }).then(function(res) {
+          if (res && res.error) { showToast('답글 등록에 실패했습니다 (DB 설정 확인 필요)', 'error'); loadComments(feedId, container); return; }
+          feedCommentCounts[feedId] = (feedCommentCounts[feedId] || 0) + 1;
+          updateCommentCountBadge(feedId);
+          if (ancestor.is_ai) { triggerAiReply(feedId, ancestor, container); }
+          else { loadComments(feedId, container); }
+        }).catch(function() { showToast('답글 등록 실패 — 네트워크를 확인해주세요', 'error'); });
+      }
+
+      // AI 분석 스레드에 사용자가 답글 → AI가 코치로서 이어서 답변
+      function triggerAiReply(feedId, ancestor, container) {
+        loadComments(feedId, container); // 사용자 답글 즉시 반영
+        showToast('🤖 AI가 답변을 작성하는 중...');
+        _supabase.from('feed_comments').select('*').eq('feed_id', feedId)
+          .or('id.eq.' + ancestor.id + ',parent_id.eq.' + ancestor.id)
+          .order('created_at', { ascending: true })
+          .then(function(res) {
+            var thread = res.data || [];
+            var analysisText = '', messages = [];
+            thread.forEach(function(t) {
+              if (t.id === ancestor.id) analysisText = t.content || '';
+              else messages.push({ role: t.is_ai ? 'assistant' : 'user', content: t.content || '' });
+            });
+            if (messages.length === 0) return;
+            return callClaudeReply(analysisText, messages).then(function(replyText) {
+              return _supabase.from('feed_comments').insert({
+                feed_id: feedId, parent_id: ancestor.id, user_id: _currentUser.id, content: replyText,
+                display_name: 'Claude AI', avatar_url: '', is_ai: true
+              }).then(function(r2) {
+                if (r2 && r2.error) { showToast('AI 답변 저장 실패', 'error'); return; }
+                feedCommentCounts[feedId] = (feedCommentCounts[feedId] || 0) + 1;
+                updateCommentCountBadge(feedId);
+                showToast('🤖 AI가 답변했어요', 'success');
+                loadComments(feedId, container);
+              });
+            });
+          }).catch(function() { showToast('AI 답변 생성 실패 — 잠시 후 다시 시도해주세요', 'error'); });
       }
 
       function deleteComment(commentId, feedId, container) {
@@ -6831,6 +6929,27 @@
         return res.json();
       }).then(function(data) {
         return data.analysis || '분석 결과가 없습니다.';
+      });
+    }
+
+    // AI 분석 댓글 대화(답글) — 코치 톤으로 이어서 답변
+    function callClaudeReply(analysisText, messages) {
+      var body = JSON.stringify({ reply: { analysis: analysisText, messages: messages } });
+      var getToken = _supabase.auth.getSession().then(function(res) {
+        var session = res && res.data && res.data.session;
+        return (session && session.access_token) ? session.access_token : SUPABASE_ANON;
+      }).catch(function() { return SUPABASE_ANON; });
+      return getToken.then(function(token) {
+        return fetch(SUPABASE_URL + '/functions/v1/claude-analysis', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token, 'apikey': SUPABASE_ANON },
+          body: body
+        });
+      }).then(function(res) {
+        if (!res.ok) return res.text().then(function(t) { throw new Error('Edge function error: ' + t); });
+        return res.json();
+      }).then(function(data) {
+        return data.reply || '응답을 생성할 수 없습니다.';
       });
     }
 
