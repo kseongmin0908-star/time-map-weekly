@@ -1487,6 +1487,40 @@
       color: #0a0a0f; border-color: transparent; font-weight: 700;
       box-shadow: 0 2px 12px rgba(212,165,116,.25);
     }
+    /* ── 검색/태그/정렬 컨트롤 (피드·프로필 공용 룩) ── */
+    .comm-subfilter, .mp-filter-row {
+      display: flex; gap: .4rem; margin-bottom: .8rem; flex-wrap: wrap; align-items: center;
+    }
+    .comm-search, .mp-search {
+      flex: 1; min-width: 120px; padding: .45rem .7rem; border-radius: 8px;
+      background: rgba(255,255,255,.03); border: 1px solid rgba(106,102,96,.15);
+      color: var(--text); font-family: 'Noto Sans KR', sans-serif; font-size: .68rem;
+    }
+    .comm-search:focus, .mp-search:focus { outline: none; border-color: var(--gold-dim); }
+    .comm-search::placeholder, .mp-search::placeholder { color: rgba(106,102,96,.45); }
+    .comm-tag-select, .mp-tag-select {
+      padding: .45rem .5rem; border-radius: 8px; max-width: 130px;
+      background: rgba(255,255,255,.03); border: 1px solid rgba(106,102,96,.15);
+      color: var(--text-dim); font-family: 'Noto Sans KR', sans-serif; font-size: .65rem; cursor: pointer;
+    }
+    .comm-tag-select:focus, .mp-tag-select:focus { outline: none; border-color: var(--gold-dim); }
+    .comm-sort-btn, .mp-sort-btn {
+      padding: .45rem .65rem; border-radius: 8px; white-space: nowrap;
+      background: rgba(212,165,116,.06); border: 1px solid rgba(212,165,116,.2); color: var(--gold-dim);
+      font-family: 'Noto Sans KR', sans-serif; font-size: .65rem; font-weight: 600; cursor: pointer; transition: all .2s;
+    }
+    .comm-sort-btn:hover, .mp-sort-btn:hover { background: rgba(212,165,116,.13); color: var(--gold); border-color: var(--gold-dim); }
+    /* 프로필 종류 칩 */
+    .mp-filterbar { margin: .2rem 0 .6rem; }
+    .mp-type-chips { display: flex; gap: .3rem; flex-wrap: wrap; margin-bottom: .5rem; }
+    .mp-type-chip {
+      padding: .35rem .7rem; border-radius: 16px; border: 1px solid rgba(212,165,116,.15);
+      background: rgba(212,165,116,.04); color: var(--text-dim);
+      font-family: 'Noto Sans KR', sans-serif; font-size: .64rem; font-weight: 500; cursor: pointer; transition: all .2s;
+    }
+    .mp-type-chip:hover { border-color: var(--gold-dim); color: var(--gold); }
+    .mp-type-chip.active { background: linear-gradient(135deg, var(--gold), var(--gold-bright)); color: #0a0a0f; border-color: transparent; font-weight: 700; }
+
     .comm-write-btn {
       width: 100%; padding: .85rem; border-radius: 12px; border: 2px dashed rgba(212,165,116,.25);
       background: rgba(212,165,116,.03); color: var(--gold);
@@ -2627,6 +2661,13 @@
           <button class="comm-filter" data-filter="free">자유</button>
         </div>
         <button class="comm-write-btn" id="commWriteBtn">+ 게시물 작성</button>
+      </div>
+
+      <!-- 검색 / 태그 / 정렬 -->
+      <div class="comm-subfilter">
+        <input type="text" class="comm-search" id="commSearch" placeholder="🔎 검색 (내용·태그·작성자)">
+        <select class="comm-tag-select" id="commTagSelect"><option value="all">🏷️ 태그 전체</option></select>
+        <button class="comm-sort-btn" id="commSortBtn" data-sort="new" title="정렬">↕ 최신순</button>
       </div>
 
       <!-- 피드 리스트 -->
@@ -5195,6 +5236,7 @@
       var feedCommentCounts = {};
       var openComments = {}; // feedId -> true 면 댓글창이 열린 상태 (재렌더 시 유지)
       var collapsedThreads = {}; // 최상위 댓글 id -> true 면 답글 스레드 접힘 (기본 펼침)
+      var feedSearch = '', feedTag = 'all', feedSort = 'new'; // 피드 검색/태그/정렬 상태
       var editingFeedId = null; // null = new post, string = editing existing post
 
       function escH(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -5258,6 +5300,30 @@
           renderFeed();
         });
       });
+
+      /* ── 피드 검색 / 태그 / 정렬 ── */
+      var commSearchEl = document.getElementById('commSearch');
+      var commTagEl = document.getElementById('commTagSelect');
+      var commSortEl = document.getElementById('commSortBtn');
+      if (commSearchEl) commSearchEl.addEventListener('input', function() { feedSearch = commSearchEl.value; renderFeed(); });
+      if (commTagEl) commTagEl.addEventListener('change', function() { feedTag = commTagEl.value; renderFeed(); });
+      if (commSortEl) commSortEl.addEventListener('click', function() {
+        feedSort = (feedSort === 'new') ? 'old' : 'new';
+        commSortEl.setAttribute('data-sort', feedSort);
+        commSortEl.textContent = (feedSort === 'new') ? '↕ 최신순' : '↕ 오래된순';
+        renderFeed();
+      });
+      // 피드의 태그 목록으로 드롭다운 채우기
+      function refreshFeedTagOptions() {
+        if (!commTagEl) return;
+        var tags = collectAllTags(feedData);
+        var cur = feedTag;
+        commTagEl.innerHTML = '<option value="all">🏷️ 태그 전체</option>' +
+          tags.map(function(t){ return '<option value="' + escH(t) + '">#' + escH(t) + '</option>'; }).join('');
+        // 현재 선택값이 여전히 유효하면 유지
+        commTagEl.value = (cur === 'all' || tags.indexOf(cur) !== -1) ? cur : 'all';
+        feedTag = commTagEl.value;
+      }
 
       /* ── Modal Open/Close ── */
       document.getElementById('commWriteBtn').addEventListener('click', function() {
@@ -5616,6 +5682,7 @@
           .limit(50)
           .then(function(res) {
             feedData = (res.data || []);
+            if (typeof refreshFeedTagOptions === 'function') refreshFeedTagOptions();
             // Load likes and comment counts in parallel
             if (feedData.length > 0) {
               loadFeedMeta(feedData.map(function(f) { return f.id; }));
@@ -5651,19 +5718,55 @@
           }).catch(function(){});
       }
 
+      /* ── 공통 필터/검색/정렬 헬퍼 (피드·프로필 공용) ── */
+      function postSearchText(item) {
+        var c = item.content || {}, parts = [];
+        if (c.title) parts.push(c.title);
+        if (c.body) parts.push(c.body);
+        if (c.note) parts.push(c.note);
+        if (c.went_well) parts.push(c.went_well);
+        if (c.to_improve) parts.push(c.to_improve);
+        if (c.analysis) parts.push(c.analysis);
+        if (c.tags && c.tags.length) parts.push(c.tags.join(' '));
+        if (c.tasks && c.tasks.length) parts.push(c.tasks.map(function(t){ return t.text || ''; }).join(' '));
+        parts.push(resolveName(item.user_id, item.display_name));
+        return parts.join(' ').toLowerCase();
+      }
+      function postTagList(item) {
+        var c = item.content || {};
+        return (item.feed_type === 'retro' && c.tags) ? c.tags : [];
+      }
+      function collectAllTags(posts) {
+        var cnt = {};
+        (posts || []).forEach(function(p){ postTagList(p).forEach(function(t){ if (t) cnt[t] = (cnt[t]||0)+1; }); });
+        return Object.keys(cnt).sort(function(a,b){ return cnt[b]-cnt[a]; });
+      }
+      // type: all/daily/retro/free, search, tag, sort(new/old), aiWithRetro
+      function filterSortPosts(posts, opts) {
+        opts = opts || {};
+        var type = opts.type || 'all', q = (opts.search || '').trim().toLowerCase(), tag = opts.tag || 'all', sort = opts.sort || 'new';
+        var out = (posts || []).filter(function(p) {
+          if (type === 'daily' && p.feed_type !== 'daily') return false;
+          if (type === 'retro' && !(p.feed_type === 'retro' || (opts.aiWithRetro && p.feed_type === 'ai_analysis'))) return false;
+          if (type === 'free' && p.feed_type !== 'free') return false;
+          if (q && postSearchText(p).indexOf(q) === -1) return false;
+          if (tag !== 'all' && postTagList(p).indexOf(tag) === -1) return false;
+          return true;
+        });
+        out.sort(function(a, b) {
+          var ta = new Date(a.shared_at || 0).getTime(), tb = new Date(b.shared_at || 0).getTime();
+          return sort === 'old' ? (ta - tb) : (tb - ta);
+        });
+        return out;
+      }
+
       /* ── Render Feed ── */
       function renderFeed() {
-        var filtered = feedData;
-        if (currentFilter !== 'all') {
-          filtered = feedData.filter(function(item) {
-            if (currentFilter === 'daily') return item.feed_type === 'daily';
-            if (currentFilter === 'retro') return item.feed_type === 'retro' || item.feed_type === 'ai_analysis';
-            if (currentFilter === 'free') return item.feed_type === 'free';
-            return true;
-          });
-        }
+        var filtered = filterSortPosts(feedData, { type: currentFilter, search: feedSearch, tag: feedTag, sort: feedSort, aiWithRetro: true });
         if (filtered.length === 0) {
-          feedEl.innerHTML = '<div class="feed-empty"><span class="feed-empty-icon">🌌</span>아직 게시물이 없습니다.<br>첫 번째 게시물을 작성해보세요!</div>';
+          var hasAny = feedData.length > 0;
+          feedEl.innerHTML = '<div class="feed-empty"><span class="feed-empty-icon">🌌</span>' +
+            (hasAny ? '조건에 맞는 게시물이 없습니다.<br>필터·검색을 바꿔보세요.' : '아직 게시물이 없습니다.<br>첫 번째 게시물을 작성해보세요!') + '</div>';
           return;
         }
         feedEl.innerHTML = '';
@@ -6332,35 +6435,62 @@
           var visible = posts.filter(function(p){ return p.feed_type !== 'ai_analysis'; });
           var name = maskName(prof.display_name) || resolveName(userId, '익명');
           var avatar = prof.avatar_url || resolveAvatar(userId, '');
-          var stats = computeMemberStats(visible);
+          var allStats = computeMemberStats(visible); // since(활동 시작일)는 전체 기준
           var isMe = _currentUser && userId === _currentUser.id;
           var badgeLabels = { daily: '오늘의 목표', retro: '오늘의 회고', free: '자유' };
+          var allTags = collectAllTags(visible);
 
+          // 필터 상태 (이 프로필 열림 동안 유지)
+          var mpType = 'all', mpSearch = '', mpTag = 'all', mpSort = 'new';
+
+          // 헤더 + 필터바 + 컨테이너 (필터바는 1회만 그려서 입력 포커스 유지)
           var html = '<div class="mp-head">' + avatarHTML(avatar, 'mp-avatar-lg') +
             '<div><div class="mp-name">' + escH(name) + '</div>' +
-            (stats.since ? '<div class="mp-since">since ' + (formatPostDate(stats.since) || stats.since) + '</div>' : '') +
+            (allStats.since ? '<div class="mp-since">since ' + (formatPostDate(allStats.since) || allStats.since) + '</div>' : '') +
             '</div>' +
             (isMe ? '<div class="mp-self-actions"><button class="mp-edit-btn" id="mpEditBtn">✏️ 프로필 편집</button><button class="mp-logout-btn" id="mpLogoutBtn">🚪 로그아웃</button></div>' : '') +
-          '</div>';
+          '</div>' +
+          '<div id="mpStats"></div>' +
+          '<div class="mp-filterbar">' +
+            '<div class="mp-type-chips">' +
+              '<button class="mp-type-chip active" data-mptype="all">전체</button>' +
+              '<button class="mp-type-chip" data-mptype="daily">📋 목표</button>' +
+              '<button class="mp-type-chip" data-mptype="retro">📝 회고</button>' +
+              '<button class="mp-type-chip" data-mptype="free">💬 자유</button>' +
+            '</div>' +
+            '<div class="mp-filter-row">' +
+              '<input type="text" class="mp-search" id="mpSearchInp" placeholder="🔎 검색">' +
+              '<select class="mp-tag-select" id="mpTagSel"><option value="all">🏷️ 태그 전체</option>' +
+                allTags.map(function(t){ return '<option value="' + escH(t) + '">#' + escH(t) + '</option>'; }).join('') +
+              '</select>' +
+              '<button class="mp-sort-btn" id="mpSortBtn">↕ 최신순</button>' +
+            '</div>' +
+          '</div>' +
+          '<div id="mpListTitle" class="mp-section-title"></div>' +
+          '<div id="mpList"></div>';
+          body.innerHTML = html;
 
-          html += '<div class="mp-stats">' +
-            '<div class="mp-stat"><div class="mp-stat-val">' + stats.total + '</div><div class="mp-stat-label">게시물</div></div>' +
-            '<div class="mp-stat"><div class="mp-stat-val">' + (stats.avgScore != null ? stats.avgScore.toFixed(1) + ' ' + scoreEmoji(Math.round(stats.avgScore)) : '—') + '</div><div class="mp-stat-label">평균 회고</div></div>' +
-            '<div class="mp-stat"><div class="mp-stat-val">' + (stats.avgCompletion != null ? stats.avgCompletion + '%' : '—') + '</div><div class="mp-stat-label">목표 달성률</div></div>' +
-            '<div class="mp-stat"><div class="mp-stat-val">' + stats.streak + '일</div><div class="mp-stat-label">연속 작성</div></div>' +
-            '<div class="mp-stat"><div class="mp-stat-val">' + stats.retro + '</div><div class="mp-stat-label">회고 글</div></div>' +
-            '<div class="mp-stat"><div class="mp-stat-val">' + stats.daily + '</div><div class="mp-stat-label">목표 글</div></div>' +
-          '</div>';
-
-          if (stats.tags.length) {
-            html += '<div class="mp-tags">' + stats.tags.map(function(t){ return '<span class="mp-tag">#' + escH(t) + '</span>'; }).join('') + '</div>';
-          }
-
-          html += '<div class="mp-section-title">게시물 기록 (' + visible.length + ')</div>';
-          if (visible.length === 0) {
-            html += '<div class="mp-empty">아직 공유한 게시물이 없습니다.</div>';
-          } else {
-            html += visible.map(function(p) {
+          // 필터 적용 → 통계 + 목록 갱신 (통계 연동)
+          function renderMemberView() {
+            var filtered = filterSortPosts(visible, { type: mpType, search: mpSearch, tag: mpTag, sort: mpSort });
+            var s = computeMemberStats(filtered);
+            document.getElementById('mpStats').innerHTML =
+              '<div class="mp-stats">' +
+                '<div class="mp-stat"><div class="mp-stat-val">' + s.total + '</div><div class="mp-stat-label">게시물</div></div>' +
+                '<div class="mp-stat"><div class="mp-stat-val">' + (s.avgScore != null ? s.avgScore.toFixed(1) + ' ' + scoreEmoji(Math.round(s.avgScore)) : '—') + '</div><div class="mp-stat-label">평균 회고</div></div>' +
+                '<div class="mp-stat"><div class="mp-stat-val">' + (s.avgCompletion != null ? s.avgCompletion + '%' : '—') + '</div><div class="mp-stat-label">목표 달성률</div></div>' +
+                '<div class="mp-stat"><div class="mp-stat-val">' + s.streak + '일</div><div class="mp-stat-label">연속 작성</div></div>' +
+                '<div class="mp-stat"><div class="mp-stat-val">' + s.retro + '</div><div class="mp-stat-label">회고 글</div></div>' +
+                '<div class="mp-stat"><div class="mp-stat-val">' + s.daily + '</div><div class="mp-stat-label">목표 글</div></div>' +
+              '</div>';
+            var anyFilter = (mpType !== 'all' || mpSearch.trim() || mpTag !== 'all');
+            document.getElementById('mpListTitle').textContent = '게시물 기록 (' + filtered.length + ')' + (anyFilter ? ' · 필터됨' : '');
+            var listEl = document.getElementById('mpList');
+            if (filtered.length === 0) {
+              listEl.innerHTML = '<div class="mp-empty">' + (visible.length === 0 ? '아직 공유한 게시물이 없습니다.' : '조건에 맞는 게시물이 없습니다.') + '</div>';
+              return;
+            }
+            listEl.innerHTML = filtered.map(function(p) {
               var dateChip = (p.content && p.content.date && formatPostDate(p.content.date)) ? '<span class="feed-date">📅 ' + formatPostDate(p.content.date) + '</span>' : '';
               return '<div class="mp-post"><div class="mp-post-head">' +
                   '<span class="feed-badge badge-' + p.feed_type + '">' + (badgeLabels[p.feed_type] || p.feed_type) + '</span>' +
@@ -6368,8 +6498,29 @@
                 '</div><div class="feed-content">' + formatContent(p.feed_type, p.content) + '</div></div>';
             }).join('');
           }
+          renderMemberView();
 
-          body.innerHTML = html;
+          // 필터 컨트롤 배선
+          body.querySelectorAll('.mp-type-chip').forEach(function(chip) {
+            chip.addEventListener('click', function() {
+              body.querySelectorAll('.mp-type-chip').forEach(function(c){ c.classList.remove('active'); });
+              chip.classList.add('active');
+              mpType = chip.getAttribute('data-mptype');
+              renderMemberView();
+            });
+          });
+          var mpSearchInp = document.getElementById('mpSearchInp');
+          if (mpSearchInp) mpSearchInp.addEventListener('input', function() { mpSearch = mpSearchInp.value; renderMemberView(); });
+          var mpTagSel = document.getElementById('mpTagSel');
+          if (mpTagSel) mpTagSel.addEventListener('change', function() { mpTag = mpTagSel.value; renderMemberView(); });
+          var mpSortBtn = document.getElementById('mpSortBtn');
+          if (mpSortBtn) mpSortBtn.addEventListener('click', function() {
+            mpSort = (mpSort === 'new') ? 'old' : 'new';
+            mpSortBtn.textContent = (mpSort === 'new') ? '↕ 최신순' : '↕ 오래된순';
+            renderMemberView();
+          });
+
+          // 본인 프로필 액션 배선
           var mpEdit = document.getElementById('mpEditBtn');
           if (mpEdit) mpEdit.addEventListener('click', function() {
             if (memberProfileModal) memberProfileModal.style.display = 'none';
