@@ -3205,17 +3205,27 @@
         // Load pomodoro data from Supabase and cache
         if (typeof SupaDB.loadPomoData === 'function') {
           var supaPomo = await SupaDB.loadPomoData();
-          if (supaPomo) {
+          // 과거 버그(아래 ×25)로 '총 집중 분'이 매 로드마다 25배씩 부풀려졌음 → 1회 초기화
+          var pomoFixed = localStorage.getItem('temporal-pomo-fix-v1');
+          if (!pomoFixed) {
+            localStorage.setItem('temporal-pomo-fix-v1', '1');
+            var lp0 = {};
+            try { lp0 = JSON.parse(localStorage.getItem('temporal-pomo') || '{}'); } catch(e) {}
+            lp0.totalFocusMin = 0; // 손상된 누적값 초기화(복구 불가) → 정상 기록 재시작
+            lp0.todayDate = new Date().toDateString();
+            localStorage.setItem('temporal-pomo', JSON.stringify(lp0));
+            // 서버의 손상된 값도 0으로 정리(오늘 세션 수는 보존)
+            if (SupaDB.savePomoData) { try { await SupaDB.savePomoData(lp0.sessionsToday || 0, 0); } catch(e) {} }
+          } else if (supaPomo) {
             var today = new Date().toDateString();
             var localPomo = {};
             try { localPomo = JSON.parse(localStorage.getItem("temporal-pomo") || "{}"); } catch(e) {}
-            // Merge: keep settings from local, update session data from Supabase if newer
-            var supaDate = supaPomo.today_date || '';
-            var isToday = supaDate === localDateStr();
-            localPomo.totalFocusMin = Math.max(localPomo.totalFocusMin || 0, supaPomo.total_sessions ? supaPomo.total_sessions * 25 : 0);
-            if (isToday) {
-              localPomo.sessionsToday = Math.max(localPomo.sessionsToday || 0, supaPomo.sessions_today || 0);
-            }
+            // 총 집중 분 = 전체 누적. total_sessions 컬럼에 '분'이 그대로 저장됨 → ×25 곱하지 않음(부풀림 버그)
+            localPomo.totalFocusMin = Math.max(localPomo.totalFocusMin || 0, supaPomo.total_sessions || 0);
+            // 오늘 세션 수: 로컬/서버 중 '오늘' 날짜인 것만 인정해 큰 값 사용(지난 날짜 값이 오늘로 넘어오지 않게)
+            var localToday = (localPomo.todayDate === today) ? (localPomo.sessionsToday || 0) : 0;
+            var supaToday = (supaPomo.today_date === localDateStr()) ? (supaPomo.sessions_today || 0) : 0;
+            localPomo.sessionsToday = Math.max(localToday, supaToday);
             localPomo.todayDate = today;
             localStorage.setItem("temporal-pomo", JSON.stringify(localPomo));
           }
@@ -4663,10 +4673,10 @@
         try {
           var d = JSON.parse(localStorage.getItem("temporal-pomo") || "{}");
           var today = new Date().toDateString();
-          if (d.todayDate === today) {
-            pomoState.sessionsToday = d.sessionsToday || 0;
-            pomoState.totalFocusMin = d.totalFocusMin || 0;
-          }
+          // 총 집중 분은 '전체 누적' → 날짜와 무관하게 항상 복원(새 날에 0으로 덮어써지지 않게)
+          pomoState.totalFocusMin = d.totalFocusMin || 0;
+          // 오늘 세션 수는 같은 날만 복원, 새 날이면 0으로 초기화
+          pomoState.sessionsToday = (d.todayDate === today) ? (d.sessionsToday || 0) : 0;
           if (d.workMin) pomoState.workMin = d.workMin;
           if (d.shortMin) pomoState.shortMin = d.shortMin;
           if (d.longMin) pomoState.longMin = d.longMin;
