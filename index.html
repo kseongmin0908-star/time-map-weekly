@@ -762,6 +762,12 @@
       font-family: 'Noto Sans KR', sans-serif; font-size: .6rem;
       color: var(--text-dim); margin-top: .15rem;
     }
+    .pomo-reset-total {
+      width: 100%; margin-top: .5rem; padding: .45rem; border-radius: 8px;
+      background: transparent; border: 1px solid rgba(239,68,68,.25); color: #ff8a8a;
+      font-family: 'Noto Sans KR', sans-serif; font-size: .62rem; cursor: pointer; transition: all .2s;
+    }
+    .pomo-reset-total:hover { background: rgba(239,68,68,.1); border-color: var(--danger); color: #ffb4b4; }
 
     /* Settings row */
     .pomo-settings {
@@ -2472,6 +2478,7 @@
         <div class="pomo-stat-label">총 집중 (분)</div>
       </div>
     </div>
+    <button class="pomo-reset-total" id="pomoResetTotal">총 집중 시간 초기화</button>
 
     <div class="pomo-settings">
       <div class="pomo-setting-row">
@@ -3279,17 +3286,19 @@
         // Load pomodoro data from Supabase and cache
         if (typeof SupaDB.loadPomoData === 'function') {
           var supaPomo = await SupaDB.loadPomoData();
-          // 과거 버그(아래 ×25)로 '총 집중 분'이 매 로드마다 25배씩 부풀려졌음 → 1회 초기화
-          var pomoFixed = localStorage.getItem('temporal-pomo-fix-v1');
+          // 과거 ×25 버그로 '총 집중 분'이 부풀려진 값(예: 25^4=390625) 1회 초기화.
+          // v1은 서버 정리 실패 시 다시 부풀어 묶이는 문제가 있어 v2로 재시도: 서버 0 저장이 성공해야 플래그 잠금.
+          var pomoFixed = localStorage.getItem('temporal-pomo-fix-v2');
           if (!pomoFixed) {
-            localStorage.setItem('temporal-pomo-fix-v1', '1');
             var lp0 = {};
             try { lp0 = JSON.parse(localStorage.getItem('temporal-pomo') || '{}'); } catch(e) {}
             lp0.totalFocusMin = 0; // 손상된 누적값 초기화(복구 불가) → 정상 기록 재시작
             lp0.todayDate = new Date().toDateString();
             localStorage.setItem('temporal-pomo', JSON.stringify(lp0));
-            // 서버의 손상된 값도 0으로 정리(오늘 세션 수는 보존)
-            if (SupaDB.savePomoData) { try { await SupaDB.savePomoData(lp0.sessionsToday || 0, 0); } catch(e) {} }
+            // 서버의 손상된 값도 0으로 정리. 성공했을 때만 플래그를 세워 다음 로드의 max 병합으로 되돌아오지 않게 함
+            var cleared = true;
+            if (SupaDB.savePomoData) { try { cleared = await SupaDB.savePomoData(lp0.sessionsToday || 0, 0); } catch(e) { cleared = false; } }
+            if (cleared !== false) localStorage.setItem('temporal-pomo-fix-v2', '1');
           } else if (supaPomo) {
             var today = new Date().toDateString();
             var localPomo = {};
@@ -3562,13 +3571,14 @@
         } catch(e) { return null; }
       },
       async savePomoData(sessionsToday, totalSessions) {
-        if (!_currentUser) return;
+        if (!_currentUser) return false;
         try {
           var today = localDateStr();
-          await _supabase.from('pomodoro_sessions').upsert({
+          var { error } = await _supabase.from('pomodoro_sessions').upsert({
             user_id: _currentUser.id, today_date: today, sessions_today: sessionsToday, total_sessions: totalSessions
           }, { onConflict: 'user_id' });
-        } catch(e) {}
+          return !error;
+        } catch(e) { return false; }
       },
       async loadMindEntries() {
         if (!_currentUser) return null;
@@ -4781,6 +4791,28 @@
         todayCountEl.textContent = pomoState.sessionsToday;
         totalMinEl.textContent = pomoState.totalFocusMin;
       };
+
+      // 총 집중 시간 수동 초기화 (확인 후 로컬+서버 0으로)
+      var resetTotalBtn = document.getElementById("pomoResetTotal");
+      if (resetTotalBtn) resetTotalBtn.addEventListener("click", function() {
+        if (!window.confirm("총 집중 시간 기록을 0으로 초기화할까요?\n(오늘 완료 세션 수는 유지됩니다)")) return;
+        pomoState.totalFocusMin = 0;
+        totalMinEl.textContent = 0;
+        try {
+          var d = JSON.parse(localStorage.getItem("temporal-pomo") || "{}");
+          d.totalFocusMin = 0; localStorage.setItem("temporal-pomo", JSON.stringify(d));
+        } catch(e) {}
+        // 서버에도 0으로 — 성공해야 다음 로드에서 되돌아오지 않음
+        if (typeof SupaDB !== "undefined" && SupaDB.savePomoData) {
+          Promise.resolve(SupaDB.savePomoData(pomoState.sessionsToday, 0)).then(function(ok) {
+            if (typeof showToast === "function") {
+              showToast(ok === false ? "초기화 저장 실패 — 네트워크 확인 후 다시 시도" : "총 집중 시간을 초기화했어요", ok === false ? "error" : "success");
+            }
+          });
+        } else if (typeof showToast === "function") {
+          showToast("총 집중 시간을 초기화했어요", "success");
+        }
+      });
 
       // Apply settings from inputs
       document.getElementById("pomoWorkMin").value = pomoState.workMin;
