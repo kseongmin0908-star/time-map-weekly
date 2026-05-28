@@ -5333,6 +5333,28 @@
             item.innerHTML = '<label class="panel-checkbox"><input type="checkbox"'+(task.completed?' checked':'')+'/><span class="check-box"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span></label><span class="task-text">'+escH(task.text)+'</span><button class="task-remove">&times;</button>';
             item.querySelector('input').addEventListener('change', function() { tasks[i].completed = this.checked; renderT(); });
             item.querySelector('.task-remove').addEventListener('click', function() { tasks.splice(i, 1); renderT(); });
+            // 인라인 수정: 텍스트 클릭 → 편집, Enter/포커스아웃 저장, Esc 취소 (주간 목표와 동일)
+            var textSpan = item.querySelector('.task-text');
+            textSpan.title = '클릭하여 수정';
+            textSpan.addEventListener('click', function() {
+              if (textSpan.getAttribute('contenteditable') === 'true') return;
+              textSpan.setAttribute('contenteditable', 'true');
+              textSpan.classList.add('editing');
+              textSpan.focus();
+              var range = document.createRange(); range.selectNodeContents(textSpan);
+              var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+            });
+            textSpan.addEventListener('keydown', function(e) {
+              if (e.key === 'Enter') { e.preventDefault(); textSpan.blur(); }
+              else if (e.key === 'Escape') { e.preventDefault(); textSpan.textContent = tasks[i].text; textSpan.blur(); }
+            });
+            textSpan.addEventListener('blur', function() {
+              textSpan.setAttribute('contenteditable', 'false');
+              textSpan.classList.remove('editing');
+              var val = textSpan.textContent.replace(/\s+/g, ' ').trim();
+              if (val) tasks[i].text = val;  // 비우면 원래 내용 유지
+              textSpan.textContent = tasks[i].text;
+            });
             tl.appendChild(item);
           });
           comp.innerHTML = '목표 <b>' + tasks.length + '</b> / ' + MAX;
