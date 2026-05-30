@@ -4513,6 +4513,7 @@
       var progressInterval = null;
       var autoplayAttempted = false;
       var loopCheckInterval = null;
+      var pendingFirstGesturePlay = false; // 사용자 제스처 발생했지만 YT 준비 전인 경우 대기 플래그
 
       // Restore loop UI state
       if (loopEnabled) {
@@ -4568,10 +4569,15 @@
               if (loopEnabled && loopStartSec) {
                 e.target.seekTo(loopStartSec, true);
               }
-              // Autoplay on page load
+              // Autoplay on page load (브라우저가 제스처 없으면 무시할 수 있음)
               if (!autoplayAttempted) {
                 autoplayAttempted = true;
                 e.target.playVideo();
+              }
+              // 사용자가 이미 페이지에서 제스처를 했지만 YT 준비 전이었다면 지금 재생
+              if (pendingFirstGesturePlay) {
+                pendingFirstGesturePlay = false;
+                try { e.target.playVideo(); } catch(err) {}
               }
             },
             onStateChange: function(e) {
@@ -4592,6 +4598,23 @@
       window.onYouTubeIframeAPIReady = function() {
         createPlayer(currentVideoId);
       };
+
+      // 첫 사용자 동작(클릭/키/터치) 시 음악 재생 — 브라우저 자동재생 차단 우회
+      // 이미 재생 중이거나 사용자가 명시적으로 정지한 경우는 그대로 둠
+      function onFirstGesture() {
+        if (player && isReady) {
+          if (!isPlaying) { try { player.playVideo(); } catch(err) {} }
+        } else {
+          // YT 아직 안 준비되었으면 준비되는 즉시 재생되도록 표시
+          pendingFirstGesturePlay = true;
+        }
+        document.removeEventListener("click", onFirstGesture, true);
+        document.removeEventListener("keydown", onFirstGesture, true);
+        document.removeEventListener("touchstart", onFirstGesture, true);
+      }
+      document.addEventListener("click", onFirstGesture, true);
+      document.addEventListener("keydown", onFirstGesture, true);
+      document.addEventListener("touchstart", onFirstGesture, true);
 
       function startProgress() {
         stopProgress();
