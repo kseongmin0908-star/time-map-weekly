@@ -1034,8 +1034,8 @@
         color: var(--text-dim); width: 30px; flex-shrink: 0; text-align: right;
         letter-spacing: .02em;
       }
-      .week-cell { width: clamp(40px, 12.5vw, 54px); height: clamp(40px, 12.5vw, 54px); border-width: 2px; }
-      .week-cell .goal-dot { width: 7px; height: 7px; bottom: -3px; }
+      .week-cell { width: clamp(36px, 11vw, 42px); height: clamp(36px, 11vw, 42px); border-width: 2px; }
+      .week-cell .goal-dot { width: 6px; height: 6px; bottom: -3px; }
       .week-cell:hover { transform: scale(1.12); } /* 터치 확대 과하지 않게 */
       .stats-section { grid-template-columns: repeat(2, 1fr); gap: .8rem; }
       .achievement-section { grid-template-columns: 1fr; justify-items: center; text-align: center; }
@@ -1043,6 +1043,12 @@
       .mini-chart { height: 32px; }
       .insights-section { grid-template-columns: 1fr; }
       .monthly-bars { height: 60px; gap: 4px; }
+
+      /* ── 모바일 성능: 무거운 전체화면 효과·무한 애니메이션·blur 완화 (버벅임 개선) ── */
+      body::before { display: none; }                 /* SVG 그레인 필터 제거(거의 안 보이는데 비용 큼) */
+      .nebula, .nebula::after { animation: none; }     /* 성운 회전 정지(정적으로는 유지) */
+      .star-field__layer--medium, .star-field__layer--large { animation: none; }  /* 별 반짝임 정지 */
+      .pomo-trigger, .mind-trigger, .music-fab { backdrop-filter: none; }  /* 상시 고정요소 blur 제거 → 스크롤 부드럽게 */
     }
     @media (max-width: 420px) {
       .streak-section { gap: 1.5rem; }
@@ -1356,6 +1362,7 @@
       .mind-panel { width: 100%; right: -100%; }
       .mind-pattern-row { flex-direction: column; }
       .mind-arrow { transform: rotate(90deg); margin: 0 auto; }
+      .mind-trigger { backdrop-filter: none; }  /* 정의 이후 위치 — 모바일 스크롤 부드럽게 */
     }
 
     @media (prefers-reduced-motion: reduce) {
