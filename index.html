@@ -1018,9 +1018,25 @@
     /* ===== RESPONSIVE ===== */
     @media (max-width: 700px) {
       #app { padding: 1.5rem 1rem 3rem; }
-      .week-grid, .month-labels { gap: 4px; }
-      .week-cell { width: 24px; height: 24px; }
-      .month-col { gap: 4px; }
+      /* 주간 그리드: 모바일은 세로(월=가로줄) 레이아웃 — 동그라미를 키워 터치 쉽게 */
+      .month-labels { display: none; } /* 상단 월 라벨 줄 숨김(각 줄 앞에 월 표기) */
+      .week-grid {
+        display: flex; flex-direction: column; gap: 10px; padding: 4px 0;
+        counter-reset: monthnum;
+      }
+      .month-col {
+        flex-direction: row; justify-content: flex-start; align-items: center;
+        gap: 10px; counter-increment: monthnum;
+      }
+      .month-col::before {
+        content: counter(monthnum) "월";
+        font-family: 'Noto Sans KR', sans-serif; font-size: .72rem; font-weight: 600;
+        color: var(--text-dim); width: 30px; flex-shrink: 0; text-align: right;
+        letter-spacing: .02em;
+      }
+      .week-cell { width: clamp(40px, 12.5vw, 54px); height: clamp(40px, 12.5vw, 54px); border-width: 2px; }
+      .week-cell .goal-dot { width: 7px; height: 7px; bottom: -3px; }
+      .week-cell:hover { transform: scale(1.12); } /* 터치 확대 과하지 않게 */
       .stats-section { grid-template-columns: repeat(2, 1fr); gap: .8rem; }
       .achievement-section { grid-template-columns: 1fr; justify-items: center; text-align: center; }
       .goal-panel { width: 100%; right: -100%; }
@@ -1029,10 +1045,6 @@
       .monthly-bars { height: 60px; gap: 4px; }
     }
     @media (max-width: 420px) {
-      .week-cell { width: 18px; height: 18px; }
-      .week-grid, .month-labels { gap: 3px; }
-      .month-col { gap: 3px; }
-      .week-cell .goal-dot { width: 4px; height: 4px; bottom: -2px; }
       .streak-section { gap: 1.5rem; }
     }
 
