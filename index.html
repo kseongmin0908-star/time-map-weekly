@@ -582,6 +582,16 @@
     }
     .task-item:hover .task-remove { opacity: .7; }
     .task-remove:hover { opacity: 1 !important; background: rgba(239,68,68,.15); color: var(--danger); }
+    /* 우선순위 이동 버튼 (▲▼) */
+    .task-move-group { display: flex; flex-direction: column; gap: 1px; flex-shrink: 0; }
+    .task-move {
+      width: 20px; height: 15px; padding: 0; border: none; border-radius: 4px;
+      background: rgba(212,165,116,.08); color: var(--gold-dim); cursor: pointer;
+      font-size: .55rem; line-height: 1; display: flex; align-items: center; justify-content: center;
+      transition: background .2s, color .2s;
+    }
+    .task-move:hover:not(:disabled) { background: rgba(212,165,116,.22); color: var(--gold); }
+    .task-move:disabled { opacity: .25; cursor: default; }
     .task-add { display: flex; gap: .4rem; align-items: center; }
     .task-add-input {
       flex: 1; padding: .55rem .8rem; background: rgba(255,255,255,.03);
@@ -3995,9 +4005,24 @@
           if (v) panelTasks[idx].text = v;       // 비우면 원래 내용 유지
           textSpan.textContent = panelTasks[idx].text;
         });
+        // 우선순위 이동 (▲▼)
+        var moveGroup = document.createElement("div"); moveGroup.className = "task-move-group";
+        var upBtn = document.createElement("button"); upBtn.className = "task-move"; upBtn.textContent = "▲";
+        upBtn.title = "위로"; upBtn.setAttribute("aria-label", "위로 이동"); upBtn.disabled = (idx === 0);
+        upBtn.addEventListener("click", function() {
+          if (idx === 0) return;
+          var t = panelTasks.splice(idx, 1)[0]; panelTasks.splice(idx - 1, 0, t); renderTaskList();
+        });
+        var downBtn = document.createElement("button"); downBtn.className = "task-move"; downBtn.textContent = "▼";
+        downBtn.title = "아래로"; downBtn.setAttribute("aria-label", "아래로 이동"); downBtn.disabled = (idx === panelTasks.length - 1);
+        downBtn.addEventListener("click", function() {
+          if (idx === panelTasks.length - 1) return;
+          var t = panelTasks.splice(idx, 1)[0]; panelTasks.splice(idx + 1, 0, t); renderTaskList();
+        });
+        moveGroup.appendChild(upBtn); moveGroup.appendChild(downBtn);
         var removeBtn = document.createElement("button"); removeBtn.className = "task-remove"; removeBtn.textContent = "×";
         removeBtn.addEventListener("click", function() { panelTasks.splice(idx, 1); renderTaskList(); });
-        item.appendChild(label); item.appendChild(textSpan); item.appendChild(removeBtn);
+        item.appendChild(label); item.appendChild(textSpan); item.appendChild(moveGroup); item.appendChild(removeBtn);
         taskListEl.appendChild(item);
       });
       taskCountEl.textContent = panelTasks.length + " / " + MAX_TASKS;
@@ -5451,9 +5476,17 @@
           tasks.forEach(function(task, i) {
             var item = document.createElement('div');
             item.className = 'task-item' + (task.completed ? ' completed' : '');
-            item.innerHTML = '<label class="panel-checkbox"><input type="checkbox"'+(task.completed?' checked':'')+'/><span class="check-box"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span></label><span class="task-text">'+escH(task.text)+'</span><button class="task-remove">&times;</button>';
+            item.innerHTML = '<label class="panel-checkbox"><input type="checkbox"'+(task.completed?' checked':'')+'/><span class="check-box"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span></label><span class="task-text">'+escH(task.text)+'</span>'+
+              '<div class="task-move-group"><button class="task-move task-up" title="위로" aria-label="위로 이동"'+(i===0?' disabled':'')+'>▲</button><button class="task-move task-down" title="아래로" aria-label="아래로 이동"'+(i===tasks.length-1?' disabled':'')+'>▼</button></div>'+
+              '<button class="task-remove">&times;</button>';
             item.querySelector('input').addEventListener('change', function() { tasks[i].completed = this.checked; renderT(); });
             item.querySelector('.task-remove').addEventListener('click', function() { tasks.splice(i, 1); renderT(); });
+            item.querySelector('.task-up').addEventListener('click', function() {
+              if (i === 0) return; var t = tasks.splice(i, 1)[0]; tasks.splice(i - 1, 0, t); renderT();
+            });
+            item.querySelector('.task-down').addEventListener('click', function() {
+              if (i === tasks.length - 1) return; var t = tasks.splice(i, 1)[0]; tasks.splice(i + 1, 0, t); renderT();
+            });
             // 인라인 수정: 텍스트 클릭 → 편집, Enter/포커스아웃 저장, Esc 취소 (주간 목표와 동일)
             var textSpan = item.querySelector('.task-text');
             textSpan.title = '클릭하여 수정';
