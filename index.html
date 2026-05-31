@@ -2980,7 +2980,7 @@
         <div class="guide-section">
           <div class="guide-section-title">🌐 커뮤니티 · 함께 실행</div>
           <div class="guide-card"><span class="guide-ic">✍️</span><div class="guide-body"><b>게시물 작성</b><p>‘+ 게시물 작성’으로 <b>오늘의 목표 · 오늘의 회고 · 자유</b> 글을 공유합니다. 날짜를 골라 과거 기록도 올릴 수 있어요.</p></div></div>
-          <div class="guide-card"><span class="guide-ic">❤️</span><div class="guide-body"><b>좋아요 · 댓글</b><p>서로의 글에 응원을 남기며 함께 동기를 얻습니다. 긴 글은 ‘더보기’로 펼쳐 볼 수 있어요.</p></div></div>
+          <div class="guide-card"><span class="guide-ic">❤️</span><div class="guide-body"><b>좋아요 · 댓글</b><p>서로의 글에 응원을 남기며 함께 동기를 얻습니다. 긴 글은 ‘전체보기’로 펼쳐 볼 수 있어요.</p></div></div>
           <div class="guide-card"><span class="guide-ic">🤖</span><div class="guide-body"><b>AI 분석</b><p>내 게시물의 <b>🤖 AI 분석</b> 버튼을 누르면 AI가 코칭 댓글로 잘한 점·개선점을 짚어줍니다.</p></div></div>
           <div class="guide-card"><span class="guide-ic">👤</span><div class="guide-body"><b>멤버 프로필</b><p>아바타·이름을 누르면 그 멤버의 현황과 게시물 기록을 봅니다. 내 <b>닉네임·아바타</b>는 우상단 ‘내 프로필’에서 설정하세요.</p></div></div>
         </div>
@@ -3176,7 +3176,7 @@
           toggle.textContent = '접기';
         } else {
           ta.style.height = collapsedMax + 'px'; ta.style.overflowY = 'auto';
-          toggle.style.display = 'inline-block'; toggle.textContent = '더보기';
+          toggle.style.display = 'inline-block'; toggle.textContent = '전체보기';
         }
       }
       ta.addEventListener('input', fit);
@@ -6153,7 +6153,7 @@
         }
         return '<div class="feed-longtext clamped">' +
           '<div class="lt-content" style="' + style + '">' + safe + '</div>' +
-          '<button class="lt-toggle" type="button">더보기</button>' +
+          '<button class="lt-toggle" type="button">전체보기</button>' +
         '</div>';
       }
 
@@ -6195,7 +6195,7 @@
         if (toggle) {
           var box = toggle.closest('.feed-longtext'); if (!box) return;
           var clamped = box.classList.toggle('clamped');
-          toggle.textContent = clamped ? '더보기' : '접기';
+          toggle.textContent = clamped ? '전체보기' : '접기';
           return;
         }
         // 접힌 상태에서 본문을 직접 눌러도 펼쳐지도록 (펼친 뒤엔 클릭으로 안 접힘 → 텍스트 선택 가능)
