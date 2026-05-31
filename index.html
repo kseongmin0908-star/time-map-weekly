@@ -527,6 +527,14 @@
     }
     .panel-field textarea:focus { outline: none; border-color: var(--gold-dim); }
     .panel-field textarea::placeholder { color: rgba(106,102,96,.5); }
+    /* 한마디/회고 더보기·접기 토글 (auto-grow textarea용) */
+    .ta-more-btn {
+      display: inline-block; margin-top: .35rem; padding: .2rem .65rem;
+      background: rgba(212,165,116,.1); border: 1px solid rgba(212,165,116,.28);
+      border-radius: 10px; color: var(--gold); font-size: .62rem; font-weight: 600;
+      font-family: 'Noto Sans KR', sans-serif; cursor: pointer; transition: all .2s;
+    }
+    .ta-more-btn:hover { background: rgba(212,165,116,.2); border-color: var(--gold); }
     .panel-checkbox {
       display: flex; align-items: center; gap: .6rem; cursor: pointer;
       font-family: 'Noto Sans KR', sans-serif; font-size: .85rem; color: var(--text); user-select: none;
@@ -558,7 +566,7 @@
 
     /* ===== TASK LIST ===== */
     .task-count { float: right; font-family: 'JetBrains Mono', monospace; font-size: .65rem; color: var(--gold-dim); font-weight: 400; }
-    .task-list { display: flex; flex-direction: column; gap: .5rem; margin-bottom: .8rem; max-height: 280px; overflow-y: auto; }
+    .task-list { display: flex; flex-direction: column; gap: .5rem; margin-bottom: .8rem; }
     .task-list::-webkit-scrollbar { width: 4px; }
     .task-list::-webkit-scrollbar-thumb { background: rgba(212,165,116,.2); border-radius: 2px; }
     .task-item {
@@ -3147,6 +3155,38 @@
       return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
 
+    // textarea를 내용에 맞춰 자동 확장(전체 보이게). 너무 길면(collapsedMax 초과) 접고 '더보기' 토글 표시.
+    // 편집 중(focus)에는 항상 전부 펼쳐 입력이 잘리지 않게 함.
+    function setupExpandableTextarea(ta, collapsedMax) {
+      if (!ta || ta._expSetup) { if (ta && ta._fit) ta._fit(); return; }
+      ta._expSetup = true;
+      collapsedMax = collapsedMax || 150;
+      ta.style.resize = 'none'; ta.style.overflowY = 'hidden';
+      var expanded = false;
+      var toggle = document.createElement('button');
+      toggle.type = 'button'; toggle.className = 'ta-more-btn'; toggle.style.display = 'none';
+      ta.insertAdjacentElement('afterend', toggle);
+      function fit() {
+        ta.style.height = 'auto';
+        var full = ta.scrollHeight;
+        var focused = (document.activeElement === ta);
+        if (focused || expanded || full <= collapsedMax) {
+          ta.style.height = full + 'px'; ta.style.overflowY = 'hidden';
+          toggle.style.display = (!focused && full > collapsedMax) ? 'inline-block' : 'none';
+          toggle.textContent = '접기';
+        } else {
+          ta.style.height = collapsedMax + 'px'; ta.style.overflowY = 'auto';
+          toggle.style.display = 'inline-block'; toggle.textContent = '더보기';
+        }
+      }
+      ta.addEventListener('input', fit);
+      ta.addEventListener('focus', function(){ fit(); });
+      ta.addEventListener('blur', function(){ fit(); });
+      toggle.addEventListener('click', function(){ expanded = !expanded; fit(); });
+      ta._fit = fit;
+      fit();
+    }
+
     // 이메일이 그대로 공개 노출되지 않도록 마스킹: "user@gmail.com" → "user"
     // (공개 피드/프로필은 anon 키로 누구나 조회 가능하므로 전체 이메일을 절대 표시하지 않음)
     function maskName(n) {
@@ -4074,6 +4114,10 @@
       else emptyMsg.style.display = "none";
       renderTaskList();
       panelEl.classList.add("open"); overlay.classList.add("open");
+      // 회고: 내용에 맞춰 자동 확장 + 너무 길면 더보기 (패널 열린 뒤 높이 계산)
+      setTimeout(function() {
+        if (typeof setupExpandableTextarea === "function") setupExpandableTextarea(reflectionInput, 150);
+      }, 380);
       setTimeout(function() { taskAddInput.focus(); }, 350);
     }
     function closePanel() { panelEl.classList.remove("open"); overlay.classList.remove("open"); openWeek = null; panelTasks = []; }
@@ -5487,6 +5531,8 @@
         } else {
           try { tasks = JSON.parse(localStorage.getItem('temporal-daily-' + initDate)) || []; } catch(e) {}
         }
+        // 한마디: 내용에 맞춰 자동 확장 + 너무 길면 더보기
+        if (typeof setupExpandableTextarea === 'function') setupExpandableTextarea(formEl.querySelector('#mDailyNote'), 140);
         var tl = formEl.querySelector('#mDailyTaskList');
         var inp = formEl.querySelector('#mDailyInput');
         var addB = formEl.querySelector('#mDailyAddBtn');
