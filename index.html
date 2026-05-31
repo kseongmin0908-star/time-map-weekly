@@ -2112,19 +2112,20 @@
     /* Score trend SVG chart */
     .score-chart-svg { width: 100%; height: 120px; }
     .score-chart-svg .chart-line {
-      fill: none; stroke: url(#scoreGrad); stroke-width: 2.5;
+      fill: none; stroke: url(#scoreGrad); stroke-width: 4;
       stroke-linecap: round; stroke-linejoin: round;
-      filter: drop-shadow(0 0 4px rgba(240,200,136,.3));
+      filter: drop-shadow(0 0 6px rgba(240,200,136,.55));
     }
     .score-chart-svg .chart-area {
-      fill: url(#scoreAreaGrad); opacity: .3;
+      fill: url(#scoreAreaGrad); opacity: .5;
     }
     .score-chart-svg .chart-dot {
-      fill: var(--gold-bright); stroke: var(--bg-panel); stroke-width: 2;
+      fill: var(--gold-bright); stroke: var(--bg-panel); stroke-width: 2.5; r: 4;
       transition: r .2s;
       cursor: pointer;
+      filter: drop-shadow(0 0 3px rgba(240,200,136,.5));
     }
-    .score-chart-svg .chart-dot:hover { r: 5; }
+    .score-chart-svg .chart-dot:hover { r: 6; }
     .score-chart-svg .chart-grid-line {
       stroke: rgba(216,172,122,.18); stroke-width: 1; stroke-dasharray: 3 3;
     }
@@ -2133,12 +2134,12 @@
     }
 
     /* Daily completion bars */
-    .daily-bars-wrap { display: flex; gap: 8px; align-items: flex-end; height: 80px; }
+    .daily-bars-wrap { display: flex; gap: 8px; align-items: flex-end; height: 88px; }
     .daily-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
     .daily-bar {
-      width: 100%; border-radius: 4px 4px 0 0; min-height: 4px;
+      width: 100%; border-radius: 5px 5px 0 0; min-height: 4px;
       transition: height .6s cubic-bezier(.22,1,.36,1);
-      position: relative;
+      position: relative; box-shadow: 0 0 9px -1px currentColor; /* 색상 매칭 글로우로 또렷하게 */
     }
     .daily-bar-label { font-family: 'Noto Sans KR', sans-serif; font-size: .56rem; color: var(--text-dim); }
     .daily-bar-pct {
@@ -2165,15 +2166,15 @@
       color: var(--text-dim); width: 50px; text-align: right; flex-shrink: 0;
     }
     .tag-corr-bar-wrap {
-      flex: 1; height: 20px; position: relative;
-      background: rgba(255,255,255,.045); border-radius: 4px; overflow: hidden;
+      flex: 1; height: 28px; position: relative;
+      background: rgba(255,255,255,.06); border-radius: 6px; overflow: hidden;
     }
     .tag-corr-bar {
-      height: 100%; border-radius: 4px; position: absolute; top: 0;
+      height: 100%; border-radius: 6px; position: absolute; top: 0;
       transition: width .6s cubic-bezier(.22,1,.36,1);
     }
-    .tag-corr-bar.positive { background: linear-gradient(90deg, rgba(74,222,128,.3), rgba(74,222,128,.7)); left: 50%; }
-    .tag-corr-bar.negative { background: linear-gradient(270deg, rgba(239,68,68,.3), rgba(239,68,68,.7)); right: 50%; }
+    .tag-corr-bar.positive { background: linear-gradient(90deg, rgba(74,222,128,.5), #4ade80); left: 50%; box-shadow: 0 0 8px rgba(74,222,128,.35); }
+    .tag-corr-bar.negative { background: linear-gradient(270deg, rgba(239,68,68,.5), #ef4444); right: 50%; box-shadow: 0 0 8px rgba(239,68,68,.35); }
     .tag-corr-center {
       position: absolute; left: 50%; top: 0; bottom: 0; width: 1px;
       background: rgba(106,102,96,.2);
@@ -2257,10 +2258,11 @@
       font-family: 'Noto Sans KR', sans-serif; font-size: .7rem; color: var(--text);
       min-width: 60px; text-align: right;
     }
-    .tag-freq-bar-wrap { flex: 1; height: 8px; border-radius: 4px; background: rgba(106,102,96,.1); overflow: hidden; }
+    .tag-freq-bar-wrap { flex: 1; height: 14px; border-radius: 7px; background: rgba(255,255,255,.06); overflow: hidden; }
     .tag-freq-bar {
-      height: 100%; border-radius: 4px;
-      background: linear-gradient(90deg, var(--gold-dim), var(--gold-bright));
+      height: 100%; border-radius: 7px;
+      background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+      box-shadow: 0 0 8px rgba(240,200,136,.3);
       transition: width .8s cubic-bezier(.22,1,.36,1);
     }
     .tag-freq-count {
@@ -6784,8 +6786,8 @@
         var col = document.createElement('div');
         col.className = 'daily-bar-col';
         var color = d.pct >= 80 ? 'var(--success)' : d.pct >= 40 ? 'var(--warn)' : (d.total > 0 ? 'var(--danger)' : 'rgba(106,102,96,.2)');
-        var height = d.total > 0 ? Math.max(d.pct * 0.7, 6) : 4;
-        col.innerHTML = '<div class="daily-bar" style="height:' + height + 'px;background:' + color + '"><span class="daily-bar-pct">' + d.pct + '%</span></div>' +
+        var height = d.total > 0 ? Math.max(d.pct * 0.78, 8) : 4;
+        col.innerHTML = '<div class="daily-bar" style="height:' + height + 'px;background:' + color + ';color:' + color + '"><span class="daily-bar-pct">' + d.pct + '%</span></div>' +
           '<div class="daily-bar-label">' + d.date.slice(5) + '</div>';
         el.appendChild(col);
       });
