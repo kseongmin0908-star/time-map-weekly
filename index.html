@@ -5530,6 +5530,14 @@
           if (editData.note) formEl.querySelector('#mDailyNote').value = editData.note;
         } else {
           try { tasks = JSON.parse(localStorage.getItem('temporal-daily-' + initDate)) || []; } catch(e) {}
+          // 게시 실패로 임시저장된 글이 있으면 복원 (작성하던 내용 유실 방지)
+          var _dft = (typeof loadDraftFor === 'function') ? loadDraftFor('daily') : null;
+          if (_dft) {
+            if (_dft.tasks && _dft.tasks.length) tasks = _dft.tasks.map(function(t){ return { text: t.text, completed: !!t.completed }; });
+            if (_dft.note) formEl.querySelector('#mDailyNote').value = _dft.note;
+            if (_dft.date) { var dd = formEl.querySelector('#mDailyDate'); if (dd) dd.value = _dft.date; }
+            showToast('임시저장된 내용을 불러왔어요', '');
+          }
         }
         // 한마디: 내용에 맞춰 자동 확장 + 너무 길면 더보기
         if (typeof setupExpandableTextarea === 'function') setupExpandableTextarea(formEl.querySelector('#mDailyNote'), 140);
@@ -5669,6 +5677,26 @@
           selectedTags = editData.tags.filter(function(t) { return known.indexOf(t) !== -1; });
           var unknown = editData.tags.filter(function(t) { return known.indexOf(t) === -1; });
           if (unknown.length > 0) tagInput.value = unknown.join(', ');
+        } else if (!isEdit) {
+          // 게시 실패로 임시저장된 글이 있으면 복원
+          var _dft = (typeof loadDraftFor === 'function') ? loadDraftFor('retro') : null;
+          if (_dft) {
+            if (_dft.went_well) formEl.querySelector('#mRetroWell').value = _dft.went_well;
+            if (_dft.to_improve) formEl.querySelector('#mRetroImprove').value = _dft.to_improve;
+            if (_dft.score) {
+              var _sl = formEl.querySelector('#mRetroSlider'), _sv = formEl.querySelector('#mRetroScoreVal');
+              if (_sl) _sl.value = _dft.score;
+              if (_sv) { _sv.textContent = _dft.score; _sv.style.color = _dft.score <= 3 ? 'var(--danger)' : _dft.score <= 6 ? 'var(--warn)' : 'var(--success)'; }
+            }
+            if (_dft.date) { var _rd = formEl.querySelector('#mRetroDate'); if (_rd) _rd.value = _dft.date; }
+            if (_dft.tags && _dft.tags.length) {
+              var known2 = DEFAULT_TAGS.concat(getCustomTags());
+              selectedTags = _dft.tags.filter(function(t) { return known2.indexOf(t) !== -1; });
+              var unknown2 = _dft.tags.filter(function(t) { return known2.indexOf(t) === -1; });
+              if (unknown2.length > 0) tagInput.value = unknown2.join(', ');
+            }
+            showToast('임시저장된 내용을 불러왔어요', '');
+          }
         }
 
         // 칩 렌더(기본 태그 + 내 커스텀 태그 + "추가" 버튼)
@@ -5790,6 +5818,18 @@
           '<div class="retro-field"><label>본문</label><textarea id="mFreeBody" placeholder="자유롭게 생각을 적어보세요..." style="min-height:120px">' + (isEdit ? escH(editData.body || '') : '') + '</textarea></div>' +
           '<button class="daily-save-btn" id="mFreeSave">' + (isEdit ? '✏️ 수정하기' : '💬 게시하기') + '</button>';
 
+        // 게시 실패로 임시저장된 글이 있으면 복원
+        if (!isEdit) {
+          var _dft = (typeof loadDraftFor === 'function') ? loadDraftFor('free') : null;
+          if (_dft) {
+            if (_dft.title) formEl.querySelector('#mFreeTitle').value = _dft.title;
+            if (_dft.body) formEl.querySelector('#mFreeBody').value = _dft.body;
+            if (_dft.date) { var _fd = formEl.querySelector('#mFreeDate'); if (_fd) _fd.value = _dft.date; }
+            showToast('임시저장된 내용을 불러왔어요', '');
+          }
+        }
+        if (typeof setupExpandableTextarea === 'function') setupExpandableTextarea(formEl.querySelector('#mFreeBody'), 220);
+
         formEl.querySelector('.comm-form-back').addEventListener('click', function() {
           formEl.style.display = 'none'; typeSelect.style.display = 'flex';
         });
@@ -5810,18 +5850,45 @@
         });
       }
 
+      /* ── 게시물 임시저장(draft): 게시 실패 시 작성 내용 보존 ── */
+      var DRAFT_KEY = 'temporal-post-draft';
+      function draftMeaningful(type, c) {
+        if (!c) return false;
+        if (type === 'daily') return (c.tasks && c.tasks.length > 0) || !!(c.note && String(c.note).trim());
+        if (type === 'retro') return !!(c.went_well && String(c.went_well).trim()) || !!(c.to_improve && String(c.to_improve).trim()) || (c.tags && c.tags.length > 0);
+        if (type === 'free') return !!(c.title && String(c.title).trim()) || !!(c.body && String(c.body).trim());
+        return false;
+      }
+      function saveDraft(type, content) {
+        try { if (draftMeaningful(type, content)) localStorage.setItem(DRAFT_KEY, JSON.stringify({ type: type, content: content, ts: Date.now() })); } catch(e) {}
+      }
+      function loadDraftFor(type) {
+        try { var d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); return (d && d.type === type && d.content) ? d.content : null; } catch(e) { return null; }
+      }
+      function clearDraft() { try { localStorage.removeItem(DRAFT_KEY); } catch(e) {} }
+
+      // 새 글이 종류·검색·태그 필터에 가려지지 않도록 피드 필터 초기화
+      function resetFeedFilters() {
+        currentFilter = 'all'; feedSearch = ''; feedTag = 'all';
+        document.querySelectorAll('.comm-filter').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-filter') === 'all'); });
+        try { var s = document.getElementById('commSearch'); if (s) s.value = ''; var t = document.getElementById('commTagSelect'); if (t) t.value = 'all'; } catch(e) {}
+      }
+
       /* ── Share to Feed (Supabase) ── */
       function shareToFeed(type, content) {
-        if (!_currentUser) return;
+        if (!_currentUser) { showToast('로그인이 필요합니다', 'error'); return; }
+        saveDraft(type, content); // 시도 전에 먼저 저장 → 오류·네트워크 실패해도 유실 없음
         _supabase.from('community_feed').insert({
           user_id: _currentUser.id, feed_type: type, content: content,
           display_name: getUserName(), avatar_url: getUserAvatar(),
           shared_at: new Date().toISOString()
         }).then(function(res) {
-          if (res && res.error) { showToast('게시에 실패했습니다 — 다시 시도해주세요', 'error'); return; }
+          if (res && res.error) { showToast('게시 실패 — 작성 내용은 임시저장됐어요. 잠시 후 다시 시도하세요.', 'error'); return; }
+          clearDraft();
           showToast('게시되었습니다', 'success');
+          resetFeedFilters();   // 방금 올린 글이 필터에 가려지지 않게
           loadFeed();
-        }).catch(function() { showToast('게시 실패 — 네트워크를 확인해주세요', 'error'); });
+        }).catch(function() { showToast('게시 실패 — 작성 내용은 임시저장됐어요. 네트워크 확인 후 다시 시도하세요.', 'error'); });
       }
       window.shareToFeed = shareToFeed;
 
