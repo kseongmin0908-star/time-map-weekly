@@ -563,6 +563,29 @@
     .btn-delete:hover { background: rgba(239,68,68,.2); }
     .btn-repeat { background: rgba(74,222,128,.08); color: var(--success); border: 1px solid rgba(74,222,128,.2); }
     .btn-repeat:hover { background: rgba(74,222,128,.15); }
+    /* 주 목표 공유 토글 + 복사 */
+    .panel-share-row { display: flex; align-items: center; gap: .6rem; margin: .3rem 0 .7rem; flex-wrap: wrap; }
+    .share-toggle { display: flex; align-items: center; gap: .5rem; cursor: pointer; user-select: none; flex: 1; min-width: 0; }
+    .share-toggle input { display: none; }
+    .share-toggle-track {
+      width: 40px; height: 22px; border-radius: 12px; flex-shrink: 0;
+      background: rgba(106,102,96,.35); border: 1px solid rgba(106,102,96,.3);
+      position: relative; transition: background .25s, border-color .25s;
+    }
+    .share-toggle-knob {
+      position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%;
+      background: #cfcac3; transition: transform .25s, background .25s;
+    }
+    .share-toggle input:checked + .share-toggle-track { background: rgba(74,222,128,.45); border-color: rgba(74,222,128,.5); }
+    .share-toggle input:checked + .share-toggle-track .share-toggle-knob { transform: translateX(18px); background: #eafff0; }
+    .share-toggle-label { font-family: 'Noto Sans KR', sans-serif; font-size: .7rem; color: var(--text-dim); white-space: nowrap; }
+    .share-toggle input:checked ~ .share-toggle-label { color: var(--success); font-weight: 600; }
+    .btn-copy-week {
+      padding: .5rem .8rem; border-radius: 8px; flex-shrink: 0;
+      background: rgba(212,165,116,.1); border: 1px solid rgba(212,165,116,.28); color: var(--gold);
+      font-family: 'Noto Sans KR', sans-serif; font-size: .72rem; font-weight: 600; cursor: pointer; transition: all .2s;
+    }
+    .btn-copy-week:hover { background: rgba(212,165,116,.2); border-color: var(--gold); }
 
     /* ===== TASK LIST ===== */
     .task-count { float: right; font-family: 'JetBrains Mono', monospace; font-size: .65rem; color: var(--gold-dim); font-weight: 400; }
@@ -2609,6 +2632,14 @@
       <label>📝 이번 주 회고</label>
       <textarea id="reflectionInput" placeholder="이번 주를 돌아보며 한마디..."></textarea>
     </div>
+    <div class="panel-share-row">
+      <label class="share-toggle" title="켜두면 저장(확인) 시 이 주 목표가 커뮤니티에 게시·갱신됩니다">
+        <input type="checkbox" id="weeklyShareToggle">
+        <span class="share-toggle-track"><span class="share-toggle-knob"></span></span>
+        <span class="share-toggle-label" id="weeklyShareLabel">커뮤니티 공유 · 공유안함</span>
+      </label>
+      <button class="btn-copy-week" id="btnCopyWeek" title="이 주 목표 텍스트 복사">📋 복사</button>
+    </div>
     <div class="panel-actions">
       <button class="btn btn-save" id="btnSave">저장</button>
       <button class="btn btn-repeat" id="btnRepeat">↻ 다음 주 복사</button>
@@ -2703,6 +2734,7 @@
         <div class="comm-filter-tabs">
           <button class="comm-filter active" data-filter="all">전체</button>
           <button class="comm-filter" data-filter="daily">오늘의 목표</button>
+          <button class="comm-filter" data-filter="weekly">주간 목표</button>
           <button class="comm-filter" data-filter="retro">오늘의 회고</button>
           <button class="comm-filter" data-filter="free">자유</button>
         </div>
@@ -4110,6 +4142,9 @@
       var g = goals[w];
       panelTasks = (g && g.tasks) ? g.tasks.map(function(t) { return { text: t.text, completed: !!t.completed }; }) : [];
       reflectionInput.value = (g && g.reflection) || "";
+      // 공유 토글: 지속 설정(켜두면 계속 유지) 복원
+      var _wst = document.getElementById("weeklyShareToggle");
+      if (_wst) { _wst.checked = (localStorage.getItem("temporal-weekly-autoshare") === "1"); if (typeof refreshShareLabel === "function") refreshShareLabel(); }
       if (w < CW && panelTasks.length === 0) { emptyMsg.textContent = "이 주는 아무 계획 없이 지나갔습니다. 되돌릴 수 없는 시간입니다."; emptyMsg.style.display = "block"; }
       else emptyMsg.style.display = "none";
       renderTaskList();
@@ -4137,6 +4172,8 @@
       // Fire-and-forget Supabase save for this specific week
       if (goals[openWeek]) { SupaDB.saveGoals(openWeek, goals[openWeek]); }
       else { SupaDB.deleteGoals(openWeek); }
+      // 커뮤니티 동기화: 공유 토글 ON이면 게시(없으면 생성), 이미 공유된 주는 토글과 무관하게 갱신
+      syncWeeklyToCommunity(openWeek, weeklyShareToggle && weeklyShareToggle.checked);
       // Check if newly all-done for confetti
       var newStats = weekTaskStats(openWeek);
       var isNowAllDone = newStats.total > 0 && newStats.done === newStats.total;
@@ -4148,6 +4185,8 @@
       var wkToDelete = openWeek;
       delete goals[openWeek]; saveGoalsLocal(goals);
       SupaDB.deleteGoals(wkToDelete);
+      // 커뮤니티 동기화: 이 주의 공유글이 있으면 함께 삭제(내용이 비었으므로)
+      syncWeeklyToCommunity(wkToDelete, false);
       refreshAll(); closePanel();
     });
     // Repeat: copy uncompleted tasks to next week
@@ -4164,6 +4203,64 @@
       saveGoalsLocal(goals); SupaDB.saveGoals(nextW, goals[nextW]); refreshAll();
       alert("제 " + nextW + "주에 " + tasksToRepeat.length + "개 항목이 복사되었습니다.");
     });
+
+    /* ── 주 목표 커뮤니티 공유 (토글·복사·동기화) ── */
+    var weeklyShareToggle = document.getElementById("weeklyShareToggle");
+    var weeklyShareLabel = document.getElementById("weeklyShareLabel");
+    var btnCopyWeek = document.getElementById("btnCopyWeek");
+    function refreshShareLabel() {
+      if (weeklyShareLabel && weeklyShareToggle) weeklyShareLabel.textContent = "커뮤니티 공유 · " + (weeklyShareToggle.checked ? "공유함" : "공유안함");
+    }
+    if (weeklyShareToggle) {
+      weeklyShareToggle.addEventListener("change", function() {
+        try { localStorage.setItem("temporal-weekly-autoshare", weeklyShareToggle.checked ? "1" : "0"); } catch(e) {}
+        refreshShareLabel();
+      });
+    }
+    // 주 콘텐츠(일 목표 템플릿과 동일 구조: tasks + note) 빌드
+    function buildWeeklyContent(wk) {
+      var g = goals[wk] || {};
+      var tasks = (g.tasks || []).map(function(t){ return { text: t.text, completed: !!t.completed }; });
+      var monday = new Date(weekOneMonday(viewYear)); monday.setDate(monday.getDate() + (wk - 1) * 7);
+      return { week: wk, year: viewYear, tasks: tasks, note: (g.reflection || ""), date: localDateStr(monday) };
+    }
+    // 저장/삭제 시 커뮤니티 글과 동기화
+    function syncWeeklyToCommunity(wk, shareOn) {
+      if (typeof window.shareWeeklyGoal !== "function") return;
+      window.shareWeeklyGoal(wk, viewYear, buildWeeklyContent(wk), !!shareOn);
+    }
+    // 복사 버튼: 이 주 목표를 텍스트로
+    function buildWeeklyText(wk) {
+      var g = goals[wk] || {}, tasks = g.tasks || [], reflection = g.reflection || "";
+      var r = weekRange(viewYear, wk);
+      var done = tasks.filter(function(t){ return t.completed; }).length, total = tasks.length;
+      var pct = total > 0 ? Math.round(done / total * 100) : 0;
+      var out = [];
+      out.push("📋 제 " + wk + "주 목표 (" + r.start + " ~ " + r.end + ")");
+      out.push("📊 달성률  " + done + " / " + total + (total > 0 ? "  (" + pct + "%)" : ""));
+      out.push("────────────────");
+      tasks.forEach(function(t){ out.push((t.completed ? "✅ " : "⬜ ") + t.text); });
+      if (reflection) { out.push(""); out.push("💬 " + reflection); }
+      return out.join("\n");
+    }
+    if (btnCopyWeek) {
+      btnCopyWeek.addEventListener("click", function() {
+        if (openWeek === null) return;
+        var text = buildWeeklyText(openWeek), self = btnCopyWeek;
+        function ok(){ self.textContent = "✅ 복사됨"; setTimeout(function(){ self.textContent = "📋 복사"; }, 1500); }
+        function fallback(){ var ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select(); try{document.execCommand("copy");}catch(e){} document.body.removeChild(ta); ok(); }
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok).catch(fallback);
+        else fallback();
+      });
+    }
+    // 게시물의 ✏️에서 호출 → 주 목표 패널을 (탭 전환 없이) 오버레이로 열기
+    // 게시물의 연도(yr)를 함께 받아, 다른 연도면 먼저 그 연도로 전환 → 패널·저장·dedupe가 모두 게시물 연도 기준으로 동작(연도 불일치 desync 방지)
+    window.openWeeklyPanel = function(wk, yr) {
+      var n = parseInt(wk, 10); if (!(n >= 1 && n <= 52)) return;
+      var y = parseInt(yr, 10);
+      if (y && y !== viewYear) switchYear(y);
+      openPanel(n);
+    };
 
     /* ─── Tooltip ────────────────────────────────────── */
     var tip = document.createElement("div"); tip.className = "week-tooltip";
@@ -5892,6 +5989,59 @@
       }
       window.shareToFeed = shareToFeed;
 
+      /* ── 주 목표 공유/갱신 (주차당 1개, 양방향 동기화) ──
+         - 이미 그 주 게시물이 있으면: 내용이 있으면 update, 비었으면 delete (홈에서 비우면 공유글도 정리)
+         - 없으면: shareOn일 때만 insert (내용 있을 때) */
+      var _weeklySyncing = {}; // (week,year) 키별 진행 중 락 — 빠른 연속 저장 시 중복 insert 방지
+      window.shareWeeklyGoal = function(week, year, content, shareOn) {
+        if (!_currentUser) return;
+        var lockKey = Number(week) + ':' + Number(year);
+        if (_weeklySyncing[lockKey]) return; // 같은 주차 동기화가 이미 진행 중
+        _weeklySyncing[lockKey] = true;
+        function unlock() { delete _weeklySyncing[lockKey]; }
+        var isEmpty = !(content && ((content.tasks && content.tasks.length) || (content.note && String(content.note).trim())));
+        _supabase.from('community_feed').select('id, content').eq('user_id', _currentUser.id).eq('feed_type', 'weekly')
+          .then(function(res) {
+            if (res && res.error) { unlock(); showToast('주 목표 동기화 조회 실패', 'error'); return; } // 조회 실패 시 insert 분기로 빠지지 않게
+            var rows = (res.data || []), existing = null;
+            for (var i = 0; i < rows.length; i++) {
+              var c = rows[i].content || {};
+              // year 누락된 과거 행은 week만으로 관대하게 매칭(중복 방지)
+              if (Number(c.week) === Number(week) && (c.year == null || Number(c.year) === Number(year))) { existing = rows[i]; break; }
+            }
+            if (existing) {
+              if (isEmpty) {
+                _supabase.from('community_feed').delete().eq('id', existing.id).then(function(r2) {
+                  unlock();
+                  if (r2 && r2.error) { showToast('커뮤니티 동기화 실패', 'error'); return; }
+                  showToast('커뮤니티 공유글도 삭제했어요', '');
+                  loadFeed();
+                }).catch(function(){ unlock(); });
+              } else {
+                _supabase.from('community_feed').update({ content: content, display_name: getUserName(), avatar_url: getUserAvatar() }).eq('id', existing.id).then(function(r2) {
+                  unlock();
+                  if (r2 && r2.error) { showToast('커뮤니티 동기화 실패', 'error'); return; }
+                  if (shareOn) showToast('커뮤니티 주 목표를 갱신했어요', 'success');
+                  loadFeed();
+                }).catch(function(){ unlock(); });
+              }
+            } else if (shareOn && !isEmpty) {
+              _supabase.from('community_feed').insert({
+                user_id: _currentUser.id, feed_type: 'weekly', content: content,
+                display_name: getUserName(), avatar_url: getUserAvatar(), shared_at: new Date().toISOString()
+              }).then(function(r2) {
+                unlock();
+                if (r2 && r2.error) { showToast('주 목표 공유 실패 — 다시 시도해주세요', 'error'); return; }
+                showToast('주 목표를 커뮤니티에 공유했어요', 'success');
+                resetFeedFilters();
+                loadFeed();
+              }).catch(function(){ unlock(); });
+            } else {
+              unlock();
+            }
+          }).catch(function() { unlock(); showToast('주 목표 공유 중 오류가 발생했어요', 'error'); });
+      };
+
       /* ── Load Feed ── */
       function loadFeed() {
         // 로딩 플레이스홀더 (데이터가 아직 없을 때만 — 빈 화면 방지)
@@ -5969,6 +6119,7 @@
         var type = opts.type || 'all', q = (opts.search || '').trim().toLowerCase(), tag = opts.tag || 'all', sort = opts.sort || 'new';
         var out = (posts || []).filter(function(p) {
           if (type === 'daily' && p.feed_type !== 'daily') return false;
+          if (type === 'weekly' && p.feed_type !== 'weekly') return false;
           if (type === 'retro' && !(p.feed_type === 'retro' || (opts.aiWithRetro && p.feed_type === 'ai_analysis'))) return false;
           if (type === 'free' && p.feed_type !== 'free') return false;
           if (q && postSearchText(p).indexOf(q) === -1) return false;
@@ -6007,7 +6158,7 @@
         card.className = 'feed-card';
         card.setAttribute('data-feed-id', item.id);
 
-        var badgeLabels = { weekly: '주간', daily: '오늘의 목표', retro: '오늘의 회고', ai_analysis: 'AI 분석', free: '자유' };
+        var badgeLabels = { weekly: '주간 목표', daily: '오늘의 목표', retro: '오늘의 회고', ai_analysis: 'AI 분석', free: '자유' };
         var badgeClass = 'badge-' + (item.feed_type === 'ai_analysis' ? 'ai' : item.feed_type);
         // 현재 프로필 우선(없으면 게시 당시 저장값)
         var dispName = resolveName(item.user_id, item.display_name);
@@ -6042,7 +6193,8 @@
               '<span class="feed-name">' + escH(dispName) + '</span>' +
             '</span>' +
             '<span class="feed-badge ' + badgeClass + '">' + (badgeLabels[item.feed_type] || '') + '</span>' +
-            ((item.content && item.content.date && formatPostDate(item.content.date)) ? '<span class="feed-date">📅 ' + formatPostDate(item.content.date) + '</span>' : '') +
+            ((item.feed_type === 'weekly' && item.content && item.content.week) ? '<span class="feed-date">📅 제 ' + item.content.week + '주</span>'
+              : (item.content && item.content.date && formatPostDate(item.content.date)) ? '<span class="feed-date">📅 ' + formatPostDate(item.content.date) + '</span>' : '') +
             '<span class="feed-time">' + getTimeAgo(item.shared_at) + '</span>' +
             authorBtns +
           '</div>' +
@@ -6094,12 +6246,12 @@
         var SEP = '────────────────';
         var dateLine = content.date ? '📅 ' + (formatPostDate(content.date) || content.date) : '';
 
-        if (type === 'daily') {
+        if (type === 'daily' || type === 'weekly') {
           var tasks = content.tasks || [];
           var done = tasks.filter(function(t) { return t.completed; }).length;
           var total = tasks.length;
           var pct = total > 0 ? Math.round(done / total * 100) : 0;
-          out.push('📋 오늘의 목표');
+          out.push(type === 'weekly' ? ('📋 제 ' + (content.week || '') + '주 목표') : '📋 오늘의 목표');
           if (dateLine) out.push(dateLine);
           out.push('📊 달성률  ' + done + ' / ' + total + (total > 0 ? '  (' + pct + '%)' : ''));
           out.push(SEP);
@@ -6155,6 +6307,13 @@
 
       /* ── Edit Post ── */
       function editPost(item) {
+        // 주 목표는 편집기를 하나(주 목표 패널)로 통일 → 패널을 오버레이로 열어 거기서 수정(저장 시 양쪽 동기화)
+        if (item.feed_type === 'weekly') {
+          var wk = item.content && item.content.week;
+          if (wk && typeof window.openWeeklyPanel === 'function') window.openWeeklyPanel(wk, item.content && item.content.year);
+          else showToast('주 목표 패널을 열 수 없습니다', 'error');
+          return;
+        }
         editingFeedId = item.id;
         modal.style.display = 'flex';
         typeSelect.style.display = 'none';
@@ -6226,7 +6385,7 @@
 
       function formatContent(type, content) {
         if (!content) return '';
-        if (type === 'daily') {
+        if (type === 'daily' || type === 'weekly') {  // 주 목표는 일 목표와 동일 템플릿
           var tasks = content.tasks || [];
           var done = tasks.filter(function(t) { return t.completed; }).length;
           var html = '<div style="margin-bottom:.4rem"><span class="feed-score">' + done + '/' + tasks.length + '</span> 완료</div>';
@@ -6513,8 +6672,8 @@
         var retros = [];
         if (item.feed_type === 'retro') {
           retros = [item.content];
-        } else if (item.feed_type === 'daily') {
-          // Create a pseudo-retro from daily goals
+        } else if (item.feed_type === 'daily' || item.feed_type === 'weekly') {
+          // 목표(일/주) → 달성률 기반 의사-회고 생성
           var tasks = item.content.tasks || [];
           var done = tasks.filter(function(t) { return t.completed; }).length;
           retros = [{ date: item.content.date, score: Math.round((done / Math.max(tasks.length, 1)) * 10), went_well: tasks.filter(function(t){return t.completed}).map(function(t){return t.text}).join(', '), to_improve: tasks.filter(function(t){return !t.completed}).map(function(t){return t.text}).join(', '), tags: [] }];
@@ -6613,7 +6772,7 @@
         var scores = [], comps = [], tagCount = {}, dateSet = {}, minTs = null;
         posts.forEach(function(p) {
           var c = p.content || {};
-          if (p.feed_type === 'daily') {
+          if (p.feed_type === 'daily' || p.feed_type === 'weekly') {  // 주 목표도 목표 글로 집계(달성률 포함)
             stats.daily++;
             var tasks = c.tasks || [];
             if (tasks.length) comps.push(tasks.filter(function(t){return t.completed;}).length / tasks.length * 100);
@@ -6659,7 +6818,7 @@
           var avatar = prof.avatar_url || resolveAvatar(userId, '');
           var allStats = computeMemberStats(visible); // since(활동 시작일)는 전체 기준
           var isMe = _currentUser && userId === _currentUser.id;
-          var badgeLabels = { daily: '오늘의 목표', retro: '오늘의 회고', free: '자유' };
+          var badgeLabels = { daily: '오늘의 목표', weekly: '주간 목표', retro: '오늘의 회고', free: '자유' };
           var allTags = collectAllTags(visible);
 
           // 필터 상태 (이 프로필 열림 동안 유지)
@@ -6676,7 +6835,8 @@
           '<div class="mp-filterbar">' +
             '<div class="mp-type-chips">' +
               '<button class="mp-type-chip active" data-mptype="all">전체</button>' +
-              '<button class="mp-type-chip" data-mptype="daily">📋 목표</button>' +
+              '<button class="mp-type-chip" data-mptype="daily">📋 오늘</button>' +
+              '<button class="mp-type-chip" data-mptype="weekly">📅 주간</button>' +
               '<button class="mp-type-chip" data-mptype="retro">📝 회고</button>' +
               '<button class="mp-type-chip" data-mptype="free">💬 자유</button>' +
             '</div>' +
@@ -6713,7 +6873,8 @@
               return;
             }
             listEl.innerHTML = filtered.map(function(p) {
-              var dateChip = (p.content && p.content.date && formatPostDate(p.content.date)) ? '<span class="feed-date">📅 ' + formatPostDate(p.content.date) + '</span>' : '';
+              var dateChip = (p.feed_type === 'weekly' && p.content && p.content.week) ? '<span class="feed-date">📅 제 ' + p.content.week + '주</span>'
+                : (p.content && p.content.date && formatPostDate(p.content.date)) ? '<span class="feed-date">📅 ' + formatPostDate(p.content.date) + '</span>' : '';
               return '<div class="mp-post"><div class="mp-post-head">' +
                   '<span class="feed-badge badge-' + p.feed_type + '">' + (badgeLabels[p.feed_type] || p.feed_type) + '</span>' +
                   dateChip + '<span class="feed-time">' + getTimeAgo(p.shared_at) + '</span>' +
