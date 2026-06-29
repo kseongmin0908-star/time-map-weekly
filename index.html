@@ -6126,9 +6126,15 @@
           if (tag !== 'all' && postTagList(p).indexOf(tag) === -1) return false;
           return true;
         });
+        // 주간 목표 필터: 게시 시각이 아니라 '주차' 기준 정렬(최신 주가 위, 오래된 주가 아래)
+        var byWeek = (type === 'weekly');
+        function keyOf(p) {
+          if (byWeek) { var c = p.content || {}; return (Number(c.year) || 0) * 100 + (Number(c.week) || 0); }
+          return new Date(p.shared_at || 0).getTime();
+        }
         out.sort(function(a, b) {
-          var ta = new Date(a.shared_at || 0).getTime(), tb = new Date(b.shared_at || 0).getTime();
-          return sort === 'old' ? (ta - tb) : (tb - ta);
+          var ka = keyOf(a), kb = keyOf(b);
+          return sort === 'old' ? (ka - kb) : (kb - ka);
         });
         return out;
       }
