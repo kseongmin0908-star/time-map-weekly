@@ -6193,7 +6193,7 @@
               '<span class="feed-name">' + escH(dispName) + '</span>' +
             '</span>' +
             '<span class="feed-badge ' + badgeClass + '">' + (badgeLabels[item.feed_type] || '') + '</span>' +
-            ((item.feed_type === 'weekly' && item.content && item.content.week) ? '<span class="feed-date">📅 제 ' + item.content.week + '주</span>'
+            (item.feed_type === 'weekly' ? ''  /* 주간은 본문 머리줄에 제N주·기간 표시 */
               : (item.content && item.content.date && formatPostDate(item.content.date)) ? '<span class="feed-date">📅 ' + formatPostDate(item.content.date) + '</span>' : '') +
             '<span class="feed-time">' + getTimeAgo(item.shared_at) + '</span>' +
             authorBtns +
@@ -6251,8 +6251,12 @@
           var done = tasks.filter(function(t) { return t.completed; }).length;
           var total = tasks.length;
           var pct = total > 0 ? Math.round(done / total * 100) : 0;
-          out.push(type === 'weekly' ? ('📋 제 ' + (content.week || '') + '주 목표') : '📋 오늘의 목표');
-          if (dateLine) out.push(dateLine);
+          if (type === 'weekly') {
+            out.push('📋 ' + weeklyRangeText(content) + ' 목표');
+          } else {
+            out.push('📋 오늘의 목표');
+            if (dateLine) out.push(dateLine);
+          }
           out.push('📊 달성률  ' + done + ' / ' + total + (total > 0 ? '  (' + pct + '%)' : ''));
           out.push(SEP);
           tasks.forEach(function(t) { out.push((t.completed ? '✅ ' : '⬜ ') + t.text); });
@@ -6383,12 +6387,27 @@
         '</div>';
       }
 
+      // 주간 게시물: "제 N주 · M월 D일 ~ M월 D일" (content.date = 그 주 월요일)
+      function weeklyRangeText(content) {
+        var wk = (content && content.week) || '';
+        if (!content || !content.date) return '제 ' + wk + '주';
+        var p = String(content.date).split('-');
+        if (p.length !== 3) return '제 ' + wk + '주';
+        var start = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+        if (isNaN(start.getTime())) return '제 ' + wk + '주';
+        var end = new Date(start); end.setDate(start.getDate() + 6);
+        function f(d) { return (d.getMonth() + 1) + '월 ' + d.getDate() + '일'; }
+        return '제 ' + wk + '주 · ' + f(start) + ' ~ ' + f(end);
+      }
+
       function formatContent(type, content) {
         if (!content) return '';
-        if (type === 'daily' || type === 'weekly') {  // 주 목표는 일 목표와 동일 템플릿
+        if (type === 'daily' || type === 'weekly') {  // 주 목표는 일 목표와 동일 템플릿(+ 주차·기간 머리줄)
           var tasks = content.tasks || [];
           var done = tasks.filter(function(t) { return t.completed; }).length;
-          var html = '<div style="margin-bottom:.4rem"><span class="feed-score">' + done + '/' + tasks.length + '</span> 완료</div>';
+          var html = '';
+          if (type === 'weekly') html += '<div style="font-size:.66rem;color:var(--gold);font-weight:600;margin-bottom:.4rem">📅 ' + escH(weeklyRangeText(content)) + '</div>';
+          html += '<div style="margin-bottom:.4rem"><span class="feed-score">' + done + '/' + tasks.length + '</span> 완료</div>';
           html += tasks.map(function(t) { return '<div style="font-size:.7rem;color:' + (t.completed ? 'var(--success)' : 'var(--text-dim)') + '">' + (t.completed ? '✅ ' : '☐ ') + escH(t.text) + '</div>'; }).join('');
           if (content.note) html += '<div style="font-size:.7rem;color:var(--text-dim);margin-top:.4rem;font-style:italic">💬 ' + escH(content.note) + '</div>';
           return html;
@@ -6873,7 +6892,7 @@
               return;
             }
             listEl.innerHTML = filtered.map(function(p) {
-              var dateChip = (p.feed_type === 'weekly' && p.content && p.content.week) ? '<span class="feed-date">📅 제 ' + p.content.week + '주</span>'
+              var dateChip = (p.feed_type === 'weekly') ? ''  /* 주간은 본문 머리줄에 제N주·기간 표시 */
                 : (p.content && p.content.date && formatPostDate(p.content.date)) ? '<span class="feed-date">📅 ' + formatPostDate(p.content.date) + '</span>' : '';
               return '<div class="mp-post"><div class="mp-post-head">' +
                   '<span class="feed-badge badge-' + p.feed_type + '">' + (badgeLabels[p.feed_type] || p.feed_type) + '</span>' +
