@@ -83,7 +83,7 @@ ${String(analysis || "").slice(0, 4000)}
       const chatRes = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-api-key": CLAUDE_API_KEY, "anthropic-version": "2023-06-01" },
-        body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 1024, system: chatSystem, messages: chatMessages }),
+        body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 4096, system: chatSystem, messages: chatMessages }),
       });
       if (!chatRes.ok) {
         const t = await chatRes.text();
@@ -215,7 +215,7 @@ ${String(analysis || "").slice(0, 4000)}
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-6",
-        max_tokens: 2048,
+        max_tokens: 8192,
         system: systemPrompt,
         messages: [{ role: "user", content: userMessage }],
       }),
