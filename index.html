@@ -6695,20 +6695,24 @@
         aiBtn.textContent = '🤖 분석 중...';
 
         var retros = [];
+        var aiPeriod = 'day';
         if (item.feed_type === 'retro') {
           retros = [item.content];
         } else if (item.feed_type === 'daily' || item.feed_type === 'weekly') {
-          // 목표(일/주) → 달성률 기반 의사-회고 생성
+          // 목표(일/주) → 달성률 기반 의사-회고 생성. 주간은 '이번 주' 기간으로 분석.
           var tasks = item.content.tasks || [];
           var done = tasks.filter(function(t) { return t.completed; }).length;
-          retros = [{ date: item.content.date, score: Math.round((done / Math.max(tasks.length, 1)) * 10), went_well: tasks.filter(function(t){return t.completed}).map(function(t){return t.text}).join(', '), to_improve: tasks.filter(function(t){return !t.completed}).map(function(t){return t.text}).join(', '), tags: [] }];
+          var wellTxt = tasks.filter(function(t){return t.completed}).map(function(t){return t.text}).join(', ');
+          if (item.content.note) wellTxt = wellTxt + (wellTxt ? ' / ' : '') + '메모: ' + item.content.note;
+          retros = [{ date: item.content.date, score: Math.round((done / Math.max(tasks.length, 1)) * 10), went_well: wellTxt, to_improve: tasks.filter(function(t){return !t.completed}).map(function(t){return t.text}).join(', '), tags: [] }];
+          if (item.feed_type === 'weekly') aiPeriod = 'week';
         } else if (item.feed_type === 'free') {
           // Create a pseudo-retro from free post content
           retros = [{ date: localDateStr(), score: 5, went_well: (item.content.title || '') + ' — ' + (item.content.body || ''), to_improve: '', tags: ['자유글'] }];
         }
         if (retros.length === 0) { aiBtn.classList.remove('loading'); aiBtn.textContent = '🤖 AI 분석'; return; }
 
-        callClaudeAnalysis(retros, 'day').then(function(result) {
+        callClaudeAnalysis(retros, aiPeriod).then(function(result) {
           aiBtn.classList.remove('loading');
           aiBtn.textContent = '✅ 완료!';
           setTimeout(function() { aiBtn.textContent = '🤖 AI 분석'; }, 2000);
